@@ -1,9 +1,10 @@
 #pragma once
 
-#include "../game/game.h"
+#include <windows.h>
+#include <d3d9.h>
 
-void InitializeOverlay(GameState* lpGameState);
-void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState);
+void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice);
+void DrawOverlay();
 void FreeOverlay();
 
 LRESULT WINAPI OverlayWindowFunc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);

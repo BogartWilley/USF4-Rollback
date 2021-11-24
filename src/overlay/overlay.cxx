@@ -1,10 +1,9 @@
+#include "overlay.h"
+
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
 #include <imgui_demo.cpp>
-
-#include "overlay.h"
-
 
 #define DEFAULT_ALPHA 0.87f
 
@@ -24,17 +23,17 @@ void DrawHelpWindow(bool* pOpen) {
 	ImGui::End();
 }
 
-void InitializeOverlay(GameState* lpGameState) {
+void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.Alpha = DEFAULT_ALPHA;
-	ImGui_ImplWin32_Init(lpGameState->hWnd);
-	ImGui_ImplDX9_Init(*lpGameState->d3dDevice);
+	ImGui_ImplWin32_Init(hWnd);
+	ImGui_ImplDX9_Init(lpDevice);
 }
 
-void DrawOverlay(GameMethods* lpGameMethods, GameState* lpGameState) {
+void DrawOverlay() {
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();

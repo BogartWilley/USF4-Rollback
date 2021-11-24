@@ -1,7 +1,7 @@
 #pragma once
 
 #include <windows.h>
-#include "game.h"
+#include <d3d9.h>
 
 namespace Dimps {
 	namespace Platform {
@@ -17,6 +17,7 @@ namespace Dimps {
 
 			typedef struct __staticMethods {
 				void (WINAPI* RunD3DOperations)(void* arg1);
+				D3D* (WINAPI* GetSingleton)();
 			} __staticMethods;
 
 			static void Locate(HMODULE peRoot);

@@ -15,12 +15,19 @@ find_package(Detours 4 REQUIRED)
 find_package(ValveFileVDF 1 REQUIRED)
 
 add_library(Game STATIC
-    src/game/game.h
-    src/game/game.cxx
+    "src/game/Dimps.hxx"
+    "src/game/Dimps.cxx"
+    "src/game/Dimps__Platform.hxx"
+    "src/game/Dimps__Platform.cxx"
     "src/game/Dimps__Platform__D3D.hxx"
     "src/game/Dimps__Platform__D3D.cxx"
     "src/game/Dimps__Platform__Main.hxx"
     "src/game/Dimps__Platform__Main.cxx"
+
+    "src/game/sf4x.hxx"
+    "src/game/sf4x.cxx"
+    "src/game/sf4x__Platform.hxx"
+    "src/game/sf4x__Platform.cxx"
     "src/game/sf4x__Platform__D3D.hxx"
     "src/game/sf4x__Platform__D3D.cxx"
     "src/game/sf4x__Platform__Main.hxx"
@@ -29,8 +36,8 @@ add_library(Game STATIC
 target_link_libraries(Game PUBLIC Detours "ws2_32" "Mswsock" "AdvApi32")
 
 add_executable(Launcher WIN32
-    src/launcher/discovery.cxx
-    src/launcher/discovery.hxx
+    
+    
     src/launcher/launcher.cxx
 )
 target_link_libraries(Launcher

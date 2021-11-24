@@ -2,32 +2,34 @@
 #include <strsafe.h>
 #include <detours.h>
 
-#include "game.h"
 #include "../overlay/overlay.h"
-#include "Dimps__platform__Main.hxx"
-#include "sf4x__platform__Main.hxx"
+#include "Dimps__Platform__D3D.hxx"
+#include "Dimps__Platform__Main.hxx"
+#include "sf4x__Platform__Main.hxx"
 
 using fMain = sf4x::Platform::Main;
 using rMain = Dimps::Platform::Main;
 
-static GameState* lpGameState;
-
-void fMain::Install(GameState* gameState) {
-    int (fMain::* _FakeInitialize)(void*, void*, void*) = &FakeInitialize;
-    DetourAttach((PVOID*)&rMain::publicMethods.Initialize, *(PVOID*)&_FakeInitialize);
-
-    lpGameState = gameState;
+void fMain::Install() {
+    int (fMain::* _fInitialize)(void*, void*, void*) = &Initialize;
+    DetourAttach((PVOID*)&rMain::publicMethods.Initialize, *(PVOID*)&_fInitialize);
+    DetourAttach((PVOID*)&rMain::staticMethods.RunWindowFunc, &RunWindowFunc);
 }
 
-int fMain::FakeInitialize(void* a, void* b, void* c) {
+int fMain::Initialize(void* a, void* b, void* c) {
     int rval = (this->*(rMain::publicMethods.Initialize))(a, b, c);
 
-    // We should, uh, make this not suck
-    unsigned int peRootOffset = (unsigned int)LocatePERoot();
-    void* _win32SubPtr = *(void**)(peRootOffset + 0x97d778);
-    lpGameState->hWnd = *(HWND*)((unsigned int)_win32SubPtr + 0x4);
-    InitializeOverlay(lpGameState);
-    // End jank
+    // Once Dimps::Platform::Main is fully specified, we can stop doing this
+    // pointer math.
+    rMain::Win32_WindowData** windowData = (rMain::Win32_WindowData**)((unsigned int)this + 0x490);
+    InitializeOverlay((*windowData)->hWnd, Dimps::Platform::D3D::staticMethods.GetSingleton()->lpD3DDevice);
 
     return rval;
+}
+
+void WINAPI fMain::RunWindowFunc(rMain* lpMain, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    if (OverlayWindowFunc(hwnd, uMsg, wParam, lParam)) {
+        return;
+    }
+    rMain::staticMethods.RunWindowFunc(lpMain, hwnd, uMsg, wParam, lParam);
 }
