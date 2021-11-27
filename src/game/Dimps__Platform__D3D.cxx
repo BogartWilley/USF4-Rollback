@@ -1,6 +1,4 @@
 #include <windows.h>
-#include <strsafe.h>
-#include <detours.h>
 
 #include "Dimps__Platform__D3D.hxx"
 

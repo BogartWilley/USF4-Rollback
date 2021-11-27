@@ -5,16 +5,85 @@
 #include <imgui_impl_win32.h>
 #include <imgui_demo.cpp>
 
+#include "../game/Dimps__Game__Battle__Chara__Actor.hxx"
+#include "../game/Dimps__Game__Battle__Chara__Unit.hxx"
+#include "../game/Dimps__Game__Battle__System.hxx"
+#include "../game/Dimps__Math.hxx"
+
+
 #define DEFAULT_ALPHA 0.87f
+
+using CharaActor = Dimps::Game::Battle::Chara::Actor;
+using CharaUnit = Dimps::Game::Battle::Chara::Unit;
+
+using Dimps::Game::Battle::System;
+using Dimps::Math::FixedPoint;
+using Dimps::Math::FPtoFloat;
+
+using ImGui::NextColumn;
+using ImGui::Text;
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static bool show_help = false;
+static bool show_battle_system_window = false;
+static bool show_demo_window = false;
+static bool show_help_window = false;
+
+void DrawBattleSystemWindow(bool* pOpen) {
+	ImGui::Begin(
+		"Battle System",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	System* system = System::staticMethods.GetSingleton();
+	int isFight = (system->*System::publicMethods.IsFight)();
+	ImGui::Text("Is fight: %d", isFight);
+	ImGui::Text("Is leaving battle: %d", (system->*System::publicMethods.IsLeavingBattle)());
+
+	if (isFight) {
+		CharaUnit* lpCharaUnit = (system->*System::publicMethods.GetCharaUnit)();
+		FixedPoint tmp;
+
+		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+		if (ImGui::BeginTabBar("Battle Actor", tab_bar_flags))
+		{
+			for (int i = 0; i < 2; i++) {
+				CharaActor* a = (lpCharaUnit->*CharaUnit::publicMethods.GetActorByIndex)(i);
+
+				if (ImGui::BeginTabItem(i == 0 ? "Actor 0" : "Actor 1")) {
+					ImGui::Columns(2, NULL, false);
+
+					Text("Actor ID:"); NextColumn();
+					Text("%d", (a->*CharaActor::publicMethods.GetActorID)()); NextColumn();
+
+					Text("Status:"); NextColumn();
+					Text("%d", (a->*CharaActor::publicMethods.GetStatus)()); NextColumn();
+
+					(a->*CharaActor::publicMethods.GetDamage)(&tmp);
+					Text("Damage:"); NextColumn();
+					Text("%f", FPtoFloat(&tmp)); NextColumn();
+
+					(a->*CharaActor::publicMethods.GetComboDamage)(&tmp);
+					Text("Combo damage:"); NextColumn();
+					Text("%f", FPtoFloat(&tmp)); NextColumn();
+
+					ImGui::Columns(1);
+					ImGui::EndTabItem();
+				}
+			}
+
+			ImGui::EndTabBar();
+		}
+	}
+
+	ImGui::End();
+}
 
 void DrawHelpWindow(bool* pOpen) {
 	ImGui::Begin(
-		"ImGui Help", 
-		pOpen, 
+		"ImGui Help",
+		pOpen,
 		ImGuiWindowFlags_None
 	);
 
@@ -37,14 +106,27 @@ void DrawOverlay() {
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-	ImGui::ShowDemoWindow();
 
 	if (ImGui::IsMousePosValid() && ImGui::GetIO().MousePos.y < 200) {
 		if (ImGui::BeginMainMenuBar()) {
-			ImGui::MenuItem(show_help ? "Hide Help" : "Show Help",NULL,&show_help);
+			ImGui::MenuItem(show_battle_system_window ? "Hide Battle System" : "Show Battle System", NULL, &show_battle_system_window);
+			ImGui::MenuItem(show_demo_window ? "Hide Demo" : "Show Demo", NULL, &show_demo_window);
+			ImGui::MenuItem(show_help_window ? "Hide Help" : "Show Help", NULL, &show_help_window);
 
 			ImGui::EndMainMenuBar();
 		}
+	}
+
+	if (show_battle_system_window) {
+		DrawBattleSystemWindow(&show_battle_system_window);
+	}
+
+	if (show_demo_window) {
+		ImGui::ShowDemoWindow();
+	}
+
+	if (show_help_window) {
+		DrawHelpWindow(&show_help_window);
 	}
 
 	ImGui::EndFrame();

@@ -1,6 +1,4 @@
 #include <windows.h>
-#include <strsafe.h>
-#include <detours.h>
 
 #include "Dimps__platform__Main.hxx"
 

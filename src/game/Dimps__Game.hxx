@@ -3,5 +3,7 @@
 #include <windows.h>
 
 namespace Dimps {
-	void Locate(HMODULE peRoot);
+	namespace Game {
+		void Locate(HMODULE peRoot);
+	}
 }
