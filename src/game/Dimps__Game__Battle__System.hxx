@@ -36,6 +36,8 @@ namespace Dimps {
 					Chara::Unit* (System::* GetCharaUnit)();
 					bool (System::* IsFight)();
 					bool (System::* IsLeavingBattle)();
+					void (System::* StoreMemento)();
+					void (System::* RestoreMemento)();
 				} __publicMethods;
 
 				typedef struct __staticMethods {

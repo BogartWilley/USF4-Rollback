@@ -28,6 +28,7 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARA
 static bool show_battle_system_window = false;
 static bool show_demo_window = false;
 static bool show_help_window = false;
+static bool show_memento_window = false;
 
 void DrawBattleSystemWindow(bool* pOpen) {
 	ImGui::Begin(
@@ -92,6 +93,26 @@ void DrawHelpWindow(bool* pOpen) {
 	ImGui::End();
 }
 
+void DrawMementoWindow(bool* pOpen) {
+	ImGui::Begin(
+		"Memento: Save/load",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	if (ImGui::Button("Store memento")) {
+		System* system = System::staticMethods.GetSingleton();
+		(system->*System::publicMethods.StoreMemento)();
+	}
+
+	if (ImGui::Button("Restore memento")) {
+		System* system = System::staticMethods.GetSingleton();
+		(system->*System::publicMethods.RestoreMemento)();
+	}
+
+	ImGui::End();
+}
+
 void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -110,6 +131,7 @@ void DrawOverlay() {
 	if (ImGui::IsMousePosValid() && ImGui::GetIO().MousePos.y < 200) {
 		if (ImGui::BeginMainMenuBar()) {
 			ImGui::MenuItem(show_battle_system_window ? "Hide Battle System" : "Show Battle System", NULL, &show_battle_system_window);
+			ImGui::MenuItem(show_memento_window ? "Hide Memento Window" : "Show Memento Window", NULL, &show_memento_window);
 			ImGui::MenuItem(show_demo_window ? "Hide Demo" : "Show Demo", NULL, &show_demo_window);
 			ImGui::MenuItem(show_help_window ? "Hide Help" : "Show Help", NULL, &show_help_window);
 
@@ -127,6 +149,10 @@ void DrawOverlay() {
 
 	if (show_help_window) {
 		DrawHelpWindow(&show_help_window);
+	}
+
+	if (show_memento_window) {
+		DrawMementoWindow(&show_memento_window);
 	}
 
 	ImGui::EndFrame();
