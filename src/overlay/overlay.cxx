@@ -6,6 +6,8 @@
 #include <imgui_demo.cpp>
 
 #include "../game/Dimps.hxx"
+#include "../game/Dimps__Eva__TaskCore.hxx"
+#include "../game/Dimps__Eva__TaskCoreRegistry.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Actor.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Unit.hxx"
 #include "../game/Dimps__Game__Battle__System.hxx"
@@ -17,6 +19,8 @@
 using CharaActor = Dimps::Game::Battle::Chara::Actor;
 using CharaUnit = Dimps::Game::Battle::Chara::Unit;
 
+using Dimps::Eva::TaskCore;
+using Dimps::Eva::TaskCoreRegistry;
 using Dimps::Game::Battle::System;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FPtoFloat;
@@ -30,6 +34,7 @@ static bool show_battle_system_window = false;
 static bool show_demo_window = false;
 static bool show_help_window = false;
 static bool show_memento_window = false;
+static bool show_task_window = false;
 
 void DrawBattleSystemWindow(bool* pOpen) {
 	ImGui::Begin(
@@ -123,6 +128,24 @@ void DrawMementoWindow(bool* pOpen) {
 	ImGui::End();
 }
 
+void DrawTaskWindow(bool* pOpen) {
+	ImGui::Begin(
+		"Tasks",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	int numActiveCores = TaskCoreRegistry::staticMethods.GetNumActiveCores();
+	Text("Number of active task cores: %d", numActiveCores);
+	for (int i = 0; i < numActiveCores; i++) {
+		TaskCore* core = TaskCoreRegistry::staticMethods.GetCoreByIndex(i);
+		char* name = (core->*TaskCore::publicMethods.GetName)();
+		Text("Core ID: %d, name: %s", i, name);
+	}
+
+	ImGui::End();
+}
+
 void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -143,6 +166,7 @@ void DrawOverlay() {
 			ImGui::MenuItem(show_battle_system_window ? "Hide Battle System" : "Show Battle System", NULL, &show_battle_system_window);
 			ImGui::MenuItem(show_memento_window ? "Hide Memento Window" : "Show Memento Window", NULL, &show_memento_window);
 			ImGui::MenuItem(show_demo_window ? "Hide Demo" : "Show Demo", NULL, &show_demo_window);
+			ImGui::MenuItem(show_task_window ? "Hide Tasks" : "Show Tasks", NULL, &show_task_window);
 			ImGui::MenuItem(show_help_window ? "Hide Help" : "Show Help", NULL, &show_help_window);
 
 			ImGui::EndMainMenuBar();
@@ -163,6 +187,10 @@ void DrawOverlay() {
 
 	if (show_memento_window) {
 		DrawMementoWindow(&show_memento_window);
+	}
+
+	if (show_task_window) {
+		DrawTaskWindow(&show_task_window);
 	}
 
 	ImGui::EndFrame();

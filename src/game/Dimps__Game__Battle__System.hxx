@@ -58,7 +58,7 @@ namespace Dimps {
 				} __publicMethods;
 
 				typedef struct __staticMethods {
-					System* (WINAPI* GetSingleton)();
+					System* (*GetSingleton)();
 				} __staticMethods;
 
 				static void Locate(HMODULE peRoot);

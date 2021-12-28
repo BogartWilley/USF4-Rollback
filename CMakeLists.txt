@@ -17,6 +17,12 @@ find_package(ValveFileVDF 1 REQUIRED)
 add_library(Game STATIC
     "src/game/Dimps.hxx"
     "src/game/Dimps.cxx"
+    "src/game/Dimps__Eva.hxx"
+    "src/game/Dimps__Eva.cxx"
+    "src/game/Dimps__Eva__TaskCore.hxx"
+    "src/game/Dimps__Eva__TaskCore.cxx"
+    "src/game/Dimps__Eva__TaskCoreRegistry.hxx"
+    "src/game/Dimps__Eva__TaskCoreRegistry.cxx"
     "src/game/Dimps__Game.hxx"
     "src/game/Dimps__Game.cxx"
     "src/game/Dimps__Game__Battle.hxx"

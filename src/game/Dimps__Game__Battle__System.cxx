@@ -15,5 +15,5 @@ void System::Locate(HMODULE peRoot) {
 	*(PVOID*)&publicMethods.IsLeavingBattle = (PVOID)(peRootOffset + 0x1d6a70);
 	*(PVOID*)&publicMethods.StoreMemento = (PVOID)(peRootOffset + 0x1d7f80);
 	*(PVOID*)&publicMethods.RestoreMemento = (PVOID)(peRootOffset + 0x1d8020);
-	staticMethods.GetSingleton = (System * (WINAPI*)())(peRootOffset + 0x1dba30);
+	staticMethods.GetSingleton = (System*(*)())(peRootOffset + 0x1dba30);
 }
