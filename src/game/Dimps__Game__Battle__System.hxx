@@ -10,7 +10,24 @@ namespace Dimps {
 			struct System
 			{
 				enum BattleFlow {
-					ROUND_ACTIVE = 2,
+					BF__START_DEMO = 0,
+					BF__READY = 1,
+					BF__FIGHT = 2,
+					BF__FINISH = 3,
+					BF__ROUND_RESULT = 4,
+					BF__MATCH_RESULT = 5,
+					BF__DRAW_RESULT = 6,
+					BF__BONUS_RESULT = 7,
+					BF__CONTINUE = 8,
+					BF__GAME_OVER = 9,
+					BF__BTL_START = 10,
+					BF__BTL_OVER = 11,
+					BF__MATCH_START = 12,
+					BF__MATCH_OVER = 13,
+					BF__ROUND_START = 14,
+					BF__ROUND_OVER = 15,
+					BF__IDLE = 16,
+					BF__RESTART = 17,
 				};
 
 				enum UnitIndex {

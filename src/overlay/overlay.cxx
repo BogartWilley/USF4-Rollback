@@ -5,6 +5,7 @@
 #include <imgui_impl_win32.h>
 #include <imgui_demo.cpp>
 
+#include "../game/Dimps.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Actor.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Unit.hxx"
 #include "../game/Dimps__Game__Battle__System.hxx"
@@ -55,11 +56,20 @@ void DrawBattleSystemWindow(bool* pOpen) {
 				if (ImGui::BeginTabItem(i == 0 ? "Actor 0" : "Actor 1")) {
 					ImGui::Columns(2, NULL, false);
 
+					int actorID = (int)(a->*CharaActor::publicMethods.GetActorID)();
+					char* actorCode = actorID > -1 ? Dimps::characterCodes[actorID] : "";
+
 					Text("Actor ID:"); NextColumn();
-					Text("%d", (a->*CharaActor::publicMethods.GetActorID)()); NextColumn();
+					Text("%d", actorID); NextColumn();
+
+					Text("Actor code:"); NextColumn();
+					Text(actorCode); NextColumn();
 
 					Text("Status:"); NextColumn();
 					Text("%d", (a->*CharaActor::publicMethods.GetStatus)()); NextColumn();
+
+					Text("Current side:"); NextColumn();
+					Text("%d", (a->*CharaActor::publicMethods.GetCurrentSide)()); NextColumn();
 
 					(a->*CharaActor::publicMethods.GetDamage)(&tmp);
 					Text("Damage:"); NextColumn();
