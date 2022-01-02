@@ -51,6 +51,12 @@ namespace Dimps {
 
 				typedef struct __publicMethods {
 					Chara::Unit* (System::* GetCharaUnit)();
+
+					// Realistically this is an IUnit*, but since I don't have complete
+					// typings for now, just mark it as void* and rely on the caller to
+					// cast based on the unit index.
+					void* (System::* GetUnitByIndex)(unsigned int index);
+
 					bool (System::* IsFight)();
 					bool (System::* IsLeavingBattle)();
 					void (System::* StoreMemento)();

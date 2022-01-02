@@ -15,5 +15,4 @@ void Actor::Locate(HMODULE peRoot) {
 	*(PVOID*)(&publicMethods.GetCurrentSide) = (PVOID)(peRootOffset + 0x141d20);
 	*(PVOID*)(&publicMethods.GetDamage) = (PVOID)(peRootOffset + 0x1423d0);
 	*(PVOID*)(&publicMethods.GetStatus) = (PVOID)(peRootOffset + 0x142520);
-	
 }

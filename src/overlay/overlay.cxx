@@ -10,6 +10,7 @@
 #include "../game/Dimps__Eva__TaskCoreRegistry.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Actor.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Unit.hxx"
+#include "../game/Dimps__Game__Battle__Command__Unit.hxx"
 #include "../game/Dimps__Game__Battle__System.hxx"
 #include "../game/Dimps__Math.hxx"
 
@@ -18,19 +19,24 @@
 
 using CharaActor = Dimps::Game::Battle::Chara::Actor;
 using CharaUnit = Dimps::Game::Battle::Chara::Unit;
+using CommandUnit = Dimps::Game::Battle::Command::Unit;
 
 using Dimps::Eva::TaskCore;
 using Dimps::Eva::TaskCoreRegistry;
+using Dimps::Game::Battle::Command::CommandImpl;
 using Dimps::Game::Battle::System;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FPtoFloat;
 
+using ImGui::Begin;
+using ImGui::End;
 using ImGui::NextColumn;
 using ImGui::Text;
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 static bool show_battle_system_window = false;
+static bool show_command_window = false;
 static bool show_demo_window = false;
 static bool show_help_window = false;
 static bool show_memento_window = false;
@@ -94,6 +100,140 @@ void DrawBattleSystemWindow(bool* pOpen) {
 	}
 
 	ImGui::End();
+}
+
+// Only 14 bytes are accounted for so far. Training mode memory and
+// reload buttons don't seem to be in this specific buffer- which in
+// a way makes sense, as this generally seems to be only "action"
+// related buttons.
+const char* GetButtonLabel(unsigned int bytePosition) {
+	switch (bytePosition) {
+	case 0: // 0x1
+		return "Directions-Off";
+	case 1: // 0x2
+		return "Up";
+	case 2: // 0x4
+		return "Down";
+	case 3: // 0x8
+		return "Away";
+	case 4: // 0x10
+		return "Towards";
+	case 5: // 0x20
+		return "Buttons-Off";
+	case 6: // 0x40
+		return "Jab";
+	case 7: // 0x80
+		return "Strong";
+	case 8: // 0x100
+		return "Fierce";
+	case 9: // 0x200
+		return "Short";
+	case 10: // 0x400
+		return "Forward";
+	case 11: // 0x800
+		return "Roundhouse";
+	case 12: // 0x1000
+		return "Start";
+	case 13: // 0x2000
+		return "Select/Back";
+	default:
+		return "Unknown";
+	}
+}
+
+void DrawCommandWindow(bool* pOpen) {
+	Begin(
+		"Command",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	System* system = System::staticMethods.GetSingleton();	
+	int isFight = (system->*System::publicMethods.IsFight)();
+	Text("Is fight: %d", isFight);
+	ImGui::Separator();
+
+	if (isFight) {
+		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+		if (ImGui::BeginTabBar("Input Type", tab_bar_flags))
+		{
+			if (ImGui::BeginTabItem("On")) {
+				ImGui::Columns(3);
+				Text("Button"); NextColumn(); Text("P1"); NextColumn(); Text("P2"); NextColumn();
+				ImGui::Separator();
+
+				CommandUnit* u = (CommandUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_COMMAND);
+				DWORD padData[2];
+				for (int i = 0; i < 2; i++) {
+					CommandImpl* impl = (u->*CommandUnit::publicMethods.GetCommandImplForEntry)(i);
+					padData[i] = (impl->*CommandImpl::publicMethods.GetCurrentOnSwitches)();
+				}
+
+				for (unsigned int bytePosition = 0; bytePosition < 14; bytePosition++) {
+					Text("%s (B%d)", GetButtonLabel(bytePosition), bytePosition); NextColumn();
+					for (int i = 0; i < 2; i++) {
+						Text((padData[i] & (1 << bytePosition)) ? "ON" : "OFF"); NextColumn();
+					}
+					ImGui::Separator();
+				}
+
+				ImGui::Columns(1);
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Rising")) {
+				ImGui::Columns(3);
+				Text("Button"); NextColumn(); Text("P1"); NextColumn(); Text("P2"); NextColumn();
+				ImGui::Separator();
+
+				CommandUnit* u = (CommandUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_COMMAND);
+				DWORD padData[2];
+				for (int i = 0; i < 2; i++) {
+					CommandImpl* impl = (u->*CommandUnit::publicMethods.GetCommandImplForEntry)(i);
+					padData[i] = (impl->*CommandImpl::publicMethods.GetCurrentRisingSwitches)();
+				}
+
+				for (unsigned int bytePosition = 0; bytePosition < 14; bytePosition++) {
+					Text("%s (B%d)", GetButtonLabel(bytePosition), bytePosition); NextColumn();
+					for (int i = 0; i < 2; i++) {
+						Text((padData[i] & (1 << bytePosition)) ? "ON" : "OFF"); NextColumn();
+					}
+					ImGui::Separator();
+				}
+
+				ImGui::Columns(1);
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Falling")) {
+				ImGui::Columns(3);
+				Text("Button"); NextColumn(); Text("P1"); NextColumn(); Text("P2"); NextColumn();
+				ImGui::Separator();
+
+				CommandUnit* u = (CommandUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_COMMAND);
+				DWORD padData[2];
+				for (int i = 0; i < 2; i++) {
+					CommandImpl* impl = (u->*CommandUnit::publicMethods.GetCommandImplForEntry)(i);
+					padData[i] = (impl->*CommandImpl::publicMethods.GetCurrentFallingSwitches)();
+				}
+
+				for (unsigned int bytePosition = 0; bytePosition < 14; bytePosition++) {
+					Text("%s (B%d)", GetButtonLabel(bytePosition), bytePosition); NextColumn();
+					for (int i = 0; i < 2; i++) {
+						Text((padData[i] & (1 << bytePosition)) ? "ON" : "OFF"); NextColumn();
+					}
+					ImGui::Separator();
+				}
+
+				ImGui::Columns(1);
+				ImGui::EndTabItem();
+			}
+
+			ImGui::EndTabBar();
+		}
+	}
+
+	End();
 }
 
 void DrawHelpWindow(bool* pOpen) {
@@ -164,6 +304,7 @@ void DrawOverlay() {
 	if (ImGui::IsMousePosValid() && ImGui::GetIO().MousePos.y < 200) {
 		if (ImGui::BeginMainMenuBar()) {
 			ImGui::MenuItem(show_battle_system_window ? "Hide Battle System" : "Show Battle System", NULL, &show_battle_system_window);
+			ImGui::MenuItem(show_command_window ? "Hide Command" : "Show Command", NULL, &show_command_window);
 			ImGui::MenuItem(show_memento_window ? "Hide Memento Window" : "Show Memento Window", NULL, &show_memento_window);
 			ImGui::MenuItem(show_demo_window ? "Hide Demo" : "Show Demo", NULL, &show_demo_window);
 			ImGui::MenuItem(show_task_window ? "Hide Tasks" : "Show Tasks", NULL, &show_task_window);
@@ -175,6 +316,10 @@ void DrawOverlay() {
 
 	if (show_battle_system_window) {
 		DrawBattleSystemWindow(&show_battle_system_window);
+	}
+
+	if (show_command_window) {
+		DrawCommandWindow(&show_command_window);
 	}
 
 	if (show_demo_window) {
