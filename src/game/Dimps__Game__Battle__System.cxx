@@ -11,6 +11,7 @@ System::__staticMethods System::staticMethods;
 void System::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 	*(PVOID*)&publicMethods.GetCharaUnit = (PVOID)(peRootOffset + 0x163510);
+	*(PVOID*)&publicMethods.GetGameManager = (PVOID)(peRootOffset + 0x1d9950);
 	*(PVOID*)&publicMethods.GetUnitByIndex = (PVOID)(peRootOffset + 0x1d9720);
 	*(PVOID*)&publicMethods.IsFight = (PVOID)(peRootOffset + 0x1d9f60);
 	*(PVOID*)&publicMethods.IsLeavingBattle = (PVOID)(peRootOffset + 0x1d6a70);

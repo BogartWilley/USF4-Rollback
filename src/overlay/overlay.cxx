@@ -11,6 +11,7 @@
 #include "../game/Dimps__Game__Battle__Chara__Actor.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Unit.hxx"
 #include "../game/Dimps__Game__Battle__Command__Unit.hxx"
+#include "../game/Dimps__Game__Battle__GameManager.hxx"
 #include "../game/Dimps__Game__Battle__System.hxx"
 #include "../game/Dimps__Math.hxx"
 
@@ -24,6 +25,7 @@ using CommandUnit = Dimps::Game::Battle::Command::Unit;
 using Dimps::Eva::TaskCore;
 using Dimps::Eva::TaskCoreRegistry;
 using Dimps::Game::Battle::Command::CommandImpl;
+using Dimps::Game::Battle::GameManager;
 using Dimps::Game::Battle::System;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
@@ -50,9 +52,17 @@ void DrawBattleSystemWindow(bool* pOpen) {
 	);
 
 	System* system = System::staticMethods.GetSingleton();
+	GameManager* manager = (system->*System::publicMethods.GetGameManager)();
+
 	int isFight = (system->*System::publicMethods.IsFight)();
 	ImGui::Text("Is fight: %d", isFight);
 	ImGui::Text("Is leaving battle: %d", (system->*System::publicMethods.IsLeavingBattle)());
+	if (manager != NULL) {
+		FixedPoint tmp;
+
+		(manager->*GameManager::publicMethods.GetRoundTime)(&tmp);
+		ImGui::Text("Round time: %f", FixedToFloat(&tmp));
+	}
 
 	if (isFight) {
 		CharaUnit* lpCharaUnit = (system->*System::publicMethods.GetCharaUnit)();

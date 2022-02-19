@@ -3,6 +3,11 @@
 #include <windows.h>
 
 #include "Dimps__Game__Battle__Chara__Unit.hxx"
+#include "Dimps__Game__Battle__GameManager.hxx"
+#include "Dimps__Math.hxx"
+
+using Dimps::Game::Battle::GameManager;
+using Dimps::Math::FixedPoint;
 
 namespace Dimps {
 	namespace Game {
@@ -51,6 +56,7 @@ namespace Dimps {
 
 				typedef struct __publicMethods {
 					Chara::Unit* (System::* GetCharaUnit)();
+					GameManager* (System::* GetGameManager)();
 
 					// Realistically this is an IUnit*, but since I don't have complete
 					// typings for now, just mark it as void* and rely on the caller to

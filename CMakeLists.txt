@@ -39,6 +39,8 @@ add_library(Game STATIC
     "src/game/Dimps__Game__Battle__Command__CommandImpl.cxx"
     "src/game/Dimps__Game__Battle__Command__Unit.hxx"
     "src/game/Dimps__Game__Battle__Command__Unit.cxx"
+    "src/game/Dimps__Game__Battle__GameManager.hxx"
+    "src/game/Dimps__Game__Battle__GameManager.cxx"
     "src/game/Dimps__Game__Battle__System.hxx"
     "src/game/Dimps__Game__Battle__System.cxx"
     "src/game/Dimps__Math.hxx"
