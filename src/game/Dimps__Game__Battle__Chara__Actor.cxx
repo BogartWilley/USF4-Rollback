@@ -15,4 +15,28 @@ void Actor::Locate(HMODULE peRoot) {
 	*(PVOID*)(&publicMethods.GetCurrentSide) = (PVOID)(peRootOffset + 0x141d20);
 	*(PVOID*)(&publicMethods.GetDamage) = (PVOID)(peRootOffset + 0x1423d0);
 	*(PVOID*)(&publicMethods.GetStatus) = (PVOID)(peRootOffset + 0x142520);
+
+	*(PVOID*)(&publicMethods.GetVitalityAmt_FixedPoint) = (PVOID)(peRootOffset + 0x141ee0);
+	*(PVOID*)(&publicMethods.GetVitalityMax_FixedPoint) = (PVOID)(peRootOffset + 0x141f00);
+	*(PVOID*)(&publicMethods.GetVitalityPct_FixedPoint) = (PVOID)(peRootOffset + 0x141f20);
+
+	*(PVOID*)(&publicMethods.GetRecoverableVitalityAmt_FixedPoint) = (PVOID)(peRootOffset + 0x141f80);
+	*(PVOID*)(&publicMethods.GetRecoverableVitalityMax_FixedPoint) = (PVOID)(peRootOffset + 0x141fa0);
+	*(PVOID*)(&publicMethods.GetRecoverableVitalityPct_FixedPoint) = (PVOID)(peRootOffset + 0x141fc0);
+
+	*(PVOID*)(&publicMethods.GetSuperComboAmt_FixedPoint) = (PVOID)(peRootOffset + 0x142020);
+	*(PVOID*)(&publicMethods.GetSuperComboMax_FixedPoint) = (PVOID)(peRootOffset + 0x142040);
+	*(PVOID*)(&publicMethods.GetSuperComboPct_FixedPoint) = (PVOID)(peRootOffset + 0x142060);
+
+	*(PVOID*)(&publicMethods.GetSCTimeAmt_FixedPoint) = (PVOID)(peRootOffset + 0x1420c0);
+	*(PVOID*)(&publicMethods.GetSCTimeMax_FixedPoint) = (PVOID)(peRootOffset + 0x1420e0);
+	*(PVOID*)(&publicMethods.GetSCTimePct_FixedPoint) = (PVOID)(peRootOffset + 0x142100);
+
+	*(PVOID*)(&publicMethods.GetRevengeAmt_FixedPoint) = (PVOID)(peRootOffset + 0x142180);
+	*(PVOID*)(&publicMethods.GetRevengeMax_FixedPoint) = (PVOID)(peRootOffset + 0x1421a0);
+	*(PVOID*)(&publicMethods.GetRevengePct_FixedPoint) = (PVOID)(peRootOffset + 0x1421c0);
+
+	*(PVOID*)(&publicMethods.GetUCTimeAmt_FixedPoint) = (PVOID)(peRootOffset + 0x142220);
+	*(PVOID*)(&publicMethods.GetUCTimeMax_FixedPoint) = (PVOID)(peRootOffset + 0x142240);
+	*(PVOID*)(&publicMethods.GetUCTimePct_FixedPoint) = (PVOID)(peRootOffset + 0x142260);
 }

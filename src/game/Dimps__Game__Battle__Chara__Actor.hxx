@@ -141,6 +141,30 @@ namespace Dimps {
 						int (Actor::* GetCurrentSide)();
 						int (Actor::* GetDamage)(Dimps::Math::FixedPoint* out);
 						unsigned int (Actor::* GetStatus)();
+
+						void (Actor::* GetVitalityAmt_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetVitalityMax_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetVitalityPct_FixedPoint)(Dimps::Math::FixedPoint* out);
+
+						void (Actor::* GetRevengeAmt_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetRevengeMax_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetRevengePct_FixedPoint)(Dimps::Math::FixedPoint* out);
+
+						void (Actor::* GetRecoverableVitalityAmt_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetRecoverableVitalityMax_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetRecoverableVitalityPct_FixedPoint)(Dimps::Math::FixedPoint* out);
+
+						void (Actor::* GetSuperComboAmt_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetSuperComboMax_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetSuperComboPct_FixedPoint)(Dimps::Math::FixedPoint* out);
+
+						void (Actor::* GetSCTimeAmt_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetSCTimeMax_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetSCTimePct_FixedPoint)(Dimps::Math::FixedPoint* out);
+
+						void (Actor::* GetUCTimeAmt_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetUCTimeMax_FixedPoint)(Dimps::Math::FixedPoint* out);
+						void (Actor::* GetUCTimePct_FixedPoint)(Dimps::Math::FixedPoint* out);
 					} __publicMethods;
 
 					typedef struct __staticMethods {

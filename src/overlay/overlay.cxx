@@ -51,6 +51,7 @@ void DrawBattleSystemWindow(bool* pOpen) {
 		ImGuiWindowFlags_None
 	);
 
+	FixedPoint tmp, tmp2, tmp3;
 	System* system = System::staticMethods.GetSingleton();
 	GameManager* manager = (system->*System::publicMethods.GetGameManager)();
 
@@ -58,15 +59,12 @@ void DrawBattleSystemWindow(bool* pOpen) {
 	ImGui::Text("Is fight: %d", isFight);
 	ImGui::Text("Is leaving battle: %d", (system->*System::publicMethods.IsLeavingBattle)());
 	if (manager != NULL) {
-		FixedPoint tmp;
-
 		(manager->*GameManager::publicMethods.GetRoundTime)(&tmp);
 		ImGui::Text("Round time: %f", FixedToFloat(&tmp));
 	}
 
 	if (isFight) {
 		CharaUnit* lpCharaUnit = (system->*System::publicMethods.GetCharaUnit)();
-		FixedPoint tmp;
 
 		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 		if (ImGui::BeginTabBar("Battle Actor", tab_bar_flags))
@@ -91,6 +89,42 @@ void DrawBattleSystemWindow(bool* pOpen) {
 
 					Text("Current side:"); NextColumn();
 					Text("%d", (a->*CharaActor::publicMethods.GetCurrentSide)()); NextColumn();
+
+					(a->*CharaActor::publicMethods.GetVitalityAmt_FixedPoint)(&tmp);
+					(a->*CharaActor::publicMethods.GetVitalityMax_FixedPoint)(&tmp2);
+					(a->*CharaActor::publicMethods.GetVitalityPct_FixedPoint)(&tmp3);
+					Text("Vitality:"); NextColumn();
+					Text("%f / %f (%fa%%)", FixedToFloat(&tmp), FixedToFloat(&tmp2), FixedToFloat(&tmp3) * 100); NextColumn();
+
+					(a->*CharaActor::publicMethods.GetRevengeAmt_FixedPoint)(&tmp);
+					(a->*CharaActor::publicMethods.GetRevengeMax_FixedPoint)(&tmp2);
+					(a->*CharaActor::publicMethods.GetRevengePct_FixedPoint)(&tmp3);
+					Text("Revenge:"); NextColumn();
+					Text("%f / %f (%f%%)", FixedToFloat(&tmp), FixedToFloat(&tmp2), FixedToFloat(&tmp3) * 100); NextColumn();
+
+					(a->*CharaActor::publicMethods.GetRecoverableVitalityAmt_FixedPoint)(&tmp);
+					(a->*CharaActor::publicMethods.GetRecoverableVitalityMax_FixedPoint)(&tmp2);
+					(a->*CharaActor::publicMethods.GetRecoverableVitalityPct_FixedPoint)(&tmp3);
+					Text("Recoverable Vitality:"); NextColumn();
+					Text("%f / %f (%f%%)", FixedToFloat(&tmp), FixedToFloat(&tmp2), FixedToFloat(&tmp3) * 100); NextColumn();
+
+					(a->*CharaActor::publicMethods.GetSuperComboAmt_FixedPoint)(&tmp);
+					(a->*CharaActor::publicMethods.GetSuperComboMax_FixedPoint)(&tmp2);
+					(a->*CharaActor::publicMethods.GetSuperComboPct_FixedPoint)(&tmp3);
+					Text("Super:"); NextColumn();
+					Text("%f / %f (%f%%)", FixedToFloat(&tmp), FixedToFloat(&tmp2), FixedToFloat(&tmp3) * 100); NextColumn();
+
+					(a->*CharaActor::publicMethods.GetSCTimeAmt_FixedPoint)(&tmp);
+					(a->*CharaActor::publicMethods.GetSCTimeMax_FixedPoint)(&tmp2);
+					(a->*CharaActor::publicMethods.GetSCTimePct_FixedPoint)(&tmp3);
+					Text("Super clock:"); NextColumn();
+					Text("%f / %f (%f%%)", FixedToFloat(&tmp), FixedToFloat(&tmp2), FixedToFloat(&tmp3) * 100); NextColumn();
+
+					(a->*CharaActor::publicMethods.GetUCTimeAmt_FixedPoint)(&tmp);
+					(a->*CharaActor::publicMethods.GetUCTimeMax_FixedPoint)(&tmp2);
+					(a->*CharaActor::publicMethods.GetUCTimePct_FixedPoint)(&tmp3);
+					Text("Ultra clock:"); NextColumn();
+					Text("%f / %f (%f%%)", FixedToFloat(&tmp), FixedToFloat(&tmp2), FixedToFloat(&tmp3) * 100); NextColumn();
 
 					(a->*CharaActor::publicMethods.GetDamage)(&tmp);
 					Text("Damage:"); NextColumn();
