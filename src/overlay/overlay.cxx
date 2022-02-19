@@ -26,7 +26,7 @@ using Dimps::Eva::TaskCoreRegistry;
 using Dimps::Game::Battle::Command::CommandImpl;
 using Dimps::Game::Battle::System;
 using Dimps::Math::FixedPoint;
-using Dimps::Math::FPtoFloat;
+using Dimps::Math::FixedToFloat;
 
 using ImGui::Begin;
 using ImGui::End;
@@ -84,11 +84,11 @@ void DrawBattleSystemWindow(bool* pOpen) {
 
 					(a->*CharaActor::publicMethods.GetDamage)(&tmp);
 					Text("Damage:"); NextColumn();
-					Text("%f", FPtoFloat(&tmp)); NextColumn();
+					Text("%f", FixedToFloat(&tmp)); NextColumn();
 
 					(a->*CharaActor::publicMethods.GetComboDamage)(&tmp);
 					Text("Combo damage:"); NextColumn();
-					Text("%f", FPtoFloat(&tmp)); NextColumn();
+					Text("%f", FixedToFloat(&tmp)); NextColumn();
 
 					ImGui::Columns(1);
 					ImGui::EndTabItem();

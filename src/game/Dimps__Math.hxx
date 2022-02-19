@@ -9,6 +9,6 @@ namespace Dimps {
 			short integral; // Might be unsigned? Not entirely sure
 		};
 
-		float FPtoFloat(FixedPoint* fp);
+		float FixedToFloat(FixedPoint* fp);
 	}
 }
