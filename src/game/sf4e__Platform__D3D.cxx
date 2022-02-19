@@ -5,9 +5,9 @@
 #include "../overlay/overlay.h"
 
 #include "Dimps__Platform__D3D.hxx"
-#include "sf4x__Platform__D3D.hxx"
+#include "sf4e__Platform__D3D.hxx"
 
-using fD3D = sf4x::Platform::D3D;
+using fD3D = sf4e::Platform::D3D;
 using rD3D = Dimps::Platform::D3D;
 
 void fD3D::Install() {

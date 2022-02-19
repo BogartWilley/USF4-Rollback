@@ -3,7 +3,7 @@
 #include <windows.h>
 #include "Dimps__Platform__D3D.hxx"
 
-namespace sf4x {
+namespace sf4e {
 	namespace Platform {
 		struct D3D : Dimps::Platform::D3D
 		{

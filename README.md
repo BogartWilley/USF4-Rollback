@@ -1,4 +1,4 @@
-﻿# sf4x
+﻿# sf4e
 
 A process-inspection and modification tool for the Steam release of _Ultra Street Fighter 4_.
 
@@ -11,7 +11,7 @@ A process-inspection and modification tool for the Steam release of _Ultra Stree
 
 ## Building
 
-sf4x uses [CMake](https://cmake.org/) as a build engine. This is
+sf4e uses [CMake](https://cmake.org/) as a build engine. This is
 completely irrelevant to users, but developers will need an installation
 of CMake, or IDE support for CMake, like Visual Studio.
 
@@ -20,7 +20,7 @@ of CMake, or IDE support for CMake, like Visual Studio.
 * [CMake](https://cmake.org/)
 * [Visual Studio](https://visualstudio.microsoft.com/) 2017 or later with Visual C++
 
-To manually build and run sf4x:
+To manually build and run sf4e:
 1. Clone the following dependencies, which are built from source:
    * Microsoft's [Detours](https://github.com/microsoft/Detours). Detours
      is used to install custom netplay hooks at runtime.

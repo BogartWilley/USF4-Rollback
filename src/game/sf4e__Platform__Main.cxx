@@ -5,9 +5,9 @@
 #include "../overlay/overlay.h"
 #include "Dimps__Platform__D3D.hxx"
 #include "Dimps__Platform__Main.hxx"
-#include "sf4x__Platform__Main.hxx"
+#include "sf4e__Platform__Main.hxx"
 
-using fMain = sf4x::Platform::Main;
+using fMain = sf4e::Platform::Main;
 using rMain = Dimps::Platform::Main;
 
 void fMain::Install() {

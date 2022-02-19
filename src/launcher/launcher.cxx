@@ -156,7 +156,7 @@ int WINAPI wWinMain(
 	char szSidecarDllPathA[1024] = { 0 };
 
 	DWORD env_size = 0;
-	env_size = GetEnvironmentVariableW(L"SF4X_LINUX_DIR", szGameDirectory, 1024);
+	env_size = GetEnvironmentVariableW(L"sf4e_LINUX_DIR", szGameDirectory, 1024);
 
 	if (env_size > 0) {
 		PathCombineW(szExePath, szGameDirectory, L"SSFIV.exe");

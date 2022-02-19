@@ -29,7 +29,7 @@
 - OS: [e.g. Win7, Win10, Linux under WINE, Linux under Proton]
 - Antivirus: [e.g. Sophos, Windows Defender, none]
 - Any third-party tools or programs that are running at the time (e.g. OBS, CheatEngine, x360ce)
-- sf4x tool version
+- sf4e tool version
 - System display resolution
 - SF4 display resolution
 - SF4 display type (ex. windowed/fullscreen)

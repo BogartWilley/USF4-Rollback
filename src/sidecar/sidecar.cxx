@@ -13,7 +13,7 @@
 #include <tchar.h>
 
 #include "../game/Dimps.hxx"
-#include "../game/sf4x.hxx"
+#include "../game/sf4e.hxx"
 #include "sidecar.h"
 
 static HMODULE LocatePERoot() {
@@ -35,7 +35,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 		DetourRestoreAfterWith();
 		Dimps::Locate(LocatePERoot());
 		DetourTransactionBegin();
-		sf4x::Install();
+		sf4e::Install();
 		error = DetourTransactionCommit();
 		if (error != NO_ERROR) {
 			MessageBox(NULL, DETOUR_FAILED_MESSAGE, NULL, MB_OK);

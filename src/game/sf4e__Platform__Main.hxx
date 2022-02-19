@@ -3,7 +3,7 @@
 #include <windows.h>
 #include "Dimps__Platform__Main.hxx"
 
-namespace sf4x {
+namespace sf4e {
 	namespace Platform {
 		struct Main : Dimps::Platform::Main
 		{

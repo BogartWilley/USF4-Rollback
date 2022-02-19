@@ -1,5 +1,5 @@
 #pragma once
 
-namespace sf4x {
+namespace sf4e {
 	void Install();
 }

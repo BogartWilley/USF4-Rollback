@@ -1,9 +1,9 @@
 cmake_minimum_required (VERSION 3.10)
 project (
-    SF4X
+    sf4e
     VERSION 0.0.1
     DESCRIPTION "A process-inspection and modification tool for the Steam release of Ultra Street Fighter 4."
-    HOMEPAGE_URL "https://gitlab.com/adanducci/sf4x"
+    HOMEPAGE_URL "https://gitlab.com/adanducci/sf4e"
 )
 
 set(CMAKE_CXX_STANDARD 11)
@@ -52,14 +52,14 @@ add_library(Game STATIC
     "src/game/Dimps__Platform__Main.hxx"
     "src/game/Dimps__Platform__Main.cxx"
 
-    "src/game/sf4x.hxx"
-    "src/game/sf4x.cxx"
-    "src/game/sf4x__Platform.hxx"
-    "src/game/sf4x__Platform.cxx"
-    "src/game/sf4x__Platform__D3D.hxx"
-    "src/game/sf4x__Platform__D3D.cxx"
-    "src/game/sf4x__Platform__Main.hxx"
-    "src/game/sf4x__Platform__Main.cxx"
+    "src/game/sf4e.hxx"
+    "src/game/sf4e.cxx"
+    "src/game/sf4e__Platform.hxx"
+    "src/game/sf4e__Platform.cxx"
+    "src/game/sf4e__Platform__D3D.hxx"
+    "src/game/sf4e__Platform__D3D.cxx"
+    "src/game/sf4e__Platform__Main.hxx"
+    "src/game/sf4e__Platform__Main.cxx"
 )
 target_link_libraries(Game PUBLIC Detours "ws2_32" "Mswsock" "AdvApi32")
 
