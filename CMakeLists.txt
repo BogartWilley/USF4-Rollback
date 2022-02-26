@@ -43,6 +43,11 @@ add_library(Game STATIC
     "src/game/Dimps__Game__Battle__GameManager.cxx"
     "src/game/Dimps__Game__Battle__System.hxx"
     "src/game/Dimps__Game__Battle__System.cxx"
+    "src/game/Dimps__GameEvents.hxx"
+    "src/game/Dimps__GameEvents.cxx"
+    "src/game/Dimps__GameEvents__RootEvent.hxx"
+    "src/game/Dimps__GameEvents__RootEvent.cxx"
+
     "src/game/Dimps__Math.hxx"
     "src/game/Dimps__Math.cxx"
     "src/game/Dimps__Platform.hxx"
@@ -54,6 +59,10 @@ add_library(Game STATIC
 
     "src/game/sf4e.hxx"
     "src/game/sf4e.cxx"
+    "src/game/sf4e__GameEvents.hxx"
+    "src/game/sf4e__GameEvents.cxx"
+    "src/game/sf4e__GameEvents__RootEvent.hxx"
+    "src/game/sf4e__GameEvents__RootEvent.cxx"
     "src/game/sf4e__Platform.hxx"
     "src/game/sf4e__Platform.cxx"
     "src/game/sf4e__Platform__D3D.hxx"
