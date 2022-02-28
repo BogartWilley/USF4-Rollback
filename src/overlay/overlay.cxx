@@ -21,6 +21,7 @@
 #include "../game/Dimps__Game__Battle__Training.hxx"
 #include "../game/Dimps__Game__Battle__Vfx.hxx"
 #include "../game/Dimps__Math.hxx"
+#include "../game/Dimps__Pad.hxx"
 
 #include "../game/sf4e__Event.hxx"
 #include "../game/sf4e__Game.hxx"
@@ -39,6 +40,7 @@ using CommandUnit = Dimps::Game::Battle::Command::Unit;
 using EffectUnit = Dimps::Game::Battle::Effect::Unit;
 using HudUnit = Dimps::Game::Battle::Hud::Unit;
 using TrainingManager = Dimps::Game::Battle::Training::Manager;
+using PadSystem = Dimps::Pad::System;
 using VfxUnit = rVfx::Unit;
 
 using Dimps::Eva::TaskCore;
@@ -84,6 +86,7 @@ static bool show_event_window = false;
 static bool show_help_window = false;
 static bool show_log_window = false;
 static bool show_memento_window = false;
+static bool show_pad_window = false;
 static bool show_task_window = false;
 static bool show_vfx_window = false;
 
@@ -347,6 +350,74 @@ void DrawEventWindow(bool* pOpen) {
 	if (Button("Step")) {
 		fEventController::bUpdateAllowed = true;
 		fEventController::bHaltAfterNext = true;
+	}
+
+	End();
+}
+
+void DrawPadTable(DWORD* padData) {
+	Columns(3);
+	Text("Button"); NextColumn(); Text("P1"); NextColumn(); Text("P2"); NextColumn();
+	Separator();
+
+	for (unsigned int bytePosition = 0; bytePosition < 14; bytePosition++) {
+		Text("B%d", bytePosition); NextColumn();
+		for (int i = 0; i < 2; i++) {
+			Text((padData[i] & (1 << bytePosition)) ? "ON" : "OFF"); NextColumn();
+		}
+		Separator();
+	}
+	Columns(1);
+}
+
+void DrawPadWindow(bool* pOpen) {
+	Begin(
+		"Pad",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	PadSystem* p = PadSystem::staticMethods.GetSingleton();
+	DWORD padData[2];
+
+	if (BeginTabBar("Pad types", ImGuiTabBarFlags_None)) {
+		if (BeginTabItem("On")) {
+			for (int i = 0; i < 2; i++) {
+				padData[i] = (p->*PadSystem::publicMethods.GetButtons_On)(i);
+			}
+
+			DrawPadTable(padData);
+			EndTabItem();
+		}
+
+		if (BeginTabItem("Rising")) {
+			for (int i = 0; i < 2; i++) {
+				padData[i] = (p->*PadSystem::publicMethods.GetButtons_Rising)(i);
+			}
+
+			DrawPadTable(padData);
+			EndTabItem();
+		}
+
+		if (BeginTabItem("Falling")) {
+			for (int i = 0; i < 2; i++) {
+				padData[i] = (p->*PadSystem::publicMethods.GetButtons_Falling)(i);
+			}
+
+			DrawPadTable(padData);
+			EndTabItem();
+		}
+
+		if (BeginTabItem("Repeat")) {
+			for (int i = 0; i < 2; i++) {
+				padData[i] = (p->*PadSystem::publicMethods.GetButtons_RisingWithRepeat)(i);
+			}
+
+			DrawPadTable(padData);
+			EndTabItem();
+		}
+
+		EndTabBar();
 	}
 
 	End();
@@ -668,6 +739,14 @@ void DrawOverlay() {
 				ImGui::EndMenu();
 			}
 
+			if (BeginMenu("Pad")) {
+				if (MenuItem("System")) {
+					show_pad_window = true;
+				}
+
+				ImGui::EndMenu();
+			}
+
 			if (BeginMenu("Imgui")) {
 				if (MenuItem("Demo")) {
 					show_demo_window = true;
@@ -703,6 +782,10 @@ void DrawOverlay() {
 
 	if (show_log_window) {
 		debugLog.Draw("Debug Log", &show_log_window);
+	}
+
+	if (show_pad_window) {
+		DrawPadWindow(&show_pad_window);
 	}
 
 	if (show_vfx_window) {

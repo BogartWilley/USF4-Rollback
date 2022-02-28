@@ -58,11 +58,12 @@ add_library(Game STATIC
     "src/game/Dimps__Game__Battle__Vfx.hxx"
     "src/game/Dimps__Game__Battle__Vfx.cxx"
 
-
     "src/game/Dimps__GameEvents.hxx"
     "src/game/Dimps__GameEvents.cxx"
     "src/game/Dimps__Math.hxx"
     "src/game/Dimps__Math.cxx"
+    "src/game/Dimps__Pad.hxx"
+    "src/game/Dimps__Pad.cxx"
     "src/game/Dimps__Platform.hxx"
     "src/game/Dimps__Platform.cxx"
 
