@@ -4,9 +4,11 @@
 
 #include "Dimps__Game__Battle__Chara__Unit.hxx"
 #include "Dimps__Game__Battle__GameManager.hxx"
+#include "Dimps__Game__GameMementoKey.hxx"
 #include "Dimps__Math.hxx"
 
 using Dimps::Game::Battle::GameManager;
+using Dimps::Game::GameMementoKey;
 using Dimps::Math::FixedPoint;
 
 namespace Dimps {
@@ -65,8 +67,11 @@ namespace Dimps {
 
 					bool (System::* IsFight)();
 					bool (System::* IsLeavingBattle)();
-					void (System::* StoreMemento)();
-					void (System::* RestoreMemento)();
+					void (System::* RecordAllToInternalMementoKeys)();
+					void (System::* RestoreAllFromInternalMementoKeys)();
+
+					void (System::* RecordToInternalMementoKey)(GameMementoKey::MementoID* id);
+					void (System::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
 				} __publicMethods;
 
 				typedef struct __staticMethods {

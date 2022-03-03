@@ -2,31 +2,29 @@
 
 #include <windows.h>
 
-#include "Dimps__Game__Battle__Command__CommandImpl.hxx"
 #include "Dimps__Game__GameMementoKey.hxx"
 
-using Dimps::Game::Battle::Command::CommandImpl;
 using Dimps::Game::GameMementoKey;
 
 namespace Dimps {
 	namespace Game {
 		namespace Battle {
-			namespace Command {
-				struct Unit
+			namespace Training {
+				void Locate(HMODULE peRoot);
+
+				struct Manager
 				{
 					typedef struct __privateMethods {
 						// TODO
 					} __privateMethods;
 
 					typedef struct __publicMethods {
-						CommandImpl* (Unit::* GetCommandImplForEntry)(unsigned int index);
-
-						void (Unit::* RecordToInternalMementoKey)(GameMementoKey::MementoID* id);
-						void (Unit::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
+						void (Manager::* RecordToInternalMementoKey)(GameMementoKey::MementoID* id);
+						void (Manager::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
 					} __publicMethods;
 
 					typedef struct __staticMethods {
-						// TODO
+						Manager* (*GetSingleton)();
 					} __staticMethods;
 
 					static void Locate(HMODULE peRoot);

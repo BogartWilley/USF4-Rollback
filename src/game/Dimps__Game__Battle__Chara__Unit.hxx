@@ -3,8 +3,10 @@
 #include <windows.h>
 
 #include "Dimps__Game__Battle__Chara__Actor.hxx"
+#include "Dimps__Game__GameMementoKey.hxx"
 
 using Dimps::Game::Battle::Chara::Actor;
+using Dimps::Game::GameMementoKey;
 
 namespace Dimps {
 	namespace Game {
@@ -18,6 +20,10 @@ namespace Dimps {
 
 					typedef struct __publicMethods {
 						Actor* (Unit::* GetActorByIndex)(unsigned int index);
+
+						BOOL (Unit::* CanStoreMemento_MaybeActorExists)();
+						void (Unit::* RecordToInternalMementoKey)(GameMementoKey::MementoID* id);
+						void (Unit::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
 					} __publicMethods;
 
 					typedef struct __staticMethods {

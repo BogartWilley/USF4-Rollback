@@ -8,25 +8,37 @@
 #include "../game/Dimps.hxx"
 #include "../game/Dimps__Eva__TaskCore.hxx"
 #include "../game/Dimps__Eva__TaskCoreRegistry.hxx"
+#include "../game/Dimps__Game__Battle__Camera.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Actor.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Unit.hxx"
 #include "../game/Dimps__Game__Battle__Command__Unit.hxx"
+#include "../game/Dimps__Game__Battle__Effect.hxx"
 #include "../game/Dimps__Game__Battle__GameManager.hxx"
+#include "../game/Dimps__Game__Battle__Hud.hxx"
 #include "../game/Dimps__Game__Battle__System.hxx"
+#include "../game/Dimps__Game__Battle__Training.hxx"
+#include "../game/Dimps__Game__Battle__Vfx.hxx"
+#include "../game/Dimps__Game__GameMementoKey.hxx"
 #include "../game/Dimps__Math.hxx"
 
 
 #define DEFAULT_ALPHA 0.87f
 
+using CameraUnit = Dimps::Game::Battle::Camera::Unit;
 using CharaActor = Dimps::Game::Battle::Chara::Actor;
 using CharaUnit = Dimps::Game::Battle::Chara::Unit;
 using CommandUnit = Dimps::Game::Battle::Command::Unit;
+using EffectUnit = Dimps::Game::Battle::Effect::Unit;
+using HudUnit = Dimps::Game::Battle::Hud::Unit;
+using TrainingManager = Dimps::Game::Battle::Training::Manager;
+using VfxUnit = Dimps::Game::Battle::Vfx::Unit;
 
 using Dimps::Eva::TaskCore;
 using Dimps::Eva::TaskCoreRegistry;
 using Dimps::Game::Battle::Command::CommandImpl;
 using Dimps::Game::Battle::GameManager;
 using Dimps::Game::Battle::System;
+using Dimps::Game::GameMementoKey;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
 
@@ -299,14 +311,105 @@ void DrawMementoWindow(bool* pOpen) {
 		ImGuiWindowFlags_None
 	);
 
-	if (ImGui::Button("Store memento")) {
+	if (ImGui::Button("Record all mementos")) {
 		System* system = System::staticMethods.GetSingleton();
-		(system->*System::publicMethods.StoreMemento)();
+		(system->*System::publicMethods.RecordAllToInternalMementoKeys)();
 	}
 
-	if (ImGui::Button("Restore memento")) {
+	if (ImGui::Button("Restore all mementos")) {
 		System* system = System::staticMethods.GetSingleton();
-		(system->*System::publicMethods.RestoreMemento)();
+		(system->*System::publicMethods.RestoreAllFromInternalMementoKeys)();
+	}
+
+	if (ImGui::Button("Manual: Record all mementos")) {
+		GameMementoKey::MementoID id = { 1, 1 };
+		System* system = System::staticMethods.GetSingleton();
+		void* (System:: * GetUnitByIndex)(unsigned int) = System::publicMethods.GetUnitByIndex;
+		BOOL canSave = (
+			((CharaUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_CHARA))->*
+			CharaUnit::publicMethods.CanStoreMemento_MaybeActorExists
+		)();
+
+		if (canSave) {
+			(system->*System::publicMethods.RecordToInternalMementoKey)(&id);
+
+			(
+				((CameraUnit*)(system->*GetUnitByIndex)(System::U_CAMERA))->*
+				CameraUnit::publicMethods.RecordToInternalMementoKey
+			)(&id);
+
+			(
+				((CharaUnit*)(system->*GetUnitByIndex)(System::U_CHARA))->*
+				CharaUnit::publicMethods.RecordToInternalMementoKey
+			)(&id);
+
+			(
+				((CommandUnit*)(system->*GetUnitByIndex)(System::U_COMMAND))->*
+				CommandUnit::publicMethods.RecordToInternalMementoKey
+			)(&id);
+
+			(
+				((EffectUnit*)(system->*GetUnitByIndex)(System::U_EFFECT))->*
+				EffectUnit::publicMethods.RecordToInternalMementoKey
+			)(&id);
+
+			(
+				((HudUnit*)(system->*GetUnitByIndex)(System::U_HUD))->*
+				HudUnit::publicMethods.RecordToInternalMementoKey
+			)(&id);
+
+			(
+				((VfxUnit*)(system->*GetUnitByIndex)(System::U_VFX))->*
+				VfxUnit::publicMethods.RecordToInternalMementoKey
+			)(&id);
+
+			(
+				TrainingManager::staticMethods.GetSingleton()->*
+				TrainingManager::publicMethods.RecordToInternalMementoKey
+			)(&id);
+		}
+	}
+
+	if (ImGui::Button("Manual: Restore all mementos")) {
+		GameMementoKey::MementoID id = { 1, 1 };
+		System* system = System::staticMethods.GetSingleton();
+		void* (System::* GetUnitByIndex)(unsigned int) = System::publicMethods.GetUnitByIndex;
+		(system->*System::publicMethods.RestoreFromInternalMementoKey)(&id);
+
+		(
+			((CameraUnit*)(system->*GetUnitByIndex)(System::U_CAMERA))->*
+			CameraUnit::publicMethods.RestoreFromInternalMementoKey
+		)(&id);
+
+		(
+			((CharaUnit*)(system->*GetUnitByIndex)(System::U_CHARA))->*
+			CharaUnit::publicMethods.RestoreFromInternalMementoKey
+		)(&id);
+
+		(
+			((CommandUnit*)(system->*GetUnitByIndex)(System::U_COMMAND))->*
+			CommandUnit::publicMethods.RestoreFromInternalMementoKey
+		)(&id);
+
+		(
+			((EffectUnit*)(system->*GetUnitByIndex)(System::U_EFFECT))->*
+			EffectUnit::publicMethods.RestoreFromInternalMementoKey
+		)(&id);
+
+		(
+			((HudUnit*)(system->*GetUnitByIndex)(System::U_HUD))->*
+			HudUnit::publicMethods.RestoreFromInternalMementoKey
+		)(&id);
+
+		(
+			((VfxUnit*)(system->*GetUnitByIndex)(System::U_VFX))->*
+			VfxUnit::publicMethods.RestoreFromInternalMementoKey
+		)(&id);
+
+		(
+			TrainingManager::staticMethods.GetSingleton()->*
+			TrainingManager::publicMethods.RestoreFromInternalMementoKey
+		)(&id);
 	}
 
 	ImGui::End();

@@ -15,7 +15,11 @@ void System::Locate(HMODULE peRoot) {
 	*(PVOID*)&publicMethods.GetUnitByIndex = (PVOID)(peRootOffset + 0x1d9720);
 	*(PVOID*)&publicMethods.IsFight = (PVOID)(peRootOffset + 0x1d9f60);
 	*(PVOID*)&publicMethods.IsLeavingBattle = (PVOID)(peRootOffset + 0x1d6a70);
-	*(PVOID*)&publicMethods.StoreMemento = (PVOID)(peRootOffset + 0x1d7f80);
-	*(PVOID*)&publicMethods.RestoreMemento = (PVOID)(peRootOffset + 0x1d8020);
+	*(PVOID*)&publicMethods.RecordAllToInternalMementoKeys = (PVOID)(peRootOffset + 0x1d7f80);
+	*(PVOID*)&publicMethods.RestoreAllFromInternalMementoKeys = (PVOID)(peRootOffset + 0x1d8020);
+
+	*(PVOID*)&publicMethods.RecordToInternalMementoKey = (PVOID)(peRootOffset + 0x1daab0);
+	*(PVOID*)&publicMethods.RestoreFromInternalMementoKey = (PVOID)(peRootOffset + 0x1d90d0);
+
 	staticMethods.GetSingleton = (System*(*)())(peRootOffset + 0x1dba30);
 }

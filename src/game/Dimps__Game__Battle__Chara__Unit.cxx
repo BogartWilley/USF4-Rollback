@@ -11,4 +11,7 @@ Unit::__staticMethods Unit::staticMethods;
 void Unit::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 	*(PVOID*)&publicMethods.GetActorByIndex = (PVOID)(peRootOffset + 0x165d10);
+	*(PVOID*)&publicMethods.CanStoreMemento_MaybeActorExists = (PVOID)(peRootOffset + 0x165cd0);
+	*(PVOID*)&publicMethods.RecordToInternalMementoKey = (PVOID)(peRootOffset + 0x1633a0);
+	*(PVOID*)&publicMethods.RestoreFromInternalMementoKey = (PVOID)(peRootOffset + 0x1633f0);
 }

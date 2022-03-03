@@ -27,22 +27,43 @@ add_library(Game STATIC
     "src/game/Dimps__Game.cxx"
     "src/game/Dimps__Game__Battle.hxx"
     "src/game/Dimps__Game__Battle.cxx"
+
+    "src/game/Dimps__Game__Battle__Camera.hxx"
+    "src/game/Dimps__Game__Battle__Camera.cxx"
+
     "src/game/Dimps__Game__Battle__Chara.hxx"
     "src/game/Dimps__Game__Battle__Chara.cxx"
     "src/game/Dimps__Game__Battle__Chara__Actor.hxx"
     "src/game/Dimps__Game__Battle__Chara__Actor.cxx"
     "src/game/Dimps__Game__Battle__Chara__Unit.hxx"
     "src/game/Dimps__Game__Battle__Chara__Unit.cxx"
+
     "src/game/Dimps__Game__Battle__Command.hxx"
     "src/game/Dimps__Game__Battle__Command.cxx"
     "src/game/Dimps__Game__Battle__Command__CommandImpl.hxx"
     "src/game/Dimps__Game__Battle__Command__CommandImpl.cxx"
     "src/game/Dimps__Game__Battle__Command__Unit.hxx"
     "src/game/Dimps__Game__Battle__Command__Unit.cxx"
+
+    "src/game/Dimps__Game__Battle__Effect.hxx"
+    "src/game/Dimps__Game__Battle__Effect.cxx"
+
     "src/game/Dimps__Game__Battle__GameManager.hxx"
     "src/game/Dimps__Game__Battle__GameManager.cxx"
+
+    "src/game/Dimps__Game__Battle__Hud.hxx"
+    "src/game/Dimps__Game__Battle__Hud.cxx"
+
     "src/game/Dimps__Game__Battle__System.hxx"
     "src/game/Dimps__Game__Battle__System.cxx"
+
+    "src/game/Dimps__Game__Battle__Training.hxx"
+    "src/game/Dimps__Game__Battle__Training.cxx"
+
+    "src/game/Dimps__Game__Battle__Vfx.hxx"
+    "src/game/Dimps__Game__Battle__Vfx.cxx"
+
+    "src/game/Dimps__Game__GameMementoKey.hxx"
     "src/game/Dimps__GameEvents.hxx"
     "src/game/Dimps__GameEvents.cxx"
     "src/game/Dimps__GameEvents__RootEvent.hxx"

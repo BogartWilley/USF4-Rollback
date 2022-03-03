@@ -10,5 +10,7 @@ Unit::__staticMethods Unit::staticMethods;
 
 void Unit::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
-	*(PVOID*)(&publicMethods.GetCommandImplForEntry) = (PVOID)(peRootOffset + 0x199400);
+
+	*(PVOID*)&publicMethods.RecordToInternalMementoKey = (PVOID)(peRootOffset + 0x1983e0);
+	*(PVOID*)&publicMethods.RestoreFromInternalMementoKey = (PVOID)(peRootOffset + 0x198410);
 }
