@@ -18,6 +18,7 @@ using rKey = rGame::GameMementoKey;
 namespace fGame = sf4e::Game;
 using fKey = fGame::GameMementoKey;
 
+bool fKey::bEnableUnsafeReinitializationSkip = false;
 std::set<rKey*> fKey::trackedKeys;
 void (*fKey::SizeLogger)(rKey* k, int oldSize);
 
@@ -31,12 +32,22 @@ void fGame::Install() {
 
 void fKey::Install() {
     void (fKey::* _fInitialize)(void*, int) = &Initialize;
+    void (fKey:: * _fClearKey)() = &ClearKey;
     DetourAttach((PVOID*)&rKey::publicMethods.Initialize, *(PVOID*)&_fInitialize);
+    DetourAttach((PVOID*)&rKey::publicMethods.ClearKey, *(PVOID*)&_fClearKey);
 }
 
 void fKey::Initialize(void* mementoable, int numMementos) {
     rKey* _this = (rKey*)this;
     int oldSize = _this->sizeAllocated;
+    bool shouldInit = bEnableUnsafeReinitializationSkip ?
+        mementoable != _this->mementoableObject || numMementos != _this->numMementos :
+        true;
+
+    if (!shouldInit) {
+        return;
+    }
+
     (_this->*rKey::publicMethods.Initialize)(mementoable, numMementos);
     if (oldSize != 0 && oldSize != _this->sizeAllocated) {
         spdlog::info(
@@ -52,4 +63,9 @@ void fKey::Initialize(void* mementoable, int numMementos) {
         }
     }
     trackedKeys.insert(_this);
+}
+
+void fKey::ClearKey() {
+    (this->*rKey::publicMethods.ClearKey)();
+    trackedKeys.erase((rKey*)this);
 }

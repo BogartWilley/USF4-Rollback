@@ -11,7 +11,10 @@ namespace sf4e {
 		struct GameMementoKey : Dimps::Game::GameMementoKey
 		{
 			void Initialize(void* mementoable, int numMementos);
+			void ClearKey();
 			static void Install();
+
+			static bool bEnableUnsafeReinitializationSkip;
 			static std::set<Dimps::Game::GameMementoKey*> trackedKeys;
 			static void (*SizeLogger)(Dimps::Game::GameMementoKey* k, int oldSize);
 		};

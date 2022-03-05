@@ -837,6 +837,7 @@ void DrawMementoWindow(bool* pOpen) {
 
 
 		if (BeginTabItem("Debug")) {
+			ImGui::Checkbox("Enable unsafe reinitialization skipping", &fKey::bEnableUnsafeReinitializationSkip);
 			auto keyEnd = fKey::trackedKeys.end();
 			int keyIdx = 0;
 			for (auto keyIter = fKey::trackedKeys.begin(); keyIter != keyEnd; keyIter++) {

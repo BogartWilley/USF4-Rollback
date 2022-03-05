@@ -18,5 +18,6 @@ void GameMementoKey::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	*(PVOID*)&publicMethods.Initialize = (PVOID)(peRootOffset + 0x12fd40);
+	*(PVOID*)&publicMethods.ClearKey = (PVOID)(peRootOffset + 0x12f3d0);
 	totalMementoSize = (int*)(peRootOffset + 0x6a5840);
 }

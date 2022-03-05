@@ -19,6 +19,7 @@ namespace Dimps {
 
 			typedef struct __publicMethods {
 				void (GameMementoKey::* Initialize)(void* mementoable, int numMementos);
+				void (GameMementoKey::* ClearKey)();
 			} __publicMethods;
 
 			static void Locate(HMODULE peRoot);
