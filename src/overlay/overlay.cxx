@@ -452,13 +452,48 @@ void DrawOverlay() {
 
 	if (ImGui::IsMousePosValid() && ImGui::GetIO().MousePos.y < 200) {
 		if (ImGui::BeginMainMenuBar()) {
-			ImGui::MenuItem(show_battle_system_window ? "Hide Battle System" : "Show Battle System", NULL, &show_battle_system_window);
-			ImGui::MenuItem(show_command_window ? "Hide Command" : "Show Command", NULL, &show_command_window);
-			ImGui::MenuItem(show_memento_window ? "Hide Memento Window" : "Show Memento Window", NULL, &show_memento_window);
-			ImGui::MenuItem(show_demo_window ? "Hide Demo" : "Show Demo", NULL, &show_demo_window);
-			ImGui::MenuItem(show_task_window ? "Hide Tasks" : "Show Tasks", NULL, &show_task_window);
-			ImGui::MenuItem(show_help_window ? "Hide Help" : "Show Help", NULL, &show_help_window);
-			ImGui::MenuItem(fEventController::bUpdateAllowed ? "Disable Update" : "Enable Update", NULL, &fEventController::bUpdateAllowed);
+			if (ImGui::BeginMenu("Eva")) {
+				if (ImGui::MenuItem("Tasks")) {
+					show_task_window = true;
+				}
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Event")) {
+				ImGui::MenuItem("Allow Update", NULL, &fEventController::bUpdateAllowed);
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Game")) {
+				if (ImGui::MenuItem("Mementos")) {
+					show_memento_window = true;
+				}
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Battle System")) {
+				if (ImGui::MenuItem("Overview")) {
+					show_battle_system_window = true;
+				}
+
+				if (ImGui::MenuItem("Command")) {
+					show_command_window = true;
+				}
+
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("Imgui")) {
+				if (ImGui::MenuItem("Demo")) {
+					show_demo_window = true;
+				}
+
+				if (ImGui::MenuItem("Help")) {
+					show_help_window = true;
+				}
+
+				ImGui::EndMenu();
+			}
 
 			ImGui::EndMainMenuBar();
 		}
