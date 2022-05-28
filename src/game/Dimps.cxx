@@ -2,6 +2,7 @@
 
 #include "Dimps.hxx"
 #include "Dimps__Eva.hxx"
+#include "Dimps__Event.hxx"
 #include "Dimps__Game.hxx"
 #include "Dimps__GameEvents.hxx"
 #include "Dimps__Platform.hxx"
@@ -14,6 +15,7 @@ void Dimps::Locate(HMODULE peRoot) {
 	characterCodes = (char**)(peRootOffset + 0x66a8a8);
 
 	Dimps::Eva::Locate(peRoot);
+	Dimps::Event::Locate(peRoot);
 	Dimps::Game::Locate(peRoot);
 	Dimps::GameEvents::Locate(peRoot);
 	Dimps::Platform::Locate(peRoot);

@@ -20,6 +20,7 @@
 #include "../game/Dimps__Game__Battle__Vfx.hxx"
 #include "../game/Dimps__Game__GameMementoKey.hxx"
 #include "../game/Dimps__Math.hxx"
+#include "../game/sf4e__Event.hxx"
 
 
 #define DEFAULT_ALPHA 0.87f
@@ -41,6 +42,7 @@ using Dimps::Game::Battle::System;
 using Dimps::Game::GameMementoKey;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
+using fEventController = sf4e::Event::EventController;
 
 using ImGui::Begin;
 using ImGui::End;
@@ -456,6 +458,7 @@ void DrawOverlay() {
 			ImGui::MenuItem(show_demo_window ? "Hide Demo" : "Show Demo", NULL, &show_demo_window);
 			ImGui::MenuItem(show_task_window ? "Hide Tasks" : "Show Tasks", NULL, &show_task_window);
 			ImGui::MenuItem(show_help_window ? "Hide Help" : "Show Help", NULL, &show_help_window);
+			ImGui::MenuItem(fEventController::bUpdateAllowed ? "Disable Update" : "Enable Update", NULL, &fEventController::bUpdateAllowed);
 
 			ImGui::EndMainMenuBar();
 		}

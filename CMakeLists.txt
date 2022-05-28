@@ -23,6 +23,8 @@ add_library(Game STATIC
     "src/game/Dimps__Eva__TaskCore.cxx"
     "src/game/Dimps__Eva__TaskCoreRegistry.hxx"
     "src/game/Dimps__Eva__TaskCoreRegistry.cxx"
+    "src/game/Dimps__Event.hxx"
+    "src/game/Dimps__Event.cxx"
     "src/game/Dimps__Game.hxx"
     "src/game/Dimps__Game.cxx"
     "src/game/Dimps__Game__Battle.hxx"
@@ -80,6 +82,8 @@ add_library(Game STATIC
 
     "src/game/sf4e.hxx"
     "src/game/sf4e.cxx"
+    "src/game/sf4e__Event.hxx"
+    "src/game/sf4e__Event.cxx"
     "src/game/sf4e__GameEvents.hxx"
     "src/game/sf4e__GameEvents.cxx"
     "src/game/sf4e__GameEvents__RootEvent.hxx"
