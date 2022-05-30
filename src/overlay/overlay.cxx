@@ -25,6 +25,8 @@
 
 #define DEFAULT_ALPHA 0.87f
 
+namespace rVfx = Dimps::Game::Battle::Vfx;
+
 using CameraUnit = Dimps::Game::Battle::Camera::Unit;
 using CharaActor = Dimps::Game::Battle::Chara::Actor;
 using CharaUnit = Dimps::Game::Battle::Chara::Unit;
@@ -32,7 +34,7 @@ using CommandUnit = Dimps::Game::Battle::Command::Unit;
 using EffectUnit = Dimps::Game::Battle::Effect::Unit;
 using HudUnit = Dimps::Game::Battle::Hud::Unit;
 using TrainingManager = Dimps::Game::Battle::Training::Manager;
-using VfxUnit = Dimps::Game::Battle::Vfx::Unit;
+using VfxUnit = rVfx::Unit;
 
 using Dimps::Eva::TaskCore;
 using Dimps::Eva::TaskCoreRegistry;
@@ -57,6 +59,7 @@ static bool show_demo_window = false;
 static bool show_help_window = false;
 static bool show_memento_window = false;
 static bool show_task_window = false;
+static bool show_vfx_window = false;
 
 void DrawBattleSystemWindow(bool* pOpen) {
 	ImGui::Begin(
@@ -206,7 +209,7 @@ void DrawCommandWindow(bool* pOpen) {
 		ImGuiWindowFlags_None
 	);
 
-	System* system = System::staticMethods.GetSingleton();	
+	System* system = System::staticMethods.GetSingleton();
 	int isFight = (system->*System::publicMethods.IsFight)();
 	Text("Is fight: %d", isFight);
 	ImGui::Separator();
@@ -287,6 +290,120 @@ void DrawCommandWindow(bool* pOpen) {
 				ImGui::EndTabItem();
 			}
 
+			ImGui::EndTabBar();
+		}
+	}
+
+	End();
+}
+
+void DrawVfxWindow(bool* pOpen) {
+	Begin(
+		"Vfx",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	System* system = System::staticMethods.GetSingleton();
+	int isFight = (system->*System::publicMethods.IsFight)();
+	Text("Is fight: %d", isFight);
+	ImGui::Separator();
+	if (isFight) {
+		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+		VfxUnit* unit = (VfxUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_VFX);
+		rVfx::IContainer* (VfxUnit::* GetContainerByType)(DWORD) = VfxUnit::publicMethods.GetContainerByType;
+
+		if (ImGui::BeginTabBar("Container Type", tab_bar_flags))
+		{
+			if (ImGui::BeginTabItem("Object")) {
+				rVfx::ObjectContainer* c = (rVfx::ObjectContainer*)(unit->*GetContainerByType)(VfxUnit::CT_OBJECT);
+
+				if (ImGui::BeginTabBar("Object Type", tab_bar_flags)) {
+					if (ImGui::BeginTabItem("Reserved")) {
+						ImGui::Columns(2, NULL, false);
+
+						for (int i = 0; i < rVfx::ObjectContainer::RESERVED_OBJECT_COUNT; i++) {
+							DWORD handle = rVfx::ObjectContainer::GenerateFakeHandle(i, true);
+							rVfx::Object* o = (c->*rVfx::ObjectContainer::publicMethods.GetObjectFromHandle)(handle);
+							Text("Object %d:", i); NextColumn();
+							if (o) {
+								Text("%x , Name: %s", (unsigned int)o, rVfx::Object::GetNameTmp(o)->c_str());
+								NextColumn();
+							}
+							else {
+								Text("DEAD"); NextColumn();
+							}
+						}
+
+						ImGui::Columns(1);
+						ImGui::EndTabItem();
+					}
+					if (ImGui::BeginTabItem("Loose")) {
+						ImGui::Columns(2, NULL, false);
+
+						for (int i = 0; i < rVfx::ObjectContainer::DEFAULT_LOOSE_OBJECT_COUNT; i++) {
+							DWORD handle = rVfx::ObjectContainer::GenerateFakeHandle(i, false);
+							rVfx::Object* o = (c->*rVfx::ObjectContainer::publicMethods.GetObjectFromHandle)(handle);
+							Text("Object %d:", i); NextColumn();
+							if (o) {
+								Text("%x , Name: %s", (unsigned int)o, rVfx::Object::GetNameTmp(o)->c_str());
+								NextColumn();
+							}
+							else {
+								Text("DEAD"); NextColumn();
+							}
+						}
+
+						ImGui::Columns(1);
+						ImGui::EndTabItem();
+					}
+					ImGui::EndTabBar();
+				}
+
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Particle")) {
+				rVfx::ParticleContainer* c = (rVfx::ParticleContainer*)(unit->*GetContainerByType)(VfxUnit::CT_PARTICLE);
+				ImGui::Columns(2, NULL, false);
+
+				for (int i = 0; i < rVfx::ParticleContainer::DEFAULT_PARTICLE_COUNT; i++) {
+					DWORD handle = rVfx::ParticleContainer::GenerateFakeHandle(i);
+					rVfx::Particle* p = (c->*rVfx::ParticleContainer::publicMethods.GetParticleFromHandle)(handle);
+					Text("Particle %d:", i); NextColumn();
+					if (p) {
+						Text("%x , Name: %s", (unsigned int)p, rVfx::Particle::GetNameTmp(p)->c_str());
+						NextColumn();
+					}
+					else {
+						Text("DEAD"); NextColumn();
+					}
+				}
+
+				ImGui::Columns(1);
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Trace")) {
+				rVfx::TraceContainer* c = (rVfx::TraceContainer*)(unit->*GetContainerByType)(VfxUnit::CT_TRACE);
+				ImGui::Columns(2, NULL, false);
+
+				for (int i = 0; i < rVfx::TraceContainer::DEFAULT_TRACE_COUNT; i++) {
+					DWORD handle = rVfx::TraceContainer::GenerateFakeHandle(i);
+					rVfx::Trace* t = (c->*rVfx::TraceContainer::publicMethods.GetTraceFromHandle)(handle);
+					Text("Trace %d:", i); NextColumn();
+					if (t) {
+						Text("%x , Name: %s", (unsigned int)t, rVfx::Trace::GetNameTmp(t)->c_str());
+						NextColumn();
+					}
+					else {
+						Text("DEAD"); NextColumn();
+					}
+				}
+
+				ImGui::Columns(1);
+				ImGui::EndTabItem();
+			}
 			ImGui::EndTabBar();
 		}
 	}
@@ -480,6 +597,10 @@ void DrawOverlay() {
 					show_command_window = true;
 				}
 
+				if (ImGui::MenuItem("Vfx")) {
+					show_vfx_window = true;
+				}
+
 				ImGui::EndMenu();
 			}
 
@@ -505,6 +626,10 @@ void DrawOverlay() {
 
 	if (show_command_window) {
 		DrawCommandWindow(&show_command_window);
+	}
+
+	if (show_vfx_window) {
+		DrawVfxWindow(&show_vfx_window);
 	}
 
 	if (show_demo_window) {
