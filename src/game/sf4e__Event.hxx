@@ -9,6 +9,7 @@ namespace sf4e {
 		struct EventController : Dimps::Event::EventController
 		{
 			static void Install();
+			static bool bHaltAfterNext;
 			static bool bUpdateAllowed;
 
 			void RunUpdate();

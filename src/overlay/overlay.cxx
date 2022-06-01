@@ -47,6 +47,7 @@ using Dimps::Math::FixedToFloat;
 using fEventController = sf4e::Event::EventController;
 
 using ImGui::Begin;
+using ImGui::Button;
 using ImGui::End;
 using ImGui::NextColumn;
 using ImGui::Text;
@@ -56,6 +57,7 @@ IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARA
 static bool show_battle_system_window = false;
 static bool show_command_window = false;
 static bool show_demo_window = false;
+static bool show_event_window = false;
 static bool show_help_window = false;
 static bool show_memento_window = false;
 static bool show_task_window = false;
@@ -297,6 +299,32 @@ void DrawCommandWindow(bool* pOpen) {
 	End();
 }
 
+void DrawEventWindow(bool* pOpen) {
+	Begin(
+		"Event",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	Text("Halt after next: %s", fEventController::bHaltAfterNext ? "true" : "false");
+	Text("Update allowed: %s", fEventController::bUpdateAllowed ? "true" : "false");
+	if (Button("Pause")) {
+		fEventController::bUpdateAllowed = false;
+	}
+	if (Button("Play")) {
+		fEventController::bUpdateAllowed = true;
+	}
+	if (Button("Halt after next")) {
+		fEventController::bHaltAfterNext = true;
+	}
+	if (Button("Step")) {
+		fEventController::bUpdateAllowed = true;
+		fEventController::bHaltAfterNext = true;
+	}
+
+	End();
+}
+
 void DrawVfxWindow(bool* pOpen) {
 	Begin(
 		"Vfx",
@@ -430,17 +458,17 @@ void DrawMementoWindow(bool* pOpen) {
 		ImGuiWindowFlags_None
 	);
 
-	if (ImGui::Button("Record all mementos")) {
+	if (Button("Record all mementos")) {
 		System* system = System::staticMethods.GetSingleton();
 		(system->*System::publicMethods.RecordAllToInternalMementoKeys)();
 	}
 
-	if (ImGui::Button("Restore all mementos")) {
+	if (Button("Restore all mementos")) {
 		System* system = System::staticMethods.GetSingleton();
 		(system->*System::publicMethods.RestoreAllFromInternalMementoKeys)();
 	}
 
-	if (ImGui::Button("Manual: Record all mementos")) {
+	if (Button("Manual: Record all mementos")) {
 		GameMementoKey::MementoID id = { 1, 1 };
 		System* system = System::staticMethods.GetSingleton();
 		void* (System:: * GetUnitByIndex)(unsigned int) = System::publicMethods.GetUnitByIndex;
@@ -489,7 +517,7 @@ void DrawMementoWindow(bool* pOpen) {
 		}
 	}
 
-	if (ImGui::Button("Manual: Restore all mementos")) {
+	if (Button("Manual: Restore all mementos")) {
 		GameMementoKey::MementoID id = { 1, 1 };
 		System* system = System::staticMethods.GetSingleton();
 		void* (System::* GetUnitByIndex)(unsigned int) = System::publicMethods.GetUnitByIndex;
@@ -577,7 +605,9 @@ void DrawOverlay() {
 			}
 
 			if (ImGui::BeginMenu("Event")) {
-				ImGui::MenuItem("Allow Update", NULL, &fEventController::bUpdateAllowed);
+				if (ImGui::MenuItem("Overview")) {
+					show_event_window = true;
+				}
 				ImGui::EndMenu();
 			}
 
@@ -626,6 +656,10 @@ void DrawOverlay() {
 
 	if (show_command_window) {
 		DrawCommandWindow(&show_command_window);
+	}
+
+	if (show_event_window) {
+		DrawEventWindow(&show_event_window);
 	}
 
 	if (show_vfx_window) {

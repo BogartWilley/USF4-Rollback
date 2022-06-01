@@ -9,6 +9,7 @@ namespace fEvent = sf4e::Event;
 using rEventController = rEvent::EventController;
 using fEventController = fEvent::EventController;
 
+bool fEventController::bHaltAfterNext = false;
 bool fEventController::bUpdateAllowed = true;
 
 void fEvent::Install() {
@@ -23,5 +24,10 @@ void fEventController::Install() {
 void fEventController::RunUpdate() {
 	if (bUpdateAllowed) {
 		(this->*rEventController::publicMethods.RunUpdate)();
+
+		if (bHaltAfterNext) {
+			bHaltAfterNext = false;
+			bUpdateAllowed = false;
+		}
 	}
 }
