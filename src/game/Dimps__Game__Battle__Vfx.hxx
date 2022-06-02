@@ -3,7 +3,7 @@
 #include <windows.h>
 #include <string>
 
-#include "Dimps__Game__GameMementoKey.hxx"
+#include "Dimps__Game.hxx"
 
 using Dimps::Game::GameMementoKey;
 

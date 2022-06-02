@@ -2,8 +2,8 @@
 
 #include <windows.h>
 
+#include "Dimps__Game.hxx"
 #include "Dimps__Game__Battle__Chara__Actor.hxx"
-#include "Dimps__Game__GameMementoKey.hxx"
 
 using Dimps::Game::Battle::Chara::Actor;
 using Dimps::Game::GameMementoKey;

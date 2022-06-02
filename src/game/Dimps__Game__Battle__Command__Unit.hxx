@@ -2,8 +2,8 @@
 
 #include <windows.h>
 
+#include "Dimps__Game.hxx"
 #include "Dimps__Game__Battle__Command__CommandImpl.hxx"
-#include "Dimps__Game__GameMementoKey.hxx"
 
 using Dimps::Game::Battle::Command::CommandImpl;
 using Dimps::Game::GameMementoKey;

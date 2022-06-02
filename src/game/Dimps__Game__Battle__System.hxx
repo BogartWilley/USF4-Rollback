@@ -2,9 +2,9 @@
 
 #include <windows.h>
 
+#include "Dimps__Game.hxx"
 #include "Dimps__Game__Battle__Chara__Unit.hxx"
 #include "Dimps__Game__Battle__GameManager.hxx"
-#include "Dimps__Game__GameMementoKey.hxx"
 #include "Dimps__Math.hxx"
 
 using Dimps::Game::Battle::GameManager;

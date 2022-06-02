@@ -19,66 +19,47 @@ add_library(Game STATIC
     "src/game/Dimps.cxx"
     "src/game/Dimps__Eva.hxx"
     "src/game/Dimps__Eva.cxx"
-    "src/game/Dimps__Eva__TaskCore.hxx"
-    "src/game/Dimps__Eva__TaskCore.cxx"
-    "src/game/Dimps__Eva__TaskCoreRegistry.hxx"
-    "src/game/Dimps__Eva__TaskCoreRegistry.cxx"
     "src/game/Dimps__Event.hxx"
     "src/game/Dimps__Event.cxx"
     "src/game/Dimps__Game.hxx"
     "src/game/Dimps__Game.cxx"
+
     "src/game/Dimps__Game__Battle.hxx"
     "src/game/Dimps__Game__Battle.cxx"
-
     "src/game/Dimps__Game__Battle__Camera.hxx"
     "src/game/Dimps__Game__Battle__Camera.cxx"
-
     "src/game/Dimps__Game__Battle__Chara.hxx"
     "src/game/Dimps__Game__Battle__Chara.cxx"
     "src/game/Dimps__Game__Battle__Chara__Actor.hxx"
     "src/game/Dimps__Game__Battle__Chara__Actor.cxx"
     "src/game/Dimps__Game__Battle__Chara__Unit.hxx"
     "src/game/Dimps__Game__Battle__Chara__Unit.cxx"
-
     "src/game/Dimps__Game__Battle__Command.hxx"
     "src/game/Dimps__Game__Battle__Command.cxx"
     "src/game/Dimps__Game__Battle__Command__CommandImpl.hxx"
     "src/game/Dimps__Game__Battle__Command__CommandImpl.cxx"
     "src/game/Dimps__Game__Battle__Command__Unit.hxx"
     "src/game/Dimps__Game__Battle__Command__Unit.cxx"
-
     "src/game/Dimps__Game__Battle__Effect.hxx"
     "src/game/Dimps__Game__Battle__Effect.cxx"
-
     "src/game/Dimps__Game__Battle__GameManager.hxx"
     "src/game/Dimps__Game__Battle__GameManager.cxx"
-
     "src/game/Dimps__Game__Battle__Hud.hxx"
     "src/game/Dimps__Game__Battle__Hud.cxx"
-
     "src/game/Dimps__Game__Battle__System.hxx"
     "src/game/Dimps__Game__Battle__System.cxx"
-
     "src/game/Dimps__Game__Battle__Training.hxx"
     "src/game/Dimps__Game__Battle__Training.cxx"
-
     "src/game/Dimps__Game__Battle__Vfx.hxx"
     "src/game/Dimps__Game__Battle__Vfx.cxx"
 
-    "src/game/Dimps__Game__GameMementoKey.hxx"
+    
     "src/game/Dimps__GameEvents.hxx"
     "src/game/Dimps__GameEvents.cxx"
-    "src/game/Dimps__GameEvents__RootEvent.hxx"
-    "src/game/Dimps__GameEvents__RootEvent.cxx"
-
     "src/game/Dimps__Math.hxx"
     "src/game/Dimps__Math.cxx"
     "src/game/Dimps__Platform.hxx"
     "src/game/Dimps__Platform.cxx"
-    "src/game/Dimps__Platform__D3D.hxx"
-    "src/game/Dimps__Platform__D3D.cxx"
-    "src/game/Dimps__Platform__Main.hxx"
-    "src/game/Dimps__Platform__Main.cxx"
 
     "src/game/sf4e.hxx"
     "src/game/sf4e.cxx"
@@ -86,20 +67,12 @@ add_library(Game STATIC
     "src/game/sf4e__Event.cxx"
     "src/game/sf4e__GameEvents.hxx"
     "src/game/sf4e__GameEvents.cxx"
-    "src/game/sf4e__GameEvents__RootEvent.hxx"
-    "src/game/sf4e__GameEvents__RootEvent.cxx"
     "src/game/sf4e__Platform.hxx"
     "src/game/sf4e__Platform.cxx"
-    "src/game/sf4e__Platform__D3D.hxx"
-    "src/game/sf4e__Platform__D3D.cxx"
-    "src/game/sf4e__Platform__Main.hxx"
-    "src/game/sf4e__Platform__Main.cxx"
 )
 target_link_libraries(Game PUBLIC Detours "ws2_32" "Mswsock" "AdvApi32")
 
 add_executable(Launcher WIN32
-    
-    
     src/launcher/launcher.cxx
 )
 target_link_libraries(Launcher

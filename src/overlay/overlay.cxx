@@ -6,8 +6,8 @@
 #include <imgui_demo.cpp>
 
 #include "../game/Dimps.hxx"
-#include "../game/Dimps__Eva__TaskCore.hxx"
-#include "../game/Dimps__Eva__TaskCoreRegistry.hxx"
+#include "../game/Dimps__Eva.hxx"
+#include "../game/Dimps__Game.hxx"
 #include "../game/Dimps__Game__Battle__Camera.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Actor.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Unit.hxx"
@@ -18,7 +18,6 @@
 #include "../game/Dimps__Game__Battle__System.hxx"
 #include "../game/Dimps__Game__Battle__Training.hxx"
 #include "../game/Dimps__Game__Battle__Vfx.hxx"
-#include "../game/Dimps__Game__GameMementoKey.hxx"
 #include "../game/Dimps__Math.hxx"
 #include "../game/sf4e__Event.hxx"
 
