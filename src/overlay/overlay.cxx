@@ -361,7 +361,7 @@ void DrawVfxWindow(bool* pOpen) {
 					if (BeginTabItem("Reserved")) {
 						Columns(2, NULL, false);
 
-						for (int i = 0; i < rVfx::ObjectContainer::RESERVED_OBJECT_COUNT; i++) {
+						for (unsigned int i = 0; i < rVfx::ObjectContainer::RESERVED_OBJECT_COUNT; i++) {
 							DWORD handle = rVfx::ObjectContainer::GenerateFakeHandle(i, true);
 							rVfx::Object* o = (c->*rVfx::ObjectContainer::publicMethods.GetObjectFromHandle)(handle);
 							Text("Object %d:", i); NextColumn();
@@ -380,7 +380,7 @@ void DrawVfxWindow(bool* pOpen) {
 					if (BeginTabItem("Loose")) {
 						Columns(2, NULL, false);
 
-						for (int i = 0; i < rVfx::ObjectContainer::DEFAULT_LOOSE_OBJECT_COUNT; i++) {
+						for (unsigned int i = 0; i < rVfx::ObjectContainer::DEFAULT_LOOSE_OBJECT_COUNT; i++) {
 							DWORD handle = rVfx::ObjectContainer::GenerateFakeHandle(i, false);
 							rVfx::Object* o = (c->*rVfx::ObjectContainer::publicMethods.GetObjectFromHandle)(handle);
 							Text("Object %d:", i); NextColumn();
@@ -406,7 +406,7 @@ void DrawVfxWindow(bool* pOpen) {
 				rVfx::ParticleContainer* c = (rVfx::ParticleContainer*)(unit->*GetContainerByType)(VfxUnit::CT_PARTICLE);
 				Columns(2, NULL, false);
 
-				for (int i = 0; i < rVfx::ParticleContainer::DEFAULT_PARTICLE_COUNT; i++) {
+				for (unsigned int i = 0; i < rVfx::ParticleContainer::DEFAULT_PARTICLE_COUNT; i++) {
 					DWORD handle = rVfx::ParticleContainer::GenerateFakeHandle(i);
 					rVfx::Particle* p = (c->*rVfx::ParticleContainer::publicMethods.GetParticleFromHandle)(handle);
 					Text("Particle %d:", i); NextColumn();
@@ -427,7 +427,7 @@ void DrawVfxWindow(bool* pOpen) {
 				rVfx::TraceContainer* c = (rVfx::TraceContainer*)(unit->*GetContainerByType)(VfxUnit::CT_TRACE);
 				Columns(2, NULL, false);
 
-				for (int i = 0; i < rVfx::TraceContainer::DEFAULT_TRACE_COUNT; i++) {
+				for (unsigned int i = 0; i < rVfx::TraceContainer::DEFAULT_TRACE_COUNT; i++) {
 					DWORD handle = rVfx::TraceContainer::GenerateFakeHandle(i);
 					rVfx::Trace* t = (c->*rVfx::TraceContainer::publicMethods.GetTraceFromHandle)(handle);
 					Text("Trace %d:", i); NextColumn();
