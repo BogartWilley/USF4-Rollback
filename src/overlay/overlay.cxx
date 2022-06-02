@@ -46,9 +46,21 @@ using Dimps::Math::FixedToFloat;
 using fEventController = sf4e::Event::EventController;
 
 using ImGui::Begin;
+using ImGui::BeginMainMenuBar;
+using ImGui::BeginMenu;
+using ImGui::BeginTabBar;
+using ImGui::BeginTabItem;
 using ImGui::Button;
+using ImGui::Columns;
 using ImGui::End;
+using ImGui::EndFrame;
+using ImGui::EndMainMenuBar;
+using ImGui::EndTabBar;
+using ImGui::EndTabItem;
+using ImGui::MenuItem;
+using ImGui::NewFrame;
 using ImGui::NextColumn;
+using ImGui::Separator;
 using ImGui::Text;
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -63,7 +75,7 @@ static bool show_task_window = false;
 static bool show_vfx_window = false;
 
 void DrawBattleSystemWindow(bool* pOpen) {
-	ImGui::Begin(
+	Begin(
 		"Battle System",
 		pOpen,
 		ImGuiWindowFlags_None
@@ -74,24 +86,24 @@ void DrawBattleSystemWindow(bool* pOpen) {
 	GameManager* manager = (system->*System::publicMethods.GetGameManager)();
 
 	int isFight = (system->*System::publicMethods.IsFight)();
-	ImGui::Text("Is fight: %d", isFight);
-	ImGui::Text("Is leaving battle: %d", (system->*System::publicMethods.IsLeavingBattle)());
+	Text("Is fight: %d", isFight);
+	Text("Is leaving battle: %d", (system->*System::publicMethods.IsLeavingBattle)());
 	if (manager != NULL) {
 		(manager->*GameManager::publicMethods.GetRoundTime)(&tmp);
-		ImGui::Text("Round time: %f", FixedToFloat(&tmp));
+		Text("Round time: %f", FixedToFloat(&tmp));
 	}
 
 	if (isFight) {
 		CharaUnit* lpCharaUnit = (system->*System::publicMethods.GetCharaUnit)();
 
 		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-		if (ImGui::BeginTabBar("Battle Actor", tab_bar_flags))
+		if (BeginTabBar("Battle Actor", tab_bar_flags))
 		{
 			for (int i = 0; i < 2; i++) {
 				CharaActor* a = (lpCharaUnit->*CharaUnit::publicMethods.GetActorByIndex)(i);
 
-				if (ImGui::BeginTabItem(i == 0 ? "Actor 0" : "Actor 1")) {
-					ImGui::Columns(2, NULL, false);
+				if (BeginTabItem(i == 0 ? "Actor 0" : "Actor 1")) {
+					Columns(2, NULL, false);
 
 					int actorID = (int)(a->*CharaActor::publicMethods.GetActorID)();
 					char* actorCode = actorID > -1 ? Dimps::characterCodes[actorID] : "";
@@ -152,16 +164,16 @@ void DrawBattleSystemWindow(bool* pOpen) {
 					Text("Combo damage:"); NextColumn();
 					Text("%f", FixedToFloat(&tmp)); NextColumn();
 
-					ImGui::Columns(1);
-					ImGui::EndTabItem();
+					Columns(1);
+					EndTabItem();
 				}
 			}
 
-			ImGui::EndTabBar();
+			EndTabBar();
 		}
 	}
 
-	ImGui::End();
+	End();
 }
 
 // Only 14 bytes are accounted for so far. Training mode memory and
@@ -213,16 +225,16 @@ void DrawCommandWindow(bool* pOpen) {
 	System* system = System::staticMethods.GetSingleton();
 	int isFight = (system->*System::publicMethods.IsFight)();
 	Text("Is fight: %d", isFight);
-	ImGui::Separator();
+	Separator();
 
 	if (isFight) {
 		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-		if (ImGui::BeginTabBar("Input Type", tab_bar_flags))
+		if (BeginTabBar("Input Type", tab_bar_flags))
 		{
-			if (ImGui::BeginTabItem("On")) {
-				ImGui::Columns(3);
+			if (BeginTabItem("On")) {
+				Columns(3);
 				Text("Button"); NextColumn(); Text("P1"); NextColumn(); Text("P2"); NextColumn();
-				ImGui::Separator();
+				Separator();
 
 				CommandUnit* u = (CommandUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_COMMAND);
 				DWORD padData[2];
@@ -236,17 +248,17 @@ void DrawCommandWindow(bool* pOpen) {
 					for (int i = 0; i < 2; i++) {
 						Text((padData[i] & (1 << bytePosition)) ? "ON" : "OFF"); NextColumn();
 					}
-					ImGui::Separator();
+					Separator();
 				}
 
-				ImGui::Columns(1);
-				ImGui::EndTabItem();
+				Columns(1);
+				EndTabItem();
 			}
 
-			if (ImGui::BeginTabItem("Rising")) {
-				ImGui::Columns(3);
+			if (BeginTabItem("Rising")) {
+				Columns(3);
 				Text("Button"); NextColumn(); Text("P1"); NextColumn(); Text("P2"); NextColumn();
-				ImGui::Separator();
+				Separator();
 
 				CommandUnit* u = (CommandUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_COMMAND);
 				DWORD padData[2];
@@ -260,17 +272,17 @@ void DrawCommandWindow(bool* pOpen) {
 					for (int i = 0; i < 2; i++) {
 						Text((padData[i] & (1 << bytePosition)) ? "ON" : "OFF"); NextColumn();
 					}
-					ImGui::Separator();
+					Separator();
 				}
 
-				ImGui::Columns(1);
-				ImGui::EndTabItem();
+				Columns(1);
+				EndTabItem();
 			}
 
-			if (ImGui::BeginTabItem("Falling")) {
-				ImGui::Columns(3);
+			if (BeginTabItem("Falling")) {
+				Columns(3);
 				Text("Button"); NextColumn(); Text("P1"); NextColumn(); Text("P2"); NextColumn();
-				ImGui::Separator();
+				Separator();
 
 				CommandUnit* u = (CommandUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_COMMAND);
 				DWORD padData[2];
@@ -284,14 +296,14 @@ void DrawCommandWindow(bool* pOpen) {
 					for (int i = 0; i < 2; i++) {
 						Text((padData[i] & (1 << bytePosition)) ? "ON" : "OFF"); NextColumn();
 					}
-					ImGui::Separator();
+					Separator();
 				}
 
-				ImGui::Columns(1);
-				ImGui::EndTabItem();
+				Columns(1);
+				EndTabItem();
 			}
 
-			ImGui::EndTabBar();
+			EndTabBar();
 		}
 	}
 
@@ -334,20 +346,20 @@ void DrawVfxWindow(bool* pOpen) {
 	System* system = System::staticMethods.GetSingleton();
 	int isFight = (system->*System::publicMethods.IsFight)();
 	Text("Is fight: %d", isFight);
-	ImGui::Separator();
+	Separator();
 	if (isFight) {
 		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
 		VfxUnit* unit = (VfxUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_VFX);
 		rVfx::IContainer* (VfxUnit::* GetContainerByType)(DWORD) = VfxUnit::publicMethods.GetContainerByType;
 
-		if (ImGui::BeginTabBar("Container Type", tab_bar_flags))
+		if (BeginTabBar("Container Type", tab_bar_flags))
 		{
-			if (ImGui::BeginTabItem("Object")) {
+			if (BeginTabItem("Object")) {
 				rVfx::ObjectContainer* c = (rVfx::ObjectContainer*)(unit->*GetContainerByType)(VfxUnit::CT_OBJECT);
 
-				if (ImGui::BeginTabBar("Object Type", tab_bar_flags)) {
-					if (ImGui::BeginTabItem("Reserved")) {
-						ImGui::Columns(2, NULL, false);
+				if (BeginTabBar("Object Type", tab_bar_flags)) {
+					if (BeginTabItem("Reserved")) {
+						Columns(2, NULL, false);
 
 						for (int i = 0; i < rVfx::ObjectContainer::RESERVED_OBJECT_COUNT; i++) {
 							DWORD handle = rVfx::ObjectContainer::GenerateFakeHandle(i, true);
@@ -362,11 +374,11 @@ void DrawVfxWindow(bool* pOpen) {
 							}
 						}
 
-						ImGui::Columns(1);
-						ImGui::EndTabItem();
+						Columns(1);
+						EndTabItem();
 					}
-					if (ImGui::BeginTabItem("Loose")) {
-						ImGui::Columns(2, NULL, false);
+					if (BeginTabItem("Loose")) {
+						Columns(2, NULL, false);
 
 						for (int i = 0; i < rVfx::ObjectContainer::DEFAULT_LOOSE_OBJECT_COUNT; i++) {
 							DWORD handle = rVfx::ObjectContainer::GenerateFakeHandle(i, false);
@@ -381,18 +393,18 @@ void DrawVfxWindow(bool* pOpen) {
 							}
 						}
 
-						ImGui::Columns(1);
-						ImGui::EndTabItem();
+						Columns(1);
+						EndTabItem();
 					}
-					ImGui::EndTabBar();
+					EndTabBar();
 				}
 
-				ImGui::EndTabItem();
+				EndTabItem();
 			}
 
-			if (ImGui::BeginTabItem("Particle")) {
+			if (BeginTabItem("Particle")) {
 				rVfx::ParticleContainer* c = (rVfx::ParticleContainer*)(unit->*GetContainerByType)(VfxUnit::CT_PARTICLE);
-				ImGui::Columns(2, NULL, false);
+				Columns(2, NULL, false);
 
 				for (int i = 0; i < rVfx::ParticleContainer::DEFAULT_PARTICLE_COUNT; i++) {
 					DWORD handle = rVfx::ParticleContainer::GenerateFakeHandle(i);
@@ -407,13 +419,13 @@ void DrawVfxWindow(bool* pOpen) {
 					}
 				}
 
-				ImGui::Columns(1);
-				ImGui::EndTabItem();
+				Columns(1);
+				EndTabItem();
 			}
 
-			if (ImGui::BeginTabItem("Trace")) {
+			if (BeginTabItem("Trace")) {
 				rVfx::TraceContainer* c = (rVfx::TraceContainer*)(unit->*GetContainerByType)(VfxUnit::CT_TRACE);
-				ImGui::Columns(2, NULL, false);
+				Columns(2, NULL, false);
 
 				for (int i = 0; i < rVfx::TraceContainer::DEFAULT_TRACE_COUNT; i++) {
 					DWORD handle = rVfx::TraceContainer::GenerateFakeHandle(i);
@@ -428,10 +440,10 @@ void DrawVfxWindow(bool* pOpen) {
 					}
 				}
 
-				ImGui::Columns(1);
-				ImGui::EndTabItem();
+				Columns(1);
+				EndTabItem();
 			}
-			ImGui::EndTabBar();
+			EndTabBar();
 		}
 	}
 
@@ -439,7 +451,7 @@ void DrawVfxWindow(bool* pOpen) {
 }
 
 void DrawHelpWindow(bool* pOpen) {
-	ImGui::Begin(
+	Begin(
 		"ImGui Help",
 		pOpen,
 		ImGuiWindowFlags_None
@@ -447,11 +459,11 @@ void DrawHelpWindow(bool* pOpen) {
 
 	ImGui::ShowUserGuide();
 
-	ImGui::End();
+	End();
 }
 
 void DrawMementoWindow(bool* pOpen) {
-	ImGui::Begin(
+	Begin(
 		"Memento: Save/load",
 		pOpen,
 		ImGuiWindowFlags_None
@@ -558,11 +570,11 @@ void DrawMementoWindow(bool* pOpen) {
 		)(&id);
 	}
 
-	ImGui::End();
+	End();
 }
 
 void DrawTaskWindow(bool* pOpen) {
-	ImGui::Begin(
+	Begin(
 		"Tasks",
 		pOpen,
 		ImGuiWindowFlags_None
@@ -576,7 +588,7 @@ void DrawTaskWindow(bool* pOpen) {
 		Text("Core ID: %d, name: %s", i, name);
 	}
 
-	ImGui::End();
+	End();
 }
 
 void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
@@ -592,60 +604,60 @@ void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
 void DrawOverlay() {
 	ImGui_ImplDX9_NewFrame();
 	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
+	NewFrame();
 
 	if (ImGui::IsMousePosValid() && ImGui::GetIO().MousePos.y < 200) {
-		if (ImGui::BeginMainMenuBar()) {
-			if (ImGui::BeginMenu("Eva")) {
-				if (ImGui::MenuItem("Tasks")) {
+		if (BeginMainMenuBar()) {
+			if (BeginMenu("Eva")) {
+				if (MenuItem("Tasks")) {
 					show_task_window = true;
 				}
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Event")) {
-				if (ImGui::MenuItem("Overview")) {
+			if (BeginMenu("Event")) {
+				if (MenuItem("Overview")) {
 					show_event_window = true;
 				}
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Game")) {
-				if (ImGui::MenuItem("Mementos")) {
+			if (BeginMenu("Game")) {
+				if (MenuItem("Mementos")) {
 					show_memento_window = true;
 				}
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Battle System")) {
-				if (ImGui::MenuItem("Overview")) {
+			if (BeginMenu("Battle System")) {
+				if (MenuItem("Overview")) {
 					show_battle_system_window = true;
 				}
 
-				if (ImGui::MenuItem("Command")) {
+				if (MenuItem("Command")) {
 					show_command_window = true;
 				}
 
-				if (ImGui::MenuItem("Vfx")) {
+				if (MenuItem("Vfx")) {
 					show_vfx_window = true;
 				}
 
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Imgui")) {
-				if (ImGui::MenuItem("Demo")) {
+			if (BeginMenu("Imgui")) {
+				if (MenuItem("Demo")) {
 					show_demo_window = true;
 				}
 
-				if (ImGui::MenuItem("Help")) {
+				if (MenuItem("Help")) {
 					show_help_window = true;
 				}
 
 				ImGui::EndMenu();
 			}
 
-			ImGui::EndMainMenuBar();
+			EndMainMenuBar();
 		}
 	}
 
@@ -681,7 +693,7 @@ void DrawOverlay() {
 		DrawTaskWindow(&show_task_window);
 	}
 
-	ImGui::EndFrame();
+	EndFrame();
 	ImGui::Render();
 	ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
 }
