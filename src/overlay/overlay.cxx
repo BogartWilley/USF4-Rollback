@@ -637,7 +637,7 @@ void DrawOverlay() {
 	}
 
 	if (show_demo_window) {
-		ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow(&show_demo_window);
 	}
 
 	if (show_help_window) {
