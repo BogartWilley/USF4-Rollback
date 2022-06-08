@@ -13,6 +13,7 @@ namespace sf4e {
 			void Initialize(void* mementoable, int numMementos);
 			static void Install();
 			static std::set<Dimps::Game::GameMementoKey*> trackedKeys;
+			static void (*SizeLogger)(Dimps::Game::GameMementoKey* k, int oldSize);
 		};
 	}
 }

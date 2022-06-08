@@ -78,9 +78,13 @@ static bool show_command_window = false;
 static bool show_demo_window = false;
 static bool show_event_window = false;
 static bool show_help_window = false;
+static bool show_log_window = false;
 static bool show_memento_window = false;
 static bool show_task_window = false;
 static bool show_vfx_window = false;
+
+// Defined by the ImGui demo.
+static ExampleAppLog debugLog;
 
 void DrawBattleSystemWindow(bool* pOpen) {
 	Begin(
@@ -566,6 +570,17 @@ void DrawTaskWindow(bool* pOpen) {
 	End();
 }
 
+void GameMementoKeySizeLogger(GameMementoKey* k, int oldSize) {
+	debugLog.AddLog(
+		"GameMementoKey @ %p w/ mementoable %p (vtbl %x) had differing size: Old %d, new %d\n",
+		k,
+		k->mementoableObject,
+		*(DWORD*)k->mementoableObject,
+		oldSize,
+		k->sizeAllocated
+	);
+}
+
 void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -574,6 +589,7 @@ void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
 	style.Alpha = DEFAULT_ALPHA;
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX9_Init(lpDevice);
+	sf4e::Game::GameMementoKey::SizeLogger = GameMementoKeySizeLogger;
 }
 
 void DrawOverlay() {
@@ -632,6 +648,11 @@ void DrawOverlay() {
 				ImGui::EndMenu();
 			}
 
+
+			if (MenuItem("Log")) {
+				show_log_window = true;
+			}
+
 			EndMainMenuBar();
 		}
 	}
@@ -646,6 +667,10 @@ void DrawOverlay() {
 
 	if (show_event_window) {
 		DrawEventWindow(&show_event_window);
+	}
+
+	if (show_log_window) {
+		debugLog.Draw("Debug Log", &show_log_window);
 	}
 
 	if (show_vfx_window) {
