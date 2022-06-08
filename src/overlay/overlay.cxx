@@ -23,6 +23,7 @@
 #include "../game/Dimps__Math.hxx"
 
 #include "../game/sf4e__Event.hxx"
+#include "../game/sf4e__Game.hxx"
 #include "../game/sf4e__Game__Battle__System.hxx"
 
 
@@ -49,6 +50,7 @@ using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
 
 using fEventController = sf4e::Event::EventController;
+using fKey = sf4e::Game::GameMementoKey;
 using fSystem = sf4e::Game::Battle::System;
 
 using ImGui::Begin;
@@ -523,6 +525,20 @@ void DrawMementoWindow(bool* pOpen) {
 				fSystem::RestoreAllFromInternalMementos(system, &mid);
 			}
 
+			EndTabItem();
+		}
+
+		if (BeginTabItem("Debug")) {
+			auto keyEnd = fKey::trackedKeys.end();
+			int keyIdx = 0;
+			for (auto keyIter = fKey::trackedKeys.begin(); keyIter != keyEnd; keyIter++) {
+				Text("Key %d: ", keyIdx);
+				for (int i = 0; i < (*keyIter)->numMementos; i++) {
+					ImGui::SameLine();
+					Text("Memento %d: %d, %d", i, (*keyIter)->metadata[i].id.lo, (*keyIter)->metadata[i].id.hi);
+				}
+				keyIdx++;
+			}
 			EndTabItem();
 		}
 
