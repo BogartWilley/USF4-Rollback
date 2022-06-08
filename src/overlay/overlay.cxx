@@ -1,5 +1,7 @@
 #include "overlay.h"
 
+#include <windows.h>
+
 #include <imgui.h>
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
@@ -19,7 +21,9 @@
 #include "../game/Dimps__Game__Battle__Training.hxx"
 #include "../game/Dimps__Game__Battle__Vfx.hxx"
 #include "../game/Dimps__Math.hxx"
+
 #include "../game/sf4e__Event.hxx"
+#include "../game/sf4e__Game__Battle__System.hxx"
 
 
 #define DEFAULT_ALPHA 0.87f
@@ -43,7 +47,9 @@ using Dimps::Game::Battle::System;
 using Dimps::Game::GameMementoKey;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
+
 using fEventController = sf4e::Event::EventController;
+using fSystem = sf4e::Game::Battle::System;
 
 using ImGui::Begin;
 using ImGui::BeginMainMenuBar;
@@ -345,17 +351,23 @@ void DrawVfxWindow(bool* pOpen) {
 
 	System* system = System::staticMethods.GetSingleton();
 	int isFight = (system->*System::publicMethods.IsFight)();
-	Text("Is fight: %d", isFight);
-	Separator();
-	if (isFight) {
-		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-		VfxUnit* unit = (VfxUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_VFX);
-		rVfx::IContainer* (VfxUnit::* GetContainerByType)(DWORD) = VfxUnit::publicMethods.GetContainerByType;
+	if (!isFight) {
+		Text("Is fight: %d", isFight);
+		End();
+		return;
+	}
 
+	ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+	VfxUnit* unit = (VfxUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_VFX);
+	rVfx::IContainer* (VfxUnit:: * GetContainerByType)(DWORD) = VfxUnit::publicMethods.GetContainerByType;
+	rVfx::ObjectContainer* cObject = (rVfx::ObjectContainer*)(unit->*GetContainerByType)(VfxUnit::CT_OBJECT);
+	rVfx::ParticleContainer* cParticle = (rVfx::ParticleContainer*)(unit->*GetContainerByType)(VfxUnit::CT_PARTICLE);
+	rVfx::TraceContainer* cTrace = (rVfx::TraceContainer*)(unit->*GetContainerByType)(VfxUnit::CT_TRACE);
+
+	if (isFight) {
 		if (BeginTabBar("Container Type", tab_bar_flags))
 		{
 			if (BeginTabItem("Object")) {
-				rVfx::ObjectContainer* c = (rVfx::ObjectContainer*)(unit->*GetContainerByType)(VfxUnit::CT_OBJECT);
 
 				if (BeginTabBar("Object Type", tab_bar_flags)) {
 					if (BeginTabItem("Reserved")) {
@@ -363,7 +375,7 @@ void DrawVfxWindow(bool* pOpen) {
 
 						for (unsigned int i = 0; i < rVfx::ObjectContainer::RESERVED_OBJECT_COUNT; i++) {
 							DWORD handle = rVfx::ObjectContainer::GenerateFakeHandle(i, true);
-							rVfx::Object* o = (c->*rVfx::ObjectContainer::publicMethods.GetObjectFromHandle)(handle);
+							rVfx::Object* o = (cObject->*rVfx::ObjectContainer::publicMethods.GetObjectFromHandle)(handle);
 							Text("Object %d:", i); NextColumn();
 							if (o) {
 								Text("%x , Name: %s", (unsigned int)o, rVfx::Object::GetNameTmp(o)->c_str());
@@ -382,7 +394,7 @@ void DrawVfxWindow(bool* pOpen) {
 
 						for (unsigned int i = 0; i < rVfx::ObjectContainer::DEFAULT_LOOSE_OBJECT_COUNT; i++) {
 							DWORD handle = rVfx::ObjectContainer::GenerateFakeHandle(i, false);
-							rVfx::Object* o = (c->*rVfx::ObjectContainer::publicMethods.GetObjectFromHandle)(handle);
+							rVfx::Object* o = (cObject->*rVfx::ObjectContainer::publicMethods.GetObjectFromHandle)(handle);
 							Text("Object %d:", i); NextColumn();
 							if (o) {
 								Text("%x , Name: %s", (unsigned int)o, rVfx::Object::GetNameTmp(o)->c_str());
@@ -403,12 +415,11 @@ void DrawVfxWindow(bool* pOpen) {
 			}
 
 			if (BeginTabItem("Particle")) {
-				rVfx::ParticleContainer* c = (rVfx::ParticleContainer*)(unit->*GetContainerByType)(VfxUnit::CT_PARTICLE);
 				Columns(2, NULL, false);
 
 				for (unsigned int i = 0; i < rVfx::ParticleContainer::DEFAULT_PARTICLE_COUNT; i++) {
 					DWORD handle = rVfx::ParticleContainer::GenerateFakeHandle(i);
-					rVfx::Particle* p = (c->*rVfx::ParticleContainer::publicMethods.GetParticleFromHandle)(handle);
+					rVfx::Particle* p = (cParticle->*rVfx::ParticleContainer::publicMethods.GetParticleFromHandle)(handle);
 					Text("Particle %d:", i); NextColumn();
 					if (p) {
 						Text("%x , Name: %s", (unsigned int)p, rVfx::Particle::GetNameTmp(p)->c_str());
@@ -424,12 +435,11 @@ void DrawVfxWindow(bool* pOpen) {
 			}
 
 			if (BeginTabItem("Trace")) {
-				rVfx::TraceContainer* c = (rVfx::TraceContainer*)(unit->*GetContainerByType)(VfxUnit::CT_TRACE);
 				Columns(2, NULL, false);
 
 				for (unsigned int i = 0; i < rVfx::TraceContainer::DEFAULT_TRACE_COUNT; i++) {
 					DWORD handle = rVfx::TraceContainer::GenerateFakeHandle(i);
-					rVfx::Trace* t = (c->*rVfx::TraceContainer::publicMethods.GetTraceFromHandle)(handle);
+					rVfx::Trace* t = (cTrace->*rVfx::TraceContainer::publicMethods.GetTraceFromHandle)(handle);
 					Text("Trace %d:", i); NextColumn();
 					if (t) {
 						Text("%x , Name: %s", (unsigned int)t, rVfx::Trace::GetNameTmp(t)->c_str());
@@ -463,111 +473,60 @@ void DrawHelpWindow(bool* pOpen) {
 }
 
 void DrawMementoWindow(bool* pOpen) {
+	static DWORD targetID = 2;
 	Begin(
 		"Memento: Save/load",
 		pOpen,
 		ImGuiWindowFlags_None
 	);
 
-	if (Button("Record all mementos")) {
-		System* system = System::staticMethods.GetSingleton();
-		(system->*System::publicMethods.RecordAllToInternalMementoKeys)();
-	}
+	if (BeginTabBar("Memento Tabs", ImGuiTabBarFlags_None)) {
+		if (BeginTabItem("Auto-Immediate")) {
+			if (Button("Record all to memento 1 immediately")) {
+				System* system = System::staticMethods.GetSingleton();
+				(system->*System::publicMethods.RecordAllToInternalMementoKeys)();
+			}
 
-	if (Button("Restore all mementos")) {
-		System* system = System::staticMethods.GetSingleton();
-		(system->*System::publicMethods.RestoreAllFromInternalMementoKeys)();
-	}
+			if (Button("Restore all from memento 1 immediately")) {
+				System* system = System::staticMethods.GetSingleton();
+				(system->*System::publicMethods.RestoreAllFromInternalMementoKeys)();
+			}
 
-	if (Button("Manual: Record all mementos")) {
-		GameMementoKey::MementoID id = { 1, 1 };
-		System* system = System::staticMethods.GetSingleton();
-		void* (System:: * GetUnitByIndex)(unsigned int) = System::publicMethods.GetUnitByIndex;
-		BOOL canSave = (
-			((CharaUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_CHARA))->*
-			CharaUnit::publicMethods.CanStoreMemento_MaybeActorExists
-		)();
-
-		if (canSave) {
-			(system->*System::publicMethods.RecordToInternalMementoKey)(&id);
-
-			(
-				((CameraUnit*)(system->*GetUnitByIndex)(System::U_CAMERA))->*
-				CameraUnit::publicMethods.RecordToInternalMementoKey
-			)(&id);
-
-			(
-				((CharaUnit*)(system->*GetUnitByIndex)(System::U_CHARA))->*
-				CharaUnit::publicMethods.RecordToInternalMementoKey
-			)(&id);
-
-			(
-				((CommandUnit*)(system->*GetUnitByIndex)(System::U_COMMAND))->*
-				CommandUnit::publicMethods.RecordToInternalMementoKey
-			)(&id);
-
-			(
-				((EffectUnit*)(system->*GetUnitByIndex)(System::U_EFFECT))->*
-				EffectUnit::publicMethods.RecordToInternalMementoKey
-			)(&id);
-
-			(
-				((HudUnit*)(system->*GetUnitByIndex)(System::U_HUD))->*
-				HudUnit::publicMethods.RecordToInternalMementoKey
-			)(&id);
-
-			(
-				((VfxUnit*)(system->*GetUnitByIndex)(System::U_VFX))->*
-				VfxUnit::publicMethods.RecordToInternalMementoKey
-			)(&id);
-
-			(
-				TrainingManager::staticMethods.GetSingleton()->*
-				TrainingManager::publicMethods.RecordToInternalMementoKey
-			)(&id);
+			EndTabItem();
 		}
-	}
+		if (BeginTabItem("Manual")) {
+			ImGui::InputInt("Target memento ID", (int*)&targetID);
 
-	if (Button("Manual: Restore all mementos")) {
-		GameMementoKey::MementoID id = { 1, 1 };
-		System* system = System::staticMethods.GetSingleton();
-		void* (System::* GetUnitByIndex)(unsigned int) = System::publicMethods.GetUnitByIndex;
-		(system->*System::publicMethods.RestoreFromInternalMementoKey)(&id);
+			Text("Record: ");
+			ImGui::SameLine();
+			if (Button("Request##Record")) {
+				GameMementoKey::MementoID mid = { targetID, targetID };
+				fSystem::saveRequest = mid;
+			}
+			ImGui::SameLine();
+			if (Button("Immediate##Record")) {
+				GameMementoKey::MementoID mid = { targetID, targetID };
+				System* system = System::staticMethods.GetSingleton();
+				fSystem::RecordAllToInternalMementos(system, &mid);
+			}
 
-		(
-			((CameraUnit*)(system->*GetUnitByIndex)(System::U_CAMERA))->*
-			CameraUnit::publicMethods.RestoreFromInternalMementoKey
-		)(&id);
+			Text("Restore: ");
+			ImGui::SameLine();
+			if (Button("Request##Restore")) {
+				GameMementoKey::MementoID mid = { targetID, targetID };
+				fSystem::loadRequest = mid;
+			}
+			ImGui::SameLine();
+			if (Button("Immediate##Restore")) {
+				GameMementoKey::MementoID mid = { targetID, targetID };
+				System* system = System::staticMethods.GetSingleton();
+				fSystem::RestoreAllFromInternalMementos(system, &mid);
+			}
 
-		(
-			((CharaUnit*)(system->*GetUnitByIndex)(System::U_CHARA))->*
-			CharaUnit::publicMethods.RestoreFromInternalMementoKey
-		)(&id);
+			EndTabItem();
+		}
 
-		(
-			((CommandUnit*)(system->*GetUnitByIndex)(System::U_COMMAND))->*
-			CommandUnit::publicMethods.RestoreFromInternalMementoKey
-		)(&id);
-
-		(
-			((EffectUnit*)(system->*GetUnitByIndex)(System::U_EFFECT))->*
-			EffectUnit::publicMethods.RestoreFromInternalMementoKey
-		)(&id);
-
-		(
-			((HudUnit*)(system->*GetUnitByIndex)(System::U_HUD))->*
-			HudUnit::publicMethods.RestoreFromInternalMementoKey
-		)(&id);
-
-		(
-			((VfxUnit*)(system->*GetUnitByIndex)(System::U_VFX))->*
-			VfxUnit::publicMethods.RestoreFromInternalMementoKey
-		)(&id);
-
-		(
-			TrainingManager::staticMethods.GetSingleton()->*
-			TrainingManager::publicMethods.RestoreFromInternalMementoKey
-		)(&id);
+		ImGui::EndTabBar();
 	}
 
 	End();

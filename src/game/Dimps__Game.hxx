@@ -8,8 +8,8 @@ namespace Dimps {
 
 		struct GameMementoKey {
 			struct MementoID {
-				DWORD id1;
-				DWORD id2;
+				DWORD lo;
+				DWORD hi;
 			};
 		};
 	}

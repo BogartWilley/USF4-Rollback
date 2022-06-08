@@ -168,7 +168,7 @@ namespace Dimps {
 					} __publicMethods;
 
 					typedef struct __staticMethods {
-						// TODO
+						void (*ResetAfterMemento)(Actor* a);
 					} __staticMethods;
 
 					static void Locate(HMODULE peRoot);
