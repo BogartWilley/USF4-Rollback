@@ -26,7 +26,7 @@ To manually build and run sf4e:
      is used to install custom netplay hooks at runtime.
    * [ValveFileVDF](https://github.com/TinyTinni/ValveFileVDF). ValveFileVDF
      is used to parse Steam's configuration files, to automatically detect
-     your installation of Guilty Gear.
+     your installation of SF4.
    * [Dear Imgui](https://github.com/ocornut/imgui). Dear Imgui is used to
      provide custom overlays for new features and debugging. 
 2. Build Detours using x86-compatible build tools.
