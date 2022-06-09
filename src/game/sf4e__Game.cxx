@@ -3,6 +3,8 @@
 #include <windows.h>
 #include <detours.h>
 
+#include "spdlog/spdlog.h"
+
 #include "Dimps__Game.hxx"
 #include "sf4e__Game.hxx"
 #include "sf4e__Game__Battle__System.hxx"
@@ -30,8 +32,18 @@ void fKey::Initialize(void* mementoable, int numMementos) {
     rKey* _this = (rKey*)this;
     int oldSize = _this->sizeAllocated;
     (_this->*rKey::publicMethods.Initialize)(mementoable, numMementos);
-    if (oldSize != 0 && oldSize != _this->sizeAllocated && SizeLogger != NULL) {
-        SizeLogger(_this, oldSize);
+    if (oldSize != 0 && oldSize != _this->sizeAllocated) {
+        spdlog::info(
+            "GameMementoKey @ {} w/ mementoable {} (vtbl {}) had differing size: Old {:d}, new {:d}",
+            (void*)_this,
+            _this->mementoableObject,
+            *(void**)_this->mementoableObject,
+            oldSize,
+            _this->sizeAllocated
+        );
+        if (SizeLogger != NULL) {
+            SizeLogger(_this, oldSize);
+        }
     }
     trackedKeys.insert(_this);
 }

@@ -67,7 +67,7 @@ int fMain::Initialize(void* a, void* b, void* c) {
             PathCombineW(logpath, path, L"sf4e/logs/sf4e.log");
             int max_size = 1048576 * 5; // 5MB
             int max_files = 10;
-            std::shared_ptr<spdlog::logger> logger = spdlog::rotating_logger_mt("sf4e", logpath, max_size, max_files);
+            std::shared_ptr<spdlog::logger> logger = spdlog::rotating_logger_mt("sf4e", logpath, max_size, max_files, true);
             spdlog::set_default_logger(logger);
             spdlog::info("Welcome to sf4e");
         }
