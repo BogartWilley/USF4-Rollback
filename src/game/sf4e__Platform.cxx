@@ -1,6 +1,14 @@
+#include <memory>
+
 #include <windows.h>
+#include <KnownFolders.h>
+#include <ShlObj.h>
+#include <Shlwapi.h>
 #include <strsafe.h>
 #include <detours.h>
+
+#include "spdlog/spdlog.h"
+#include "spdlog/sinks/rotating_file_sink.h"
 
 #include "Dimps__Platform.hxx"
 #include "sf4e__Platform.hxx"
@@ -15,8 +23,8 @@ using fD3D = fPlatform::D3D;
 using fMain = fPlatform::Main;
 
 void fPlatform::Install() {
-	D3D::Install();
-	Main::Install();
+    D3D::Install();
+    Main::Install();
 }
 
 void fD3D::Install() {
@@ -48,6 +56,31 @@ int fMain::Initialize(void* a, void* b, void* c) {
     // pointer math.
     rMain::Win32_WindowData** windowData = (rMain::Win32_WindowData**)((unsigned int)this + 0x490);
     InitializeOverlay((*windowData)->hWnd, Dimps::Platform::D3D::staticMethods.GetSingleton()->lpD3DDevice);
+
+    // Set up spdlog
+    PWSTR path;
+    HRESULT queryResult = SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, NULL, &path);
+    if (queryResult == S_OK) {
+        try
+        {
+            wchar_t logpath[MAX_PATH];
+            PathCombineW(logpath, path, L"sf4e/logs/sf4e.log");
+            int max_size = 1048576 * 5; // 5MB
+            int max_files = 10;
+            std::shared_ptr<spdlog::logger> logger = spdlog::rotating_logger_mt("sf4e", logpath, max_size, max_files);
+            spdlog::set_default_logger(logger);
+            spdlog::info("Welcome to sf4e");
+        }
+        catch (const spdlog::spdlog_ex& ex)
+        {
+            MessageBoxA(NULL, ex.what(), NULL, MB_OK);
+            DebugBreak();
+        }
+    }
+    else {
+        MessageBox(NULL, TEXT("Could not get appdata path for logs!"), NULL, MB_OK);
+    }
+    CoTaskMemFree(path);
 
     return rval;
 }

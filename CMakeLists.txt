@@ -12,7 +12,10 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 find_package(DearImgui 1 REQUIRED)
 find_package(Detours 4 REQUIRED)
+find_package(spdlog 1 REQUIRED)
 find_package(ValveFileVDF 1 REQUIRED)
+
+add_compile_definitions(SPDLOG_WCHAR_FILENAMES)
 
 add_library(Game STATIC
     "src/game/Dimps.hxx"
@@ -74,7 +77,7 @@ add_library(Game STATIC
     "src/game/sf4e__Platform.hxx"
     "src/game/sf4e__Platform.cxx"
 )
-target_link_libraries(Game PUBLIC Detours "ws2_32" "Mswsock" "AdvApi32")
+target_link_libraries(Game PUBLIC Detours spdlog::spdlog "ws2_32" "Mswsock" "AdvApi32" "Shlwapi")
 
 add_executable(Launcher WIN32
     src/launcher/launcher.cxx
