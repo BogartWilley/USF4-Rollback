@@ -12,6 +12,16 @@ namespace Dimps {
 			namespace Effect {
 				void Locate(HMODULE peRoot);
 
+				struct ActorManager
+				{
+					typedef struct __publicMethods {
+						size_t(ActorManager::* GetMementoSize)();
+					} __publicMethods;
+
+					static void Locate(HMODULE peRoot);
+					static __publicMethods publicMethods;
+				};
+
 				struct Unit
 				{
 					typedef struct __privateMethods {

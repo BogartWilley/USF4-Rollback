@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include "Dimps__Game__Battle.hxx"
+#include "Dimps__Game__Battle__Action.hxx"
 #include "Dimps__Game__Battle__Camera.hxx"
 #include "Dimps__Game__Battle__Chara.hxx"
 #include "Dimps__Game__Battle__Command.hxx"
@@ -14,6 +15,7 @@
 namespace Battle = Dimps::Game::Battle;
 
 void Battle::Locate(HMODULE peRoot) {
+	Action::Locate(peRoot);
 	Camera::Locate(peRoot);
 	Chara::Locate(peRoot);
 	Command::Locate(peRoot);
