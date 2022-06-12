@@ -5,6 +5,19 @@
 
 namespace Dimps {
 	namespace Platform {
+		template <class T>
+		struct list_entry {
+			list_entry<T>* next;
+			list_entry<T>* prev;
+			T data;
+		};
+
+		template <class T>
+		struct list {
+			list_entry<T>* root;
+			int numUsed;
+		};
+
 		void Locate(HMODULE peRoot);
 
 		struct D3D

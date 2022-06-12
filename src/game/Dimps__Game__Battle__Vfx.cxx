@@ -2,9 +2,11 @@
 #include <string>
 
 #include "Dimps__Game__Battle__Vfx.hxx"
+#include "Dimps__Platform.hxx"
 
 namespace Vfx = Dimps::Game::Battle::Vfx;
 using Vfx::ColorFade;
+using Vfx::ColorFadeData;
 using Vfx::ColorFadeUnit;
 using Vfx::Object;
 using Vfx::ObjectContainer;
@@ -33,6 +35,9 @@ const unsigned int ParticleContainer::DEFAULT_PARTICLE_COUNT = 0x100;
 // initialization for the container.
 const unsigned int TraceContainer::DEFAULT_TRACE_COUNT = 0x40;
 
+ColorFade::__publicMethods ColorFade::publicMethods;
+ColorFadeUnit::__publicMethods ColorFadeUnit::publicMethods;
+ColorFadeUnit::__staticMethods ColorFadeUnit::staticMethods;
 ObjectContainer::__publicMethods ObjectContainer::publicMethods;
 ParticleContainer::__publicMethods ParticleContainer::publicMethods;
 TraceContainer::__publicMethods TraceContainer::publicMethods;
@@ -52,8 +57,23 @@ void Vfx::Locate(HMODULE peRoot) {
 	Unit::Locate(peRoot);
 }
 
-void ColorFade::Locate(HMODULE peRoot){ }
-void ColorFadeUnit::Locate(HMODULE peRoot){ }
+void ColorFade::Locate(HMODULE peRoot){
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&publicMethods.Spawn = (PVOID)(peRootOffset + 0x1ce7b0);
+}
+
+Dimps::Platform::list<ColorFadeData>* ColorFade::GetList(ColorFade* fade) {
+	return (Dimps::Platform::list<ColorFadeData>*)((unsigned int)fade + 12);
+}
+
+void ColorFadeUnit::Locate(HMODULE peRoot){
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&publicMethods.GetFade = (PVOID)(peRootOffset + 0x1cd740);
+	staticMethods.GetSingleton = (ColorFadeUnit* (*)())(peRootOffset + 0x1cdc40);
+}
+
 void Object::Locate(HMODULE peRoot){ }
 
 std::string* Object::GetNameTmp(Object* o) {
@@ -77,7 +97,7 @@ DWORD ObjectContainer::GenerateFakeHandle(unsigned int index, bool isReservedObj
 	}
 }
 
-void ObjectContainer::Locate(HMODULE peRoot){
+void ObjectContainer::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	*(PVOID*)&publicMethods.GetObjectFromHandle = (PVOID)(peRootOffset + 0x1bdfd0);

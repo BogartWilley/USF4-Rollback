@@ -25,6 +25,7 @@
 #include "../game/sf4e__Event.hxx"
 #include "../game/sf4e__Game.hxx"
 #include "../game/sf4e__Game__Battle__System.hxx"
+#include "../game/sf4e__Game__Battle__Vfx.hxx"
 
 
 #define DEFAULT_ALPHA 0.87f
@@ -45,6 +46,8 @@ using Dimps::Eva::TaskCoreRegistry;
 using Dimps::Game::Battle::Command::CommandImpl;
 using Dimps::Game::Battle::GameManager;
 using Dimps::Game::Battle::System;
+using Dimps::Game::Battle::Vfx::ColorFade;
+using Dimps::Game::Battle::Vfx::ColorFadeUnit;
 using Dimps::Game::GameMementoKey;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
@@ -52,6 +55,7 @@ using Dimps::Math::FixedToFloat;
 using fEventController = sf4e::Event::EventController;
 using fKey = sf4e::Game::GameMementoKey;
 using fSystem = sf4e::Game::Battle::System;
+using fColorFade = sf4e::Game::Battle::Vfx::ColorFade;
 
 using ImGui::Begin;
 using ImGui::BeginMainMenuBar;
@@ -369,6 +373,7 @@ void DrawVfxWindow(bool* pOpen) {
 	rVfx::ObjectContainer* cObject = (rVfx::ObjectContainer*)(unit->*GetContainerByType)(VfxUnit::CT_OBJECT);
 	rVfx::ParticleContainer* cParticle = (rVfx::ParticleContainer*)(unit->*GetContainerByType)(VfxUnit::CT_PARTICLE);
 	rVfx::TraceContainer* cTrace = (rVfx::TraceContainer*)(unit->*GetContainerByType)(VfxUnit::CT_TRACE);
+	ColorFadeUnit* colorFadeUnit = ColorFadeUnit::staticMethods.GetSingleton();
 
 	if (isFight) {
 		if (BeginTabBar("Container Type", tab_bar_flags))
@@ -453,6 +458,33 @@ void DrawVfxWindow(bool* pOpen) {
 					}
 					else {
 						Text("DEAD"); NextColumn();
+					}
+				}
+
+				Columns(1);
+				EndTabItem();
+			}
+
+			if (BeginTabItem("ColorFade")) {
+				Text("Highest observed ColorFadeData count: %d", fColorFade::HIGHEST_OBSERVED_FADES);
+				ImGui::SameLine();
+				if (Button("Clear")) {
+					fColorFade::HIGHEST_OBSERVED_FADES = 0;
+				}
+
+				Columns(2, NULL, false);
+
+				for (unsigned int i = 0; i < 2; i++) {
+					ColorFade* fade = (colorFadeUnit->*ColorFadeUnit::publicMethods.GetFade)(i);
+					auto fadeList = ColorFade::GetList(fade);
+					Text("Size %d:", fadeList->numUsed); NextColumn(); NextColumn();
+
+					int j = 0;
+					for (auto iter = fadeList->root->next; iter != fadeList->root; iter = iter->next) {
+						Text("  Data @ index %d:", j); NextColumn(); NextColumn();
+						Text("    Resource offset: %p", iter->data.resourcePtr); NextColumn();
+						Text("    Flags: %x", iter->data.flags); NextColumn();
+						j++;
 					}
 				}
 

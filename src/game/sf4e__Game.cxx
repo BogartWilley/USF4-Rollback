@@ -10,6 +10,7 @@
 #include "sf4e__Game__Battle__Action.hxx"
 #include "sf4e__Game__Battle__Effect.hxx"
 #include "sf4e__Game__Battle__System.hxx"
+#include "sf4e__Game__Battle__Vfx.hxx"
 
 namespace rGame = Dimps::Game;
 using rKey = rGame::GameMementoKey;
@@ -24,6 +25,7 @@ void fGame::Install() {
     Battle::Action::Install();
     Battle::Effect::Install();
     Battle::System::Install();
+    Battle::Vfx::Install();
     GameMementoKey::Install();
 }
 

@@ -4,8 +4,11 @@
 #include <string>
 
 #include "Dimps__Game.hxx"
+#include "Dimps__Math.hxx"
+#include "Dimps__Platform.hxx"
 
 using Dimps::Game::GameMementoKey;
+using Dimps::Math::FixedPoint;
 
 namespace Dimps {
 	namespace Game {
@@ -23,13 +26,43 @@ namespace Dimps {
 
 				const DWORD INVALID_EFFECT_HANDLE = 0xffffffff;
 
+				struct ColorFadeData
+				{
+					void* resourcePtr;
+					DWORD flags;
+					float unk_float_data[12];
+					short unk_useCount;
+					short unk_58;
+					FixedPoint unk_60;
+					char unk_64[8];
+				};
+
 				struct ColorFade
 				{
+					typedef struct __publicMethods {
+						Platform::list_entry<ColorFadeData>* (ColorFade::* Spawn)(void* sourceData);
+					} __publicMethods;
+
+					static Platform::list<ColorFadeData>* GetList(ColorFade* fade);
 					static void Locate(HMODULE peRoot);
+
+					static __publicMethods publicMethods;
 				};
+
 				struct ColorFadeUnit
 				{
 					static void Locate(HMODULE peRoot);
+
+					typedef struct __publicMethods {
+						ColorFade* (ColorFadeUnit::* GetFade)(int index);
+					} __publicMethods;
+
+					typedef struct __staticMethods {
+						ColorFadeUnit* (*GetSingleton)();
+					} __staticMethods;
+
+					static __publicMethods publicMethods;
+					static __staticMethods staticMethods;
 				};
 
 				struct Object
