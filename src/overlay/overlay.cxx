@@ -1,5 +1,7 @@
 #include "overlay.h"
 
+#include <algorithm>
+#include <vector>
 #include <windows.h>
 
 #include <imgui.h>
@@ -43,6 +45,7 @@ using TrainingManager = Dimps::Game::Battle::Training::Manager;
 using PadSystem = Dimps::Pad::System;
 using VfxUnit = rVfx::Unit;
 
+using Dimps::Eva::Task;
 using Dimps::Eva::TaskCore;
 using Dimps::Eva::TaskCoreRegistry;
 using Dimps::Game::Battle::Command::CommandImpl;
@@ -79,7 +82,7 @@ using ImGui::Text;
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-static bool show_battle_system_window = false;
+static bool show_chara_window = false;
 static bool show_command_window = false;
 static bool show_demo_window = false;
 static bool show_event_window = false;
@@ -87,15 +90,16 @@ static bool show_help_window = false;
 static bool show_log_window = false;
 static bool show_memento_window = false;
 static bool show_pad_window = false;
+static bool show_system_window = false;
 static bool show_task_window = false;
 static bool show_vfx_window = false;
 
 // Defined by the ImGui demo.
 static ExampleAppLog debugLog;
 
-void DrawBattleSystemWindow(bool* pOpen) {
+void DrawCharaWindow(bool* pOpen) {
 	Begin(
-		"Battle System",
+		"Chara",
 		pOpen,
 		ImGuiWindowFlags_None
 	);
@@ -423,6 +427,59 @@ void DrawPadWindow(bool* pOpen) {
 	End();
 }
 
+bool compareTasks(Task* a, Task* b) {
+	return Task::GetPriority(a) < Task::GetPriority(b);
+}
+
+void DrawSystemTaskPanel(TaskCore* core) {
+	if (core == NULL) {
+		Text("Core not yet allocated");
+		return;
+	}
+
+	Task** taskCursor = TaskCore::GetTaskBuffer(core);
+	int taskCount = (core->*TaskCore::publicMethods.GetNumUsed)();
+	std::vector<Task*> taskVec(taskCursor, taskCursor + taskCount);
+	std::sort(taskVec.begin(), taskVec.end(), compareTasks);
+
+	Columns(2);
+	Text("Priority"); NextColumn(); Text("Name"); NextColumn();
+	for (auto taskIter = taskVec.begin(); taskIter != taskVec.end(); taskIter++) {
+		Task* t = *taskIter;
+		Text("%x", Task::GetPriority(t)); NextColumn();
+		Text("%s", (core->*TaskCore::publicMethods.GetTaskName)(&t)); NextColumn();
+	}
+	Columns(1);
+}
+
+void DrawSystemWindow(bool* pOpen) {
+	Begin(
+		"System",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	System* system = System::staticMethods.GetSingleton();
+	System::__publicMethods& methods = System::publicMethods;
+	int isFight = (system->*System::publicMethods.IsFight)();
+
+	if (BeginTabBar("System tabs", ImGuiTabBarFlags_None)) {
+		if (BeginTabItem("Update tasks")) {
+			TaskCore* updateCore = (system->*methods.GetTaskCore)(System::TCI_UPDATE);
+			DrawSystemTaskPanel(updateCore);
+			EndTabItem();
+		}
+		if (BeginTabItem("Render tasks")) {
+			TaskCore* renderCore = (system->*methods.GetTaskCore)(System::TCI_RENDER);
+			DrawSystemTaskPanel(renderCore);
+			EndTabItem();
+		}
+		EndTabBar();
+	}
+
+	End();
+}
+
 void DrawVfxWindow(bool* pOpen) {
 	Begin(
 		"Vfx",
@@ -723,13 +780,17 @@ void DrawOverlay() {
 				ImGui::EndMenu();
 			}
 
-			if (BeginMenu("Battle System")) {
-				if (MenuItem("Overview")) {
-					show_battle_system_window = true;
+			if (BeginMenu("Battle")) {
+				if (MenuItem("Chara")) {
+					show_chara_window = true;
 				}
 
 				if (MenuItem("Command")) {
 					show_command_window = true;
+				}
+
+				if (MenuItem("System")) {
+					show_system_window = true;
 				}
 
 				if (MenuItem("Vfx")) {
@@ -768,8 +829,8 @@ void DrawOverlay() {
 		}
 	}
 
-	if (show_battle_system_window) {
-		DrawBattleSystemWindow(&show_battle_system_window);
+	if (show_chara_window) {
+		DrawCharaWindow(&show_chara_window);
 	}
 
 	if (show_command_window) {
@@ -786,6 +847,10 @@ void DrawOverlay() {
 
 	if (show_pad_window) {
 		DrawPadWindow(&show_pad_window);
+	}
+
+	if (show_system_window) {
+		DrawSystemWindow(&show_chara_window);
 	}
 
 	if (show_vfx_window) {

@@ -21,6 +21,8 @@ void System::Locate(HMODULE peRoot) {
 
     *(PVOID*)&publicMethods.RecordToInternalMementoKey = (PVOID)(peRootOffset + 0x1daab0);
     *(PVOID*)&publicMethods.RestoreFromInternalMementoKey = (PVOID)(peRootOffset + 0x1d90d0);
+
+    *(PVOID*)&publicMethods.GetTaskCore = (PVOID)(peRootOffset + 0x1d9930);
     
     staticMethods.GetSingleton = (System*(*)())(peRootOffset + 0x1dba30);
 }

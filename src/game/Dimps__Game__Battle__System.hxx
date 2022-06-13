@@ -2,6 +2,7 @@
 
 #include <windows.h>
 
+#include "Dimps__Eva.hxx"
 #include "Dimps__Game.hxx"
 #include "Dimps__Game__Battle__Chara__Unit.hxx"
 #include "Dimps__Game__Battle__GameManager.hxx"
@@ -52,6 +53,11 @@ namespace Dimps {
                     U_PAUSE = 11
                 };
 
+                enum TaskCoreIndex {
+                    TCI_UPDATE = 0,
+                    TCI_RENDER = 1
+                };
+
                 typedef struct __privateMethods {
                     // TODO
                 } __privateMethods;
@@ -66,7 +72,7 @@ namespace Dimps {
                     void* (System::* GetUnitByIndex)(unsigned int index);
 
                     void (System::* SysMain_HandleTrainingModeFeatures)();
-
+                    Eva::TaskCore* (System::* GetTaskCore)(unsigned int index);
                     bool (System::* IsFight)();
                     bool (System::* IsLeavingBattle)();
                     void (System::* RecordAllToInternalMementoKeys)();
