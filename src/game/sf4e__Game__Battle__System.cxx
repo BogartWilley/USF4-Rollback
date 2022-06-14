@@ -1,20 +1,20 @@
 #include <windows.h>
 #include <detours.h>
 
-#include "../game/Dimps__Game.hxx"
-#include "../game/Dimps__Game__Battle__Camera.hxx"
-#include "../game/Dimps__Game__Battle__Chara__Actor.hxx"
-#include "../game/Dimps__Game__Battle__Chara__Unit.hxx"
-#include "../game/Dimps__Game__Battle__Command__Unit.hxx"
-#include "../game/Dimps__Game__Battle__Effect.hxx"
-#include "../game/Dimps__Game__Battle__GameManager.hxx"
-#include "../game/Dimps__Game__Battle__Hud.hxx"
-#include "../game/Dimps__Game__Battle__System.hxx"
-#include "../game/Dimps__Game__Battle__Training.hxx"
-#include "../game/Dimps__Game__Battle__Vfx.hxx"
+#include "Dimps__Game.hxx"
+#include "Dimps__Game__Battle__Camera.hxx"
+#include "Dimps__Game__Battle__Chara__Actor.hxx"
+#include "Dimps__Game__Battle__Chara__Unit.hxx"
+#include "Dimps__Game__Battle__Command__Unit.hxx"
+#include "Dimps__Game__Battle__Effect.hxx"
+#include "Dimps__Game__Battle__GameManager.hxx"
+#include "Dimps__Game__Battle__Hud.hxx"
+#include "Dimps__Game__Battle__System.hxx"
+#include "Dimps__Game__Battle__Training.hxx"
+#include "Dimps__Game__Battle__Vfx.hxx"
 
-#include "../game/sf4e__Game__Battle__System.hxx"
-
+#include "sf4e__Game__Battle__System.hxx"
+#include "sf4e__Pad.hxx"
 
 using CameraUnit = Dimps::Game::Battle::Camera::Unit;
 using CharaActor = Dimps::Game::Battle::Chara::Actor;
@@ -27,9 +27,12 @@ using TrainingManager = Dimps::Game::Battle::Training::Manager;
 using VfxUnit = Dimps::Game::Battle::Vfx::Unit;
 using Dimps::Game::GameMementoKey;
 
+using fPadSystem = sf4e::Pad::System;
+
 using fSystem = sf4e::Game::Battle::System;
 bool fSystem::bHaltAfterNext = false;
 bool fSystem::bUpdateAllowed = true;
+int fSystem::nExtraFramesToSimulate = 0;
 
 GameMementoKey::MementoID fSystem::loadRequest = { 0xffffffff, 0xffffffff };
 GameMementoKey::MementoID fSystem::saveRequest = { 0xffffffff, 0xffffffff };
@@ -45,6 +48,15 @@ void fSystem::BattleUpdate() {
     rSystem* _this = (rSystem*)this;
 
     if (bUpdateAllowed) {
+        if (nExtraFramesToSimulate > 0) {
+            for (int i = 0; i < nExtraFramesToSimulate; i++) {
+                fPadSystem::playbackFrame = i;
+                (_this->*rSystem::publicMethods.BattleUpdate)();
+            }
+            fPadSystem::playbackFrame = -1;
+            nExtraFramesToSimulate = 0;
+        }
+
         (_this->*rSystem::publicMethods.BattleUpdate)();
 
         if (bHaltAfterNext) {

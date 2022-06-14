@@ -18,5 +18,6 @@ void System::Locate(HMODULE peRoot) {
 	*(PVOID*)(&publicMethods.GetButtons_Rising) = (PVOID)(peRootOffset + 0x117150);
 	*(PVOID*)(&publicMethods.GetButtons_Falling) = (PVOID)(peRootOffset + 0x117170);
 	*(PVOID*)(&publicMethods.GetButtons_RisingWithRepeat) = (PVOID)(peRootOffset + 0x117190);
+	*(PVOID*)(&publicMethods.GetButtons_Mapped) = (PVOID)(peRootOffset + 0x1171b0);
 	staticMethods.GetSingleton = (System * (*)())(peRootOffset + 0x119480);
 }

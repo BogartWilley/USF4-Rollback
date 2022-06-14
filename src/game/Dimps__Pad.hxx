@@ -9,6 +9,7 @@ namespace Dimps {
 		struct System {
 			typedef struct __publicMethods {
 				DWORD(System::* GetButtons_On)(int pindex);
+				DWORD(System::* GetButtons_Mapped)(int pindex);
 				DWORD(System::* GetButtons_Rising)(int pindex);
 				DWORD(System::* GetButtons_Falling)(int pindex);
 				DWORD(System::* GetButtons_RisingWithRepeat)(int pindex);

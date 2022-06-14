@@ -29,6 +29,7 @@
 #include "../game/sf4e__Game.hxx"
 #include "../game/sf4e__Game__Battle__System.hxx"
 #include "../game/sf4e__Game__Battle__Vfx.hxx"
+#include "../game/sf4e__Pad.hxx"
 
 
 #define DEFAULT_ALPHA 0.87f
@@ -61,6 +62,7 @@ using fEventController = sf4e::Event::EventController;
 using fKey = sf4e::Game::GameMementoKey;
 using fSystem = sf4e::Game::Battle::System;
 using fColorFade = sf4e::Game::Battle::Vfx::ColorFade;
+using fPadSystem = sf4e::Pad::System;
 
 using ImGui::Begin;
 using ImGui::BeginMainMenuBar;
@@ -68,6 +70,7 @@ using ImGui::BeginMenu;
 using ImGui::BeginTabBar;
 using ImGui::BeginTabItem;
 using ImGui::Button;
+using ImGui::CheckboxFlags;
 using ImGui::Columns;
 using ImGui::End;
 using ImGui::EndFrame;
@@ -93,6 +96,7 @@ static bool show_pad_window = false;
 static bool show_system_window = false;
 static bool show_task_window = false;
 static bool show_vfx_window = false;
+static int nExtraFramesToSimulate = 1;
 
 // Defined by the ImGui demo.
 static ExampleAppLog debugLog;
@@ -421,6 +425,15 @@ void DrawPadWindow(bool* pOpen) {
 			EndTabItem();
 		}
 
+		if (BeginTabItem("Mapped")) {
+			for (int i = 0; i < 2; i++) {
+				padData[i] = (p->*PadSystem::publicMethods.GetButtons_Mapped)(i);
+			}
+
+			DrawPadTable(padData);
+			EndTabItem();
+		}
+
 		EndTabBar();
 	}
 
@@ -453,6 +466,8 @@ void DrawSystemTaskPanel(TaskCore* core) {
 }
 
 void DrawSystemWindow(bool* pOpen) {
+	static int selectedForwardSimFrame = 0;
+
 	Begin(
 		"System",
 		pOpen,
@@ -481,6 +496,50 @@ void DrawSystemWindow(bool* pOpen) {
 				fSystem::bHaltAfterNext = true;
 			}
 
+			EndTabItem();
+		}
+
+		if (BeginTabItem("Forward Simulation")) {
+			ImGui::InputInt("Num frames to skip", &nExtraFramesToSimulate);
+			if (nExtraFramesToSimulate < 1) {
+				nExtraFramesToSimulate = 1;
+			}
+			if (nExtraFramesToSimulate > fPadSystem::PLAYBACK_MAX) {
+				nExtraFramesToSimulate = fPadSystem::PLAYBACK_MAX;
+			}
+			if (Button("Simulate")) {
+				fSystem::nExtraFramesToSimulate = nExtraFramesToSimulate;
+			}
+			for (int p = 0; p < 2; p++) {
+				const char* headerLabel = p == 0 ? "P1 inputs during skip" : "P2 inputs during skip";
+				if (ImGui::CollapsingHeader(headerLabel)) {
+					ImGui::BeginChild("left pane", ImVec2(150, 0), true);
+					for (int i = 0; i < nExtraFramesToSimulate; i++)
+					{
+						char label[128];
+						sprintf(label, "Frame %d", i);
+						if (ImGui::Selectable(label, selectedForwardSimFrame == i)) {
+							selectedForwardSimFrame = i;
+						}
+					}
+					ImGui::EndChild();
+					ImGui::SameLine();
+
+					ImGui::BeginChild("right pane");
+					unsigned int* padData = &fPadSystem::playbackData[p][selectedForwardSimFrame];
+					CheckboxFlags("Up", padData, 0x1); NextColumn();
+					CheckboxFlags("Down", padData, 0x2); NextColumn();
+					CheckboxFlags("Left", padData, 0x4); NextColumn();
+					CheckboxFlags("Right", padData, 0x8); NextColumn();
+					CheckboxFlags("LP", padData, 0x10); NextColumn();
+					CheckboxFlags("MP", padData, 0x20); NextColumn();
+					CheckboxFlags("LK", padData, 0x40); NextColumn();
+					CheckboxFlags("MK", padData, 0x80); NextColumn();
+					CheckboxFlags("HP", padData, 0x400); NextColumn();
+					CheckboxFlags("HK", padData, 0x800); NextColumn();
+					ImGui::EndChild();
+				}
+			}
 			EndTabItem();
 		}
 
@@ -681,6 +740,7 @@ void DrawMementoWindow(bool* pOpen) {
 
 			EndTabItem();
 		}
+
 		if (BeginTabItem("Manual")) {
 			ImGui::InputInt("Target memento ID", (int*)&targetID);
 
@@ -712,6 +772,7 @@ void DrawMementoWindow(bool* pOpen) {
 
 			EndTabItem();
 		}
+
 
 		if (BeginTabItem("Debug")) {
 			auto keyEnd = fKey::trackedKeys.end();
