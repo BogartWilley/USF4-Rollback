@@ -63,6 +63,8 @@ namespace Dimps {
                 } __privateMethods;
 
                 typedef struct __publicMethods {
+                    void (System::* BattleUpdate)();
+
                     Chara::Unit* (System::* GetCharaUnit)();
                     GameManager* (System::* GetGameManager)();
 

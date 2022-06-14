@@ -28,13 +28,30 @@ using VfxUnit = Dimps::Game::Battle::Vfx::Unit;
 using Dimps::Game::GameMementoKey;
 
 using fSystem = sf4e::Game::Battle::System;
+bool fSystem::bHaltAfterNext = false;
+bool fSystem::bUpdateAllowed = true;
 
 GameMementoKey::MementoID fSystem::loadRequest = { 0xffffffff, 0xffffffff };
 GameMementoKey::MementoID fSystem::saveRequest = { 0xffffffff, 0xffffffff };
 
 void fSystem::Install() {
+    void (fSystem:: * _fBattleUpdate)() = &BattleUpdate;
     void (fSystem:: * _fSysMain_HandleTrainingModeFeatures)() = &SysMain_HandleTrainingModeFeatures;
+    DetourAttach((PVOID*)&rSystem::publicMethods.BattleUpdate, *(PVOID*)&_fBattleUpdate);
     DetourAttach((PVOID*)&rSystem::publicMethods.SysMain_HandleTrainingModeFeatures, *(PVOID*)&_fSysMain_HandleTrainingModeFeatures);
+}
+
+void fSystem::BattleUpdate() {
+    rSystem* _this = (rSystem*)this;
+
+    if (bUpdateAllowed) {
+        (_this->*rSystem::publicMethods.BattleUpdate)();
+
+        if (bHaltAfterNext) {
+            bHaltAfterNext = false;
+            bUpdateAllowed = false;
+        }
+    }
 }
 
 void fSystem::SysMain_HandleTrainingModeFeatures() {

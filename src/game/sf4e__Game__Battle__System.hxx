@@ -8,11 +8,14 @@ namespace sf4e {
 		namespace Battle {
 			struct System : Dimps::Game::Battle::System
 			{
+				static bool bHaltAfterNext;
+				static bool bUpdateAllowed;
 				static Dimps::Game::GameMementoKey::MementoID loadRequest;
 				static Dimps::Game::GameMementoKey::MementoID saveRequest;
 				static void Install();
 				static void RestoreAllFromInternalMementos(Dimps::Game::Battle::System* system, Dimps::Game::GameMementoKey::MementoID* id);
 				static void RecordAllToInternalMementos(Dimps::Game::Battle::System* system, Dimps::Game::GameMementoKey::MementoID* id);
+				void BattleUpdate();
 				void SysMain_HandleTrainingModeFeatures();
 			};
 		}

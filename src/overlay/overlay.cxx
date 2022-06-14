@@ -464,11 +464,32 @@ void DrawSystemWindow(bool* pOpen) {
 	int isFight = (system->*System::publicMethods.IsFight)();
 
 	if (BeginTabBar("System tabs", ImGuiTabBarFlags_None)) {
+		if (BeginTabItem("Simulation control")) {
+			Text("Halt after next: %s", fSystem::bHaltAfterNext ? "true" : "false");
+			Text("Update allowed: %s", fSystem::bUpdateAllowed ? "true" : "false");
+			if (Button("Pause")) {
+				fSystem::bUpdateAllowed = false;
+			}
+			if (Button("Play")) {
+				fSystem::bUpdateAllowed = true;
+			}
+			if (Button("Halt after next")) {
+				fSystem::bHaltAfterNext = true;
+			}
+			if (Button("Step")) {
+				fSystem::bUpdateAllowed = true;
+				fSystem::bHaltAfterNext = true;
+			}
+
+			EndTabItem();
+		}
+
 		if (BeginTabItem("Update tasks")) {
 			TaskCore* updateCore = (system->*methods.GetTaskCore)(System::TCI_UPDATE);
 			DrawSystemTaskPanel(updateCore);
 			EndTabItem();
 		}
+
 		if (BeginTabItem("Render tasks")) {
 			TaskCore* renderCore = (system->*methods.GetTaskCore)(System::TCI_RENDER);
 			DrawSystemTaskPanel(renderCore);

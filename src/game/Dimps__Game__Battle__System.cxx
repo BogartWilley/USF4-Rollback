@@ -10,6 +10,7 @@ System::__staticMethods System::staticMethods;
 
 void System::Locate(HMODULE peRoot) {
     unsigned int peRootOffset = (unsigned int)peRoot;
+    *(PVOID*)&publicMethods.BattleUpdate = (void (*)(DWORD))(peRootOffset + 0x1d6b10);
     *(PVOID*)&publicMethods.GetCharaUnit = (PVOID)(peRootOffset + 0x163510);
     *(PVOID*)&publicMethods.GetGameManager = (PVOID)(peRootOffset + 0x1d9950);
     *(PVOID*)&publicMethods.GetUnitByIndex = (PVOID)(peRootOffset + 0x1d9720);
@@ -23,6 +24,6 @@ void System::Locate(HMODULE peRoot) {
     *(PVOID*)&publicMethods.RestoreFromInternalMementoKey = (PVOID)(peRootOffset + 0x1d90d0);
 
     *(PVOID*)&publicMethods.GetTaskCore = (PVOID)(peRootOffset + 0x1d9930);
-    
-    staticMethods.GetSingleton = (System*(*)())(peRootOffset + 0x1dba30);
+
+    staticMethods.GetSingleton = (System* (*)())(peRootOffset + 0x1dba30);
 }
