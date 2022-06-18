@@ -22,11 +22,13 @@
 #include "../game/Dimps__Game__Battle__System.hxx"
 #include "../game/Dimps__Game__Battle__Training.hxx"
 #include "../game/Dimps__Game__Battle__Vfx.hxx"
+#include "../game/Dimps__GameEvents.hxx"
 #include "../game/Dimps__Math.hxx"
 #include "../game/Dimps__Pad.hxx"
 
 #include "../game/sf4e__Event.hxx"
 #include "../game/sf4e__Game.hxx"
+#include "../game/sf4e__GameEvents.hxx"
 #include "../game/sf4e__Game__Battle__System.hxx"
 #include "../game/sf4e__Game__Battle__Vfx.hxx"
 #include "../game/sf4e__Pad.hxx"
@@ -55,6 +57,7 @@ using Dimps::Game::Battle::System;
 using Dimps::Game::Battle::Vfx::ColorFade;
 using Dimps::Game::Battle::Vfx::ColorFadeUnit;
 using Dimps::Game::GameMementoKey;
+using Dimps::GameEvents::VsCharaSelect;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
 
@@ -62,6 +65,7 @@ using fEventController = sf4e::Event::EventController;
 using fKey = sf4e::Game::GameMementoKey;
 using fSystem = sf4e::Game::Battle::System;
 using fColorFade = sf4e::Game::Battle::Vfx::ColorFade;
+using fVsCharaSelect = sf4e::GameEvents::VsCharaSelect;
 using fPadSystem = sf4e::Pad::System;
 
 using ImGui::Begin;
@@ -96,6 +100,7 @@ static bool show_pad_window = false;
 static bool show_system_window = false;
 static bool show_task_window = false;
 static bool show_vfx_window = false;
+static bool show_vscharaselect_window = false;
 static int nExtraFramesToSimulate = 1;
 
 // Defined by the ImGui demo.
@@ -706,6 +711,49 @@ void DrawVfxWindow(bool* pOpen) {
 	End();
 }
 
+void DrawVsCharaPlayerPanel(VsCharaSelect::PlayerConditions* c) {
+	Text("Last selected character: %s", VsCharaSelect::PlayerConditions::GetSelectedCharaAbbrev(c));
+	Text("Current hovered character: %s", VsCharaSelect::PlayerConditions::GetHoveredCharaAbbrev(c));
+	Text("Color: %d", *VsCharaSelect::PlayerConditions::GetColor(c));
+	Text("Costume: %d", *VsCharaSelect::PlayerConditions::GetCostume(c));
+	Text("Personal action: %d", *VsCharaSelect::PlayerConditions::GetPersonalAction(c));
+	Text("Win quote: %d", *VsCharaSelect::PlayerConditions::GetWinQuote(c));
+	Text("Edition: %d", *VsCharaSelect::PlayerConditions::GetEdition(c));
+	Text("Ultra combo: %d", *VsCharaSelect::PlayerConditions::GetUltraCombo(c));
+}
+
+void DrawVsCharaSelectWindow(bool* pOpen) {
+	Begin(
+		"VsCharaSelect",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	if (fVsCharaSelect::instance == NULL) {
+		Text("No instance");
+		End();
+		return;
+	}
+
+	Text("Instance: %p", fVsCharaSelect::instance);
+	if (BeginTabBar("VsCharaSelect tabs", ImGuiTabBarFlags_None)) {
+		VsCharaSelect::PlayerConditions* conditions = VsCharaSelect::GetPlayerConditions(fVsCharaSelect::instance);
+
+		if (BeginTabItem("Player 1")) {
+			DrawVsCharaPlayerPanel(&conditions[0]);
+			EndTabItem();
+		}
+
+		if (BeginTabItem("Player 2")) {
+			DrawVsCharaPlayerPanel(&conditions[1]);
+			EndTabItem();
+		}
+		EndTabBar();
+	}
+
+	End();
+}
+
 void DrawHelpWindow(bool* pOpen) {
 	Begin(
 		"ImGui Help",
@@ -862,6 +910,13 @@ void DrawOverlay() {
 				ImGui::EndMenu();
 			}
 
+			if (BeginMenu("GameEvents")) {
+				if (MenuItem("VsCharaSelect")) {
+					show_vscharaselect_window = true;
+				}
+				ImGui::EndMenu();
+			}
+
 			if (BeginMenu("Battle")) {
 				if (MenuItem("Chara")) {
 					show_chara_window = true;
@@ -937,6 +992,10 @@ void DrawOverlay() {
 
 	if (show_vfx_window) {
 		DrawVfxWindow(&show_vfx_window);
+	}
+
+	if (show_vscharaselect_window) {
+		DrawVsCharaSelectWindow(&show_vscharaselect_window);
 	}
 
 	if (show_demo_window) {

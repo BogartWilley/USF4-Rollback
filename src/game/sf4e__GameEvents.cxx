@@ -1,11 +1,16 @@
+#include <windows.h>
+#include <detours.h>
+
 #include "Dimps__GameEvents.hxx"
 #include "sf4e__GameEvents.hxx"
 
 namespace rGameEvents = Dimps::GameEvents;
 using rRootEvent = rGameEvents::RootEvent;
+using rVsCharaSelect = rGameEvents::VsCharaSelect;
 
 namespace fGameEvents = sf4e::GameEvents;
 using fRootEvent = fGameEvents::RootEvent;
+using fVsCharaSelect = fGameEvents::VsCharaSelect;
 
 char* fRootEvent::eventFlowDescription = R"(	Boot, 0, Title,										
 LogoCapcom, 0, LogoNvidia, BLACK, 10.0f, BLACK, 10.0f			
@@ -75,11 +80,37 @@ PlayerData, 0, MainMenu, BLACK, 30.0f, BLACK, 30.0f
 	Signout, 0, Title, BLACK, 30.0f, BLACK, 30.0f			
 	StorageNotice, 0, Title, BLACK, 30.0f, BLACK, 30.0f		
 )";
+rVsCharaSelect* fVsCharaSelect::instance;
 
 void fGameEvents::Install() {
 	RootEvent::Install();
+	VsCharaSelect::Install();
 }
 
 void fRootEvent::Install() {
 	*rRootEvent::eventFlowDefinition = fRootEvent::eventFlowDescription;
+}
+
+void fVsCharaSelect::Install() {
+	void* (fVsCharaSelect::* _fDestroy)(DWORD) = &Destroy;
+	DetourAttach((PVOID*)&rVsCharaSelect::publicMethods.Destroy, *(PVOID*)&_fDestroy);
+	DetourAttach((PVOID*)&rVsCharaSelect::staticMethods.Factory, &Factory);
+}
+
+rVsCharaSelect* fVsCharaSelect::Factory(DWORD arg1, DWORD arg2, DWORD arg3) {
+	rVsCharaSelect* out = rVsCharaSelect::staticMethods.Factory(arg1, arg2, arg3);
+	instance = out;
+	return out;
+}
+
+void* fVsCharaSelect::Destroy(DWORD arg1) {
+	rVsCharaSelect* _this = (rVsCharaSelect*)this;
+	if (instance == this) {
+		instance = NULL;
+	}
+	else {
+		MessageBox(NULL, TEXT("VsCharaSelect not tracked that was destroyed!"), NULL, MB_OK);
+	}
+	
+	return (_this->*rVsCharaSelect::publicMethods.Destroy)(arg1);
 }
