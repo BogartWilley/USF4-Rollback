@@ -3,6 +3,8 @@
 #include <string>
 #include <windows.h>
 
+#include "Dimps__Platform.hxx"
+
 namespace Dimps {
 	namespace GameEvents {
 		void Locate(HMODULE peRoot);
@@ -30,8 +32,8 @@ namespace Dimps {
 			struct PlayerConditions {
 				BYTE pad[492];
 
-				static std::string* GetSelectedCharaAbbrev(PlayerConditions* c);
-				static std::string* GetHoveredCharaAbbrev(PlayerConditions* c);
+				static Platform::dString* GetSelectedCharaAbbrev(PlayerConditions* c);
+				static Platform::dString* GetHoveredCharaAbbrev(PlayerConditions* c);
 				static BYTE* GetColor(PlayerConditions* c);
 				static BYTE* GetCostume(PlayerConditions* c);
 				static BYTE* GetPersonalAction(PlayerConditions* c);

@@ -25,6 +25,7 @@
 #include "../game/Dimps__GameEvents.hxx"
 #include "../game/Dimps__Math.hxx"
 #include "../game/Dimps__Pad.hxx"
+#include "../game/Dimps__Platform.hxx"
 
 #include "../game/sf4e__Event.hxx"
 #include "../game/sf4e__Game.hxx"
@@ -60,6 +61,7 @@ using Dimps::Game::GameMementoKey;
 using Dimps::GameEvents::VsCharaSelect;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
+using Dimps::Platform::dString;
 
 using fEventController = sf4e::Event::EventController;
 using fKey = sf4e::Game::GameMementoKey;
@@ -724,6 +726,11 @@ void DrawVsCharaPlayerPanel(VsCharaSelect::PlayerConditions* c) {
 }
 
 void DrawVsCharaSelectWindow(bool* pOpen) {
+	// This should be deleted when a more fully-featured character select
+	// writing implementation is done, but is useful in the short term to
+	// test the dString typings.
+	static char charaNameTest[4];
+
 	Begin(
 		"VsCharaSelect",
 		pOpen,
@@ -743,6 +750,11 @@ void DrawVsCharaSelectWindow(bool* pOpen) {
 	if (BeginTabBar("VsCharaSelect tabs", ImGuiTabBarFlags_None)) {
 		if (BeginTabItem("Player 1")) {
 			DrawVsCharaPlayerPanel(&state->playerConditions[0]);
+			ImGui::InputText("Inject hovered character", charaNameTest, 4);
+			if (Button("inject")) {
+				dString* charaAbbrev = VsCharaSelect::PlayerConditions::GetHoveredCharaAbbrev(&state->playerConditions[0]);
+				(charaAbbrev->*dString::publicMethods.assign)(charaNameTest, 3);
+			}
 			EndTabItem();
 		}
 

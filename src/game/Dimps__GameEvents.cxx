@@ -1,11 +1,12 @@
-#include <string>
 #include <windows.h>
 
 #include "Dimps__GameEvents.hxx"
+#include "Dimps__Platform.hxx"
 
 namespace GameEvents = Dimps::GameEvents;
 using Dimps::GameEvents::RootEvent;
 using Dimps::GameEvents::VsCharaSelect;
+using Dimps::Platform::dString;
 
 char** RootEvent::eventFlowDefinition;
 VsCharaSelect::__publicMethods VsCharaSelect::publicMethods;
@@ -34,12 +35,12 @@ VsCharaSelect::CharaSelectState* VsCharaSelect::GetState(VsCharaSelect* selectEv
 	return (CharaSelectState*)((unsigned int)selectEvent + 0x4c);
 }
 
-std::string* VsCharaSelect::PlayerConditions::GetSelectedCharaAbbrev(PlayerConditions* c) {
-	return (std::string*)((unsigned int)c + 0x20);
+dString* VsCharaSelect::PlayerConditions::GetSelectedCharaAbbrev(PlayerConditions* c) {
+	return (dString*)((unsigned int)c + 0x20);
 }
 
-std::string* VsCharaSelect::PlayerConditions::GetHoveredCharaAbbrev(PlayerConditions* c) {
-	return (std::string*)((unsigned int)c + 0x3c);
+dString* VsCharaSelect::PlayerConditions::GetHoveredCharaAbbrev(PlayerConditions* c) {
+	return (dString*)((unsigned int)c + 0x3c);
 }
 
 BYTE* VsCharaSelect::PlayerConditions::GetUltraCombo(PlayerConditions* c) {

@@ -2,9 +2,11 @@
 #include "Dimps__Platform.hxx"
 
 namespace Platform = Dimps::Platform;
+using Platform::dString;
 using Platform::D3D;
 using Platform::Main;
 
+dString::__publicMethods dString::publicMethods;
 D3D::__privateMethods D3D::privateMethods;
 D3D::__publicMethods D3D::publicMethods;
 D3D::__staticMethods D3D::staticMethods;
@@ -13,8 +15,14 @@ Main::__publicMethods Main::publicMethods;
 Main::__staticMethods Main::staticMethods;
 
 void Platform::Locate(HMODULE peRoot) {
+    dString::Locate(peRoot);
     D3D::Locate(peRoot);
     Main::Locate(peRoot);
+}
+
+void dString::Locate(HMODULE peRoot) {
+    unsigned int peRootOffset = (unsigned int)peRoot;
+    *(PVOID*)&publicMethods.assign = (PVOID)(peRootOffset + 0x4890);
 }
 
 void D3D::Locate(HMODULE peRoot) {
