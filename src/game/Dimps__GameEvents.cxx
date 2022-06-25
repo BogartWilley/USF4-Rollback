@@ -30,38 +30,42 @@ void VsCharaSelect::Locate(HMODULE peRoot) {
 	staticMethods.Factory = (VsCharaSelect * (*)(DWORD, DWORD, DWORD))(peRootOffset + 0x23d660);
 }
 
-VsCharaSelect::PlayerConditions* VsCharaSelect::GetPlayerConditions(VsCharaSelect* selectEvent) {
-	return (PlayerConditions*)((unsigned int)selectEvent + 0x4c);
+VsCharaSelect::CharaSelectState* VsCharaSelect::GetState(VsCharaSelect* selectEvent) {
+	return (CharaSelectState*)((unsigned int)selectEvent + 0x4c);
 }
 
 std::string* VsCharaSelect::PlayerConditions::GetSelectedCharaAbbrev(PlayerConditions* c) {
-	return (std::string*)((unsigned int)c + 0x24);
+	return (std::string*)((unsigned int)c + 0x20);
 }
 
 std::string* VsCharaSelect::PlayerConditions::GetHoveredCharaAbbrev(PlayerConditions* c) {
-	return (std::string*)((unsigned int)c + 0x40);
+	return (std::string*)((unsigned int)c + 0x3c);
 }
 
 BYTE* VsCharaSelect::PlayerConditions::GetUltraCombo(PlayerConditions* c) {
-	return (BYTE*)((unsigned int)c + 0x5c);
+	return (BYTE*)((unsigned int)c + 0x58);
 }
 
 BYTE* VsCharaSelect::PlayerConditions::GetColor(PlayerConditions* c) {
-	return (BYTE*)((unsigned int)c + 0x5d);
+	return (BYTE*)((unsigned int)c + 0x59);
 }
 
 BYTE* VsCharaSelect::PlayerConditions::GetCostume(PlayerConditions* c) {
-	return (BYTE*)((unsigned int)c + 0x5e);
+	return (BYTE*)((unsigned int)c + 0x5a);
 }
 
 BYTE* VsCharaSelect::PlayerConditions::GetPersonalAction(PlayerConditions* c) {
-	return (BYTE*)((unsigned int)c + 0x5f);
+	return (BYTE*)((unsigned int)c + 0x5b);
 }
 
 BYTE* VsCharaSelect::PlayerConditions::GetWinQuote(PlayerConditions* c) {
-	return (BYTE*)((unsigned int)c + 0x60);
+	return (BYTE*)((unsigned int)c + 0x5c);
+}
+
+BYTE* VsCharaSelect::PlayerConditions::GetHandicap(PlayerConditions* c) {
+	return (BYTE*)((unsigned int)c + 0x5d);
 }
 
 BYTE* VsCharaSelect::PlayerConditions::GetEdition(PlayerConditions* c) {
-	return (BYTE*)((unsigned int)c + 0x62);
+	return (BYTE*)((unsigned int)c + 0x5e);
 }

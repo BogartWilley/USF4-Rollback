@@ -720,6 +720,7 @@ void DrawVsCharaPlayerPanel(VsCharaSelect::PlayerConditions* c) {
 	Text("Win quote: %d", *VsCharaSelect::PlayerConditions::GetWinQuote(c));
 	Text("Edition: %d", *VsCharaSelect::PlayerConditions::GetEdition(c));
 	Text("Ultra combo: %d", *VsCharaSelect::PlayerConditions::GetUltraCombo(c));
+	Text("Handicap: %d", *VsCharaSelect::PlayerConditions::GetHandicap(c));
 }
 
 void DrawVsCharaSelectWindow(bool* pOpen) {
@@ -735,17 +736,18 @@ void DrawVsCharaSelectWindow(bool* pOpen) {
 		return;
 	}
 
-	Text("Instance: %p", fVsCharaSelect::instance);
-	if (BeginTabBar("VsCharaSelect tabs", ImGuiTabBarFlags_None)) {
-		VsCharaSelect::PlayerConditions* conditions = VsCharaSelect::GetPlayerConditions(fVsCharaSelect::instance);
 
+	VsCharaSelect::CharaSelectState* state = VsCharaSelect::GetState(fVsCharaSelect::instance);
+	Text("Instance: %p", fVsCharaSelect::instance);
+	Text("Flags: %x", state->flags);
+	if (BeginTabBar("VsCharaSelect tabs", ImGuiTabBarFlags_None)) {
 		if (BeginTabItem("Player 1")) {
-			DrawVsCharaPlayerPanel(&conditions[0]);
+			DrawVsCharaPlayerPanel(&state->playerConditions[0]);
 			EndTabItem();
 		}
 
 		if (BeginTabItem("Player 2")) {
-			DrawVsCharaPlayerPanel(&conditions[1]);
+			DrawVsCharaPlayerPanel(&state->playerConditions[1]);
 			EndTabItem();
 		}
 		EndTabBar();
