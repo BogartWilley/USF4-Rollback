@@ -40,11 +40,34 @@ void fKey::Install() {
 void fKey::Initialize(void* mementoable, int numMementos) {
     rKey* _this = (rKey*)this;
     int oldSize = _this->sizeAllocated;
-    bool shouldInit = bEnableUnsafeReinitializationSkip ?
-        mementoable != _this->mementoableObject || numMementos != _this->numMementos :
-        true;
+    bool shouldInit;
+    if (bEnableUnsafeReinitializationSkip) {
+        shouldInit = (
+            _this->metadata == NULL ||
+            _this->mementoableObject != mementoable ||
+            _this->numMementos != numMementos
+        );
+    }
+    else {
+        shouldInit = true;
+    }
 
     if (!shouldInit) {
+        rKey tempKey = {};
+        (tempKey.*rKey::publicMethods.Initialize)(mementoable, numMementos);
+        if (_this->sizeAllocated != tempKey.sizeAllocated) {
+            spdlog::warn(
+                "UNSAFE MEMENTO REINIT: Memento w/ mementoable {} (vtbl {}) had differing size: Existing {:d}, clean {:d}",
+                _this->mementoableObject,
+                *(void**)_this->mementoableObject,
+                _this->sizeAllocated,
+                tempKey.sizeAllocated
+            );
+            if (SizeLogger != NULL) {
+                SizeLogger(&tempKey, _this->sizeAllocated);
+            }
+        }
+        (tempKey.*rKey::publicMethods.ClearKey)();
         return;
     }
 
