@@ -25,7 +25,7 @@ size_t fActor::GetMementoSize() {
     int expectedMaximum = (0x240 + 5 * (0x110 * 0x40));
     int observed = (_this->*rActor::publicMethods.GetMementoSize)();
     if (observed > expectedMaximum) {
-        spdlog::warn("Actor manager memento undersized! Expected {}, got {}", expectedMaximum, observed);
+        spdlog::warn("Action::Actor memento undersized! Expected {}, got {}", expectedMaximum, observed);
         return observed;
     }
     return expectedMaximum;
