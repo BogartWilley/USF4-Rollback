@@ -8,6 +8,15 @@ namespace sf4e {
 	namespace GameEvents {
 		void Install();
 
+		struct MainMenu : Dimps::GameEvents::MainMenu
+		{
+			void* Destroy(DWORD arg1);
+
+			static Dimps::GameEvents::MainMenu* instance;
+			static Dimps::GameEvents::MainMenu* Factory(DWORD arg1, DWORD arg2, DWORD arg3);
+			static void Install();
+		};
+
 		struct RootEvent : Dimps::GameEvents::RootEvent
 		{
 			static char* eventFlowDescription;

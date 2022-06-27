@@ -4,17 +4,28 @@
 #include "Dimps__Platform.hxx"
 
 namespace GameEvents = Dimps::GameEvents;
+using Dimps::GameEvents::MainMenu;
 using Dimps::GameEvents::RootEvent;
 using Dimps::GameEvents::VsCharaSelect;
 using Dimps::Platform::dString;
 
+MainMenu::__publicMethods MainMenu::publicMethods;
+MainMenu::__staticMethods MainMenu::staticMethods;
 char** RootEvent::eventFlowDefinition;
 VsCharaSelect::__publicMethods VsCharaSelect::publicMethods;
 VsCharaSelect::__staticMethods VsCharaSelect::staticMethods;
 
 void GameEvents::Locate(HMODULE peRoot) {
+	MainMenu::Locate(peRoot);
 	RootEvent::Locate(peRoot);
 	VsCharaSelect::Locate(peRoot);
+}
+
+void MainMenu::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&publicMethods.Destroy = (PVOID)(peRootOffset + 0x212f90);
+	staticMethods.Factory = (MainMenu*(*)(DWORD, DWORD, DWORD))(peRootOffset + 0x212f30);
 }
 
 void RootEvent::Locate(HMODULE peRoot) {

@@ -3,19 +3,35 @@
 #include <string>
 #include <windows.h>
 
+#include "Dimps__Event.hxx"
 #include "Dimps__Platform.hxx"
 
 namespace Dimps {
 	namespace GameEvents {
 		void Locate(HMODULE peRoot);
 
-		struct RootEvent {
+		struct RootEvent : Dimps::Event::EventBase {
 			static char** eventFlowDefinition;
 
 			static void Locate(HMODULE peRoot);
 		};
 
-		struct VsCharaSelect {
+		struct MainMenu : Dimps::Event::EventBase {
+			static void Locate(HMODULE peRoot);
+
+			typedef struct __publicMethods {
+				void* (MainMenu::* Destroy)(DWORD arg1);
+			} __publicMethods;
+
+			typedef struct __staticMethods {
+				MainMenu* (*Factory)(DWORD arg1, DWORD arg2, DWORD arg3);
+			} __staticMethods;
+
+			static __publicMethods publicMethods;
+			static __staticMethods staticMethods;
+		};
+
+		struct VsCharaSelect : Dimps::Event::EventBase {
 			enum CharaSelectFlags {
 				CHARASEL_P1_SIDEENABLED = 0x1,
 				CHARASEL_P2_SIDEENABLED = 0x2,

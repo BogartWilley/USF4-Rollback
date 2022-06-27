@@ -5,13 +5,16 @@
 #include "sf4e__GameEvents.hxx"
 
 namespace rGameEvents = Dimps::GameEvents;
+using rMainMenu = rGameEvents::MainMenu;
 using rRootEvent = rGameEvents::RootEvent;
 using rVsCharaSelect = rGameEvents::VsCharaSelect;
 
 namespace fGameEvents = sf4e::GameEvents;
+using fMainMenu = fGameEvents::MainMenu;
 using fRootEvent = fGameEvents::RootEvent;
 using fVsCharaSelect = fGameEvents::VsCharaSelect;
 
+rMainMenu* fMainMenu::instance;
 char* fRootEvent::eventFlowDescription = R"(	Boot, 0, Title,										
 LogoCapcom, 0, LogoNvidia, BLACK, 10.0f, BLACK, 10.0f			
 tLogoCapcom, 1, Title, BLACK, 10.0f, BLACK, 10.0f			
@@ -83,8 +86,33 @@ PlayerData, 0, MainMenu, BLACK, 30.0f, BLACK, 30.0f
 rVsCharaSelect* fVsCharaSelect::instance;
 
 void fGameEvents::Install() {
+	MainMenu::Install();
 	RootEvent::Install();
 	VsCharaSelect::Install();
+}
+
+void fMainMenu::Install() {
+	void* (fMainMenu:: * _fDestroy)(DWORD) = &Destroy;
+	DetourAttach((PVOID*)&rMainMenu::publicMethods.Destroy, *(PVOID*)&_fDestroy);
+	DetourAttach((PVOID*)&rMainMenu::staticMethods.Factory, &Factory);
+}
+
+rMainMenu* fMainMenu::Factory(DWORD arg1, DWORD arg2, DWORD arg3) {
+	rMainMenu* out = rMainMenu::staticMethods.Factory(arg1, arg2, arg3);
+	instance = out;
+	return out;
+}
+
+void* fMainMenu::Destroy(DWORD arg1) {
+	rMainMenu* _this = (rMainMenu*)this;
+	if (instance == this) {
+		instance = NULL;
+	}
+	else {
+		MessageBox(NULL, TEXT("MainMenu not tracked that was destroyed!"), NULL, MB_OK);
+	}
+
+	return (_this->*rMainMenu::publicMethods.Destroy)(arg1);
 }
 
 void fRootEvent::Install() {

@@ -11,6 +11,7 @@
 
 #include "../game/Dimps.hxx"
 #include "../game/Dimps__Eva.hxx"
+#include "../game/Dimps__Event.hxx"
 #include "../game/Dimps__Game.hxx"
 #include "../game/Dimps__Game__Battle__Camera.hxx"
 #include "../game/Dimps__Game__Battle__Chara__Actor.hxx"
@@ -52,6 +53,8 @@ using VfxUnit = rVfx::Unit;
 using Dimps::Eva::Task;
 using Dimps::Eva::TaskCore;
 using Dimps::Eva::TaskCoreRegistry;
+using Dimps::Event::EventBase;
+using Dimps::Event::EventController;
 using Dimps::Game::Battle::Command::CommandImpl;
 using Dimps::Game::Battle::GameManager;
 using Dimps::Game::Battle::System;
@@ -67,6 +70,7 @@ using fEventController = sf4e::Event::EventController;
 using fKey = sf4e::Game::GameMementoKey;
 using fSystem = sf4e::Game::Battle::System;
 using fColorFade = sf4e::Game::Battle::Vfx::ColorFade;
+using fMainMenu = sf4e::GameEvents::MainMenu;
 using fVsCharaSelect = sf4e::GameEvents::VsCharaSelect;
 using fPadSystem = sf4e::Pad::System;
 
@@ -97,6 +101,7 @@ static bool show_demo_window = false;
 static bool show_event_window = false;
 static bool show_help_window = false;
 static bool show_log_window = false;
+static bool show_main_menu_window = false;
 static bool show_memento_window = false;
 static bool show_pad_window = false;
 static bool show_system_window = false;
@@ -365,6 +370,29 @@ void DrawEventWindow(bool* pOpen) {
 	if (Button("Step")) {
 		fEventController::bUpdateAllowed = true;
 		fEventController::bHaltAfterNext = true;
+	}
+
+	End();
+}
+
+void DrawMainMenuWindow(bool* pOpen) {
+	Begin(
+		"MainMenu",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	if (fMainMenu::instance == NULL) {
+		Text("No instance");
+		End();
+		return;
+	}
+
+	Text("Instance: %p", fMainMenu::instance);
+	Text("Name: %s", EventBase::GetName(fMainMenu::instance));
+	if (Button("Go to versus mode")) {
+		EventController* ec = *EventBase::GetSourceController(fMainMenu::instance);
+		(ec->*EventController::publicMethods.CreateEventWithFlow)(2, 0, 0, 0, 1);
 	}
 
 	End();
@@ -926,6 +954,9 @@ void DrawOverlay() {
 			}
 
 			if (BeginMenu("GameEvents")) {
+				if (MenuItem("MainMenu")) {
+					show_main_menu_window = true;
+				}
 				if (MenuItem("VsCharaSelect")) {
 					show_vscharaselect_window = true;
 				}
@@ -995,6 +1026,10 @@ void DrawOverlay() {
 
 	if (show_log_window) {
 		debugLog.Draw("Debug Log", &show_log_window);
+	}
+
+	if (show_main_menu_window) {
+		DrawMainMenuWindow(&show_main_menu_window);
 	}
 
 	if (show_pad_window) {
