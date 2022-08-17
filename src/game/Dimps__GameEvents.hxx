@@ -10,6 +10,27 @@ namespace Dimps {
 	namespace GameEvents {
 		void Locate(HMODULE peRoot);
 
+		namespace StageSelect {
+			void Locate(HMODULE peRoot);
+
+			struct Control {
+				static void Locate(HMODULE peRoot);
+
+				enum Phase {
+					SSP_INACTIVE = 0,
+					SSP_ACTIVE = 1,
+					SSP_SELECTED = 2,
+					SSP_COMPLETE = 3
+				};
+
+				typedef struct __publicMethods {
+					int (Control::* GetPhase)();
+				} __publicMethods;
+
+				static __publicMethods publicMethods;
+			};
+		}
+
 		struct RootEvent : Dimps::Event::EventBase {
 			static char** eventFlowDefinition;
 
@@ -73,6 +94,34 @@ namespace Dimps {
 
 			typedef struct __staticMethods {
 				VsCharaSelect* (*Factory)(DWORD arg1, DWORD arg2, DWORD arg3);
+			} __staticMethods;
+
+			static __publicMethods publicMethods;
+			static __staticMethods staticMethods;
+		};
+	
+		struct VsStageSelect : Dimps::Event::EventBase {
+			struct StageSelectState {
+				enum Flags {
+					SSSF_TIMER_ENABLED = 0x1
+				};
+				
+				DWORD flags;
+				Platform::dString stageCode1;
+				Platform::dString stageCode2;
+			};
+
+			static void Locate(HMODULE peRoot);
+			static StageSelectState* GetState(VsStageSelect* event);
+			static StageSelect::Control* GetControl(VsStageSelect* event);
+
+			typedef struct __publicMethods {
+				void* (VsStageSelect::* Destroy)(DWORD arg1);
+				void* (VsStageSelect::* GetPhase)();
+			} __publicMethods;
+
+			typedef struct __staticMethods {
+				VsStageSelect* (*Factory)(DWORD arg1, DWORD arg2, DWORD arg3);
 			} __staticMethods;
 
 			static __publicMethods publicMethods;

@@ -8,11 +8,13 @@ namespace rGameEvents = Dimps::GameEvents;
 using rMainMenu = rGameEvents::MainMenu;
 using rRootEvent = rGameEvents::RootEvent;
 using rVsCharaSelect = rGameEvents::VsCharaSelect;
+using rVsStageSelect = rGameEvents::VsStageSelect;
 
 namespace fGameEvents = sf4e::GameEvents;
 using fMainMenu = fGameEvents::MainMenu;
 using fRootEvent = fGameEvents::RootEvent;
 using fVsCharaSelect = fGameEvents::VsCharaSelect;
+using fVsStageSelect = fGameEvents::VsStageSelect;
 
 rMainMenu* fMainMenu::instance;
 char* fRootEvent::eventFlowDescription = R"(	Boot, 0, Title,										
@@ -85,10 +87,14 @@ PlayerData, 0, MainMenu, BLACK, 30.0f, BLACK, 30.0f
 )";
 rVsCharaSelect* fVsCharaSelect::instance;
 
+bool fVsStageSelect::forceTimerOnNextStageSelect = false;
+rVsStageSelect* fVsStageSelect::instance;
+
 void fGameEvents::Install() {
 	MainMenu::Install();
 	RootEvent::Install();
 	VsCharaSelect::Install();
+	VsStageSelect::Install();
 }
 
 void fMainMenu::Install() {
@@ -141,4 +147,31 @@ void* fVsCharaSelect::Destroy(DWORD arg1) {
 	}
 	
 	return (_this->*rVsCharaSelect::publicMethods.Destroy)(arg1);
+}
+
+void fVsStageSelect::Install() {
+	void* (fVsStageSelect::* _fDestroy)(DWORD) = &Destroy;
+	DetourAttach((PVOID*)&rVsStageSelect::publicMethods.Destroy, *(PVOID*)&_fDestroy);
+	DetourAttach((PVOID*)&rVsStageSelect::staticMethods.Factory, &Factory);
+}
+
+rVsStageSelect* fVsStageSelect::Factory(DWORD arg1, DWORD arg2, DWORD arg3) {
+	rVsStageSelect* out = rVsStageSelect::staticMethods.Factory(arg1, arg2, arg3);
+	instance = out;
+	if (forceTimerOnNextStageSelect) {
+		rVsStageSelect::GetState(instance)->flags |= StageSelectState::SSSF_TIMER_ENABLED;
+	}
+	return out;
+}
+
+void* fVsStageSelect::Destroy(DWORD arg1) {
+	rVsStageSelect* _this = (rVsStageSelect*)this;
+	if (instance == this) {
+		instance = NULL;
+	}
+	else {
+		MessageBox(NULL, TEXT("VsStageSelect not tracked that was destroyed!"), NULL, MB_OK);
+	}
+	
+	return (_this->*rVsStageSelect::publicMethods.Destroy)(arg1);
 }

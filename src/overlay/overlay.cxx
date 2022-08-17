@@ -39,6 +39,7 @@
 #define DEFAULT_ALPHA 0.87f
 
 namespace rVfx = Dimps::Game::Battle::Vfx;
+namespace rStageSelect = Dimps::GameEvents::StageSelect;
 
 using CameraUnit = Dimps::Game::Battle::Camera::Unit;
 using CharaActor = Dimps::Game::Battle::Chara::Actor;
@@ -62,6 +63,7 @@ using Dimps::Game::Battle::Vfx::ColorFade;
 using Dimps::Game::Battle::Vfx::ColorFadeUnit;
 using Dimps::Game::GameMementoKey;
 using Dimps::GameEvents::VsCharaSelect;
+using Dimps::GameEvents::VsStageSelect;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
 using Dimps::Platform::dString;
@@ -72,6 +74,7 @@ using fSystem = sf4e::Game::Battle::System;
 using fColorFade = sf4e::Game::Battle::Vfx::ColorFade;
 using fMainMenu = sf4e::GameEvents::MainMenu;
 using fVsCharaSelect = sf4e::GameEvents::VsCharaSelect;
+using fVsStageSelect = sf4e::GameEvents::VsStageSelect;
 using fPadSystem = sf4e::Pad::System;
 
 using ImGui::Begin;
@@ -108,6 +111,7 @@ static bool show_system_window = false;
 static bool show_task_window = false;
 static bool show_vfx_window = false;
 static bool show_vscharaselect_window = false;
+static bool show_vsstageselect_window = false;
 static int nExtraFramesToSimulate = 1;
 
 // Defined by the ImGui demo.
@@ -796,6 +800,31 @@ void DrawVsCharaSelectWindow(bool* pOpen) {
 	End();
 }
 
+void DrawVsStageSelectWindow(bool* pOpen) {
+	Begin(
+		"VsStageSelect",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	ImGui::Checkbox("Force timer on next vs-stage-select?", &fVsStageSelect::forceTimerOnNextStageSelect);
+
+	if (fVsStageSelect::instance == NULL) {
+		Text("No instance");
+		End();
+		return;
+	}
+
+	rStageSelect::Control* control = VsStageSelect::GetControl(fVsStageSelect::instance);
+	VsStageSelect::StageSelectState* state = VsStageSelect::GetState(fVsStageSelect::instance);
+	Text("Instance: %p", fVsStageSelect::instance);
+	Text("Flags: %x", state->flags);
+	Text("Phase: %x", (control->*rStageSelect::Control::publicMethods.GetPhase)());
+	Text("Stage code 1: %s", &state->stageCode1);
+	Text("Stage code 2: %s", &state->stageCode2);
+	End();
+}
+
 void DrawHelpWindow(bool* pOpen) {
 	Begin(
 		"ImGui Help",
@@ -960,6 +989,9 @@ void DrawOverlay() {
 				if (MenuItem("VsCharaSelect")) {
 					show_vscharaselect_window = true;
 				}
+				if (MenuItem("VsStageSelect")) {
+					show_vsstageselect_window = true;
+				}
 				ImGui::EndMenu();
 			}
 
@@ -1046,6 +1078,10 @@ void DrawOverlay() {
 
 	if (show_vscharaselect_window) {
 		DrawVsCharaSelectWindow(&show_vscharaselect_window);
+	}
+
+	if (show_vsstageselect_window) {
+		DrawVsStageSelectWindow(&show_vsstageselect_window);
 	}
 
 	if (show_demo_window) {

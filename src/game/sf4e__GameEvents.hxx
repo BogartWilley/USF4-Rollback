@@ -31,5 +31,15 @@ namespace sf4e {
 			static Dimps::GameEvents::VsCharaSelect* Factory(DWORD arg1, DWORD arg2, DWORD arg3);
 			static void Install();
 		};
+		
+		struct VsStageSelect : Dimps::GameEvents::VsStageSelect
+		{
+			void* Destroy(DWORD arg1);
+
+			static bool forceTimerOnNextStageSelect;
+			static Dimps::GameEvents::VsStageSelect* instance;
+			static Dimps::GameEvents::VsStageSelect* Factory(DWORD arg1, DWORD arg2, DWORD arg3);
+			static void Install();
+		};
 	}
 }
