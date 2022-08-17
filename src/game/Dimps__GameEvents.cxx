@@ -113,4 +113,6 @@ void StageSelect::Control::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	*(PVOID*)&publicMethods.GetPhase = (PVOID)(peRootOffset + 0x0d22c0);
+	*(PVOID*)&publicMethods.SetStageCursor = (PVOID)(peRootOffset + 0x0d3670);
+	*(PVOID*)&publicMethods.SelectStage = (PVOID)(peRootOffset + 0x0d25f0);
 }

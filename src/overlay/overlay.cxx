@@ -801,6 +801,8 @@ void DrawVsCharaSelectWindow(bool* pOpen) {
 }
 
 void DrawVsStageSelectWindow(bool* pOpen) {
+	static char newStageCode[4];
+
 	Begin(
 		"VsStageSelect",
 		pOpen,
@@ -808,14 +810,23 @@ void DrawVsStageSelectWindow(bool* pOpen) {
 	);
 
 	ImGui::Checkbox("Force timer on next vs-stage-select?", &fVsStageSelect::forceTimerOnNextStageSelect);
+	ImGui::InputText("Stage code to inject", newStageCode, 4);
 
 	if (fVsStageSelect::instance == NULL) {
 		Text("No instance");
 		End();
 		return;
 	}
-
+	
 	rStageSelect::Control* control = VsStageSelect::GetControl(fVsStageSelect::instance);
+
+	if (Button("set stage cursor")) {
+		(control->*rStageSelect::Control::publicMethods.SetStageCursor)(newStageCode);
+	}
+	if (Button("select stage")) {
+		(control->*rStageSelect::Control::publicMethods.SelectStage)(newStageCode);
+	}
+
 	VsStageSelect::StageSelectState* state = VsStageSelect::GetState(fVsStageSelect::instance);
 	Text("Instance: %p", fVsStageSelect::instance);
 	Text("Flags: %x", state->flags);

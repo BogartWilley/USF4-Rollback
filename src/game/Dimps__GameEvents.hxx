@@ -25,6 +25,8 @@ namespace Dimps {
 
 				typedef struct __publicMethods {
 					int (Control::* GetPhase)();
+					void (Control::* SelectStage)(char* stageCode);
+					void (Control::* SetStageCursor)(char* stageCode);
 				} __publicMethods;
 
 				static __publicMethods publicMethods;
