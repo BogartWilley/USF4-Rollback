@@ -4,6 +4,7 @@
 #include "sf4e__GameEvents.hxx"
 #include "sf4e__Pad.hxx"
 #include "sf4e__Platform.hxx"
+#include "sf4e__UserApp.hxx"
 
 void sf4e::Install() {
 	Event::Install();
@@ -11,4 +12,5 @@ void sf4e::Install() {
 	GameEvents::Install();
 	Pad::Install();
 	Platform::Install();
+	UserApp::Install();
 }

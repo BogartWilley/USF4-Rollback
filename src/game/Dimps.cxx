@@ -7,6 +7,7 @@
 #include "Dimps__GameEvents.hxx"
 #include "Dimps__Pad.hxx"
 #include "Dimps__Platform.hxx"
+#include "Dimps__UserApp.hxx"
 
 char** Dimps::characterCodes;
 
@@ -21,4 +22,5 @@ void Dimps::Locate(HMODULE peRoot) {
 	Dimps::GameEvents::Locate(peRoot);
 	Dimps::Pad::Locate(peRoot);
 	Dimps::Platform::Locate(peRoot);
+	Dimps::UserApp::Locate(peRoot);
 }

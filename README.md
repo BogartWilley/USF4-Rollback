@@ -32,6 +32,9 @@ To manually build and run sf4e:
      development-time debugging.
    * [spdlog](https://github.com/gabime/spdlog). spdlog is used to provide
      durable file logging, both at development time and in release builds.
+   * [asio](https://think-async.com/Asio/). asio is used to provide
+     cross-platform asynchronous networking with a
+     [built-in duration-bound event processing loop method](https://think-async.com/Asio/asio-1.24.0/doc/asio/reference/io_context/run_for.html).
 2. Build Detours using x86-compatible build tools.
    * USF4 is natively compiled for 32-bit x86, and using an entire 32-bit
      toolchain prevents us from needing to handle cross compilation.
@@ -42,6 +45,7 @@ To manually build and run sf4e:
    * The `DETOURS_DIR` Cmake variable should point at your Detours build output
    * The `VALVEFILEVDF_DIR` CMake variable should point at your ValveFileVDF checkout.
    * The `DEARIMGUI_DIR` CMake variable should point at your Dear Imgui checkout.
+   * The `ASIO_DIR` CMake variable should point at your asio checkout.
    * The `spdlog_DIR` CMake variable should point into a built and installed
      `spdlog` directory, in `$CMAKE_BUILD_ROOT\lib\cmake\spdlog`, and be built
      in debug mode or release mode, matching sf4e. The directory
@@ -75,3 +79,6 @@ Copyright © Kitware, Inc. and Contributors.
 
 Dear Imgui
 Copyright © Omar Cornut
+
+Asio
+Copyright © 2003-2022 Christopher M. Kohlhoff

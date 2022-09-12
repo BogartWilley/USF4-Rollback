@@ -10,12 +10,13 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
+find_package(Asio 1 REQUIRED)
 find_package(DearImgui 1 REQUIRED)
 find_package(Detours 4 REQUIRED)
 find_package(spdlog 1 REQUIRED)
 find_package(ValveFileVDF 1 REQUIRED)
 
-add_compile_definitions(SPDLOG_WCHAR_FILENAMES)
+add_compile_definitions(SPDLOG_WCHAR_FILENAMES WIN32_LEAN_AND_MEAN)
 
 add_library(Game STATIC
     "src/game/Dimps.hxx"
@@ -66,6 +67,8 @@ add_library(Game STATIC
     "src/game/Dimps__Pad.cxx"
     "src/game/Dimps__Platform.hxx"
     "src/game/Dimps__Platform.cxx"
+    "src/game/Dimps__UserApp.hxx"
+    "src/game/Dimps__UserApp.cxx"
 
     "src/game/sf4e.hxx"
     "src/game/sf4e.cxx"
@@ -87,8 +90,10 @@ add_library(Game STATIC
     "src/game/sf4e__Pad.cxx"
     "src/game/sf4e__Platform.hxx"
     "src/game/sf4e__Platform.cxx"
+    "src/game/sf4e__UserApp.hxx"
+    "src/game/sf4e__UserApp.cxx"
 )
-target_link_libraries(Game PUBLIC Detours spdlog::spdlog "ws2_32" "Mswsock" "AdvApi32" "Shlwapi")
+target_link_libraries(Game PUBLIC Asio Detours spdlog::spdlog "ws2_32" "Mswsock" "AdvApi32" "Shlwapi")
 
 add_executable(Launcher WIN32
     src/launcher/launcher.cxx

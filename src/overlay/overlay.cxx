@@ -1,6 +1,7 @@
 #include "overlay.h"
 
 #include <algorithm>
+#include <memory>
 #include <vector>
 #include <windows.h>
 
@@ -34,6 +35,7 @@
 #include "../game/sf4e__Game__Battle__System.hxx"
 #include "../game/sf4e__Game__Battle__Vfx.hxx"
 #include "../game/sf4e__Pad.hxx"
+#include "../game/sf4e__UserApp.hxx"
 
 
 #define DEFAULT_ALPHA 0.87f
@@ -76,6 +78,7 @@ using fMainMenu = sf4e::GameEvents::MainMenu;
 using fVsCharaSelect = sf4e::GameEvents::VsCharaSelect;
 using fVsStageSelect = sf4e::GameEvents::VsStageSelect;
 using fPadSystem = sf4e::Pad::System;
+using fUserApp = sf4e::UserApp;
 
 using ImGui::Begin;
 using ImGui::BeginMainMenuBar;
@@ -106,6 +109,7 @@ static bool show_help_window = false;
 static bool show_log_window = false;
 static bool show_main_menu_window = false;
 static bool show_memento_window = false;
+static bool show_network_window = false;
 static bool show_pad_window = false;
 static bool show_system_window = false;
 static bool show_task_window = false;
@@ -397,6 +401,29 @@ void DrawMainMenuWindow(bool* pOpen) {
 	if (Button("Go to versus mode")) {
 		EventController* ec = *EventBase::GetSourceController(fMainMenu::instance);
 		(ec->*EventController::publicMethods.CreateEventWithFlow)(2, 0, 0, 0, 1);
+	}
+
+	End();
+}
+
+void _NetworkTestCallback(const asio::error_code& error) {
+	MessageBox(NULL, TEXT("Network test callback done"), NULL, 0);
+}
+
+void DrawNetworkWindow(bool* pOpen) {
+	static std::unique_ptr<asio::steady_timer> testTimer;
+	Begin(
+		"Network",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	if (Button("Set test Asio callback")) {
+		if (testTimer.get() == nullptr) {
+			testTimer.reset(new asio::steady_timer(*fUserApp::io_context));
+		}
+		testTimer->expires_after(std::chrono::seconds(5));
+		testTimer->async_wait(&_NetworkTestCallback);
 	}
 
 	End();
@@ -1034,6 +1061,14 @@ void DrawOverlay() {
 				ImGui::EndMenu();
 			}
 
+			if (BeginMenu("Network")) {
+				if (MenuItem("Network test")) {
+					show_network_window = true;
+				}
+
+				ImGui::EndMenu();
+			}
+
 			if (BeginMenu("Imgui")) {
 				if (MenuItem("Demo")) {
 					show_demo_window = true;
@@ -1073,6 +1108,10 @@ void DrawOverlay() {
 
 	if (show_main_menu_window) {
 		DrawMainMenuWindow(&show_main_menu_window);
+	}
+
+	if (show_network_window) {
+		DrawNetworkWindow(&show_network_window);
 	}
 
 	if (show_pad_window) {
