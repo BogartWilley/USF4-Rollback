@@ -7,13 +7,15 @@
 #include <stdio.h>
 #include <windows.h>
 #include <strsafe.h>
-#include <detours.h>
 #include <d3d9.h>
 #include <dinput.h>
 #include <tchar.h>
 
+#include <detours/detours.h>
+
 #include "../game/Dimps.hxx"
 #include "../game/sf4e.hxx"
+
 #include "sidecar.h"
 
 static HMODULE LocatePERoot() {

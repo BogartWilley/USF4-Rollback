@@ -2,7 +2,7 @@
 #include <memory>
 
 #include <windows.h>
-#include <detours.h>
+#include <detours/detours.h>
 
 #include "asio.hpp"
 #include "spdlog/spdlog.h"

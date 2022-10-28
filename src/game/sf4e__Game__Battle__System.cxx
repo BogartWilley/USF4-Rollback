@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <detours.h>
+#include <detours/detours.h>
 
 #include "Dimps__Game.hxx"
 #include "Dimps__Game__Battle__Camera.hxx"

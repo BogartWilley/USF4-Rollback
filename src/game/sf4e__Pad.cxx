@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <detours.h>
+#include <detours/detours.h>
 
 #include "Dimps__Pad.hxx"
 #include "sf4e__Pad.hxx"

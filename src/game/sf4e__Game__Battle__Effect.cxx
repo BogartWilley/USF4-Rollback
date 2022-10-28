@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <detours.h>
+#include <detours/detours.h>
 
 #include "spdlog/spdlog.h"
 

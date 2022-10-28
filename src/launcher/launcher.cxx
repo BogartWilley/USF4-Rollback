@@ -8,7 +8,7 @@
 #include <strsafe.h>
 #include <winuser.h>
 
-#include <detours.h>
+#include <detours/detours.h>
 #include <vdf_parser.hpp>
 
 int FindSF4(LPWSTR szGameDirectory, LPWSTR szExePath) {
@@ -63,10 +63,22 @@ int FindSF4(LPWSTR szGameDirectory, LPWSTR szExePath) {
 	return 1;
 }
 
+void FindFmt(LPSTR szDllPathA) {
+	char szCwdBuffer[1024] = { 0 };
+	GetCurrentDirectoryA(1024, szCwdBuffer);
+	PathCombineA(szDllPathA, szCwdBuffer, "fmtd.dll");
+}
+
 void FindSidecar(LPSTR szDllPathA) {
 	char szCwdBuffer[1024] = { 0 };
 	GetCurrentDirectoryA(1024, szCwdBuffer);
 	PathCombineA(szDllPathA, szCwdBuffer, "Sidecar.dll");
+}
+
+void FindSpdlog(LPSTR szDllPathA) {
+	char szCwdBuffer[1024] = { 0 };
+	GetCurrentDirectoryA(1024, szCwdBuffer);
+	PathCombineA(szDllPathA, szCwdBuffer, "spdlogd.dll");
 }
 
 void CreateAppIDFile(LPWSTR szGuiltyDirectory) {
@@ -99,11 +111,11 @@ void CreateAppIDFile(LPWSTR szGuiltyDirectory) {
 void CreateSF4Process(
 	LPWSTR szGameDirectory,
 	LPWSTR szExePath,
-	LPSTR szSidecarDllPathA
+	int nDlls,
+	LPCSTR* rlpDlls
 ) {
 	wchar_t szErrorString[1024] = { 0 };
 	DWORD dwError;
-	LPCSTR dllsToLoad[1] = { szSidecarDllPathA };
 	STARTUPINFOW si;
 	PROCESS_INFORMATION pi;
 	ZeroMemory(&si, sizeof(si));
@@ -124,8 +136,8 @@ void CreateSF4Process(
 			szGameDirectory,
 			&si,
 			&pi,
-			1,
-			dllsToLoad,
+			nDlls,
+			rlpDlls,
 			NULL
 		)) {
 		dwError = GetLastError();
@@ -133,7 +145,9 @@ void CreateSF4Process(
 		MessageBox(NULL, szErrorString, NULL, MB_OK);
 		MessageBox(NULL, szGameDirectory, NULL, MB_OK);
 		MessageBox(NULL, szExePath, NULL, MB_OK);
-		MessageBoxA(NULL, szSidecarDllPathA, NULL, MB_OK);
+		for (int i = 0; i < nDlls; i++) {
+			MessageBoxA(NULL, rlpDlls[i], NULL, MB_OK);
+		}
 		if (dwError == ERROR_INVALID_HANDLE) {
 			MessageBox(NULL, L"Can't detour a 64-bit target process from a 32-bit parent process or vice versa.", NULL, MB_OK);
 		}
@@ -151,7 +165,23 @@ int WINAPI wWinMain(
 ) {
 	wchar_t szGameDirectory[1024] = { 0 };
 	wchar_t szExePath[1024] = { 0 };
+	char szFmtDllPathA[1024] = { 0 };
 	char szSidecarDllPathA[1024] = { 0 };
+	char szSpdlogDllPathA[1024] = { 0 };
+	int nDlls = 3;
+
+	// To prevent the need for manipulating the subprocess's import table,
+	// manipulating the subprocess's DLL search paths, or copying sf4e's
+	// dependencies into SF4's folder directly, sf4e injects dependencies
+	// manually and dynamically. Consequently, this list is order-sensitive-
+	// if the sidecar DLL depends on spdlog and spdlog is not injected first,
+	// spdlog won't be found via normal search paths and the SF4 will halt
+	// with an error.
+	const char* dlls[3] = {
+		szFmtDllPathA,
+		szSpdlogDllPathA,
+		szSidecarDllPathA,
+	};
 
 	DWORD env_size = 0;
 	env_size = GetEnvironmentVariableW(L"sf4e_LINUX_DIR", szGameDirectory, 1024);
@@ -162,8 +192,10 @@ int WINAPI wWinMain(
 	else {
 		FindSF4(szGameDirectory, szExePath);
 	}
+	FindFmt(szFmtDllPathA);
 	FindSidecar(szSidecarDllPathA);
+	FindSpdlog(szSpdlogDllPathA);
 	CreateAppIDFile(szGameDirectory);
-	CreateSF4Process(szGameDirectory, szExePath, szSidecarDllPathA);
+	CreateSF4Process(szGameDirectory, szExePath, nDlls, dlls);
 	return 0;
 }

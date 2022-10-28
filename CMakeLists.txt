@@ -1,4 +1,8 @@
-cmake_minimum_required (VERSION 3.10)
+cmake_minimum_required (VERSION 3.20)
+set(VCPKG_OVERLAY_PORTS "${CMAKE_SOURCE_DIR}/vcpkg-ports")
+set(VCPKG_OVERLAY_TRIPLETS "${CMAKE_SOURCE_DIR}/vcpkg-triplets")
+set(VCPKG_TARGET_TRIPLET "x86-windows-wchar-filenames")
+
 project (
     sf4e
     VERSION 0.0.1
@@ -8,15 +12,13 @@ project (
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+add_compile_definitions(WIN32_LEAN_AND_MEAN)
 
-find_package(Asio 1 REQUIRED)
-find_package(DearImgui 1 REQUIRED)
-find_package(Detours 4 REQUIRED)
-find_package(spdlog 1 REQUIRED)
-find_package(ValveFileVDF 1 REQUIRED)
-
-add_compile_definitions(SPDLOG_WCHAR_FILENAMES WIN32_LEAN_AND_MEAN)
+find_package(asio CONFIG REQUIRED)
+find_library(LIB_DETOURS "detours")
+find_package(imgui CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+find_path(VALVEFILEVDF_INCLUDE_DIRS "vdf_parser.hpp")
 
 add_library(Game STATIC
     "src/game/Dimps.hxx"
@@ -93,40 +95,35 @@ add_library(Game STATIC
     "src/game/sf4e__UserApp.hxx"
     "src/game/sf4e__UserApp.cxx"
 )
-target_link_libraries(Game PUBLIC Asio Detours spdlog::spdlog "ws2_32" "Mswsock" "AdvApi32" "Shlwapi")
+target_link_libraries(
+    Game
+    PRIVATE asio::asio ${LIB_DETOURS} "ws2_32" "Mswsock" "AdvApi32" "Shlwapi"
+    PUBLIC spdlog::spdlog
+)
 
-add_executable(Launcher WIN32
-    src/launcher/launcher.cxx
-)
-target_link_libraries(Launcher
-	PRIVATE Detours
-	PRIVATE ValveFileVDF
-	PUBLIC Sidecar
-    PUBLIC "shlwapi"
-)
+add_executable(Launcher WIN32 src/launcher/launcher.cxx)
+target_include_directories(Launcher PRIVATE ${VALVEFILEVDF_INCLUDE_DIRS})
+target_link_libraries(Launcher PRIVATE ${LIB_DETOURS} "shlwapi")
 
 add_library(Overlay STATIC src/overlay/overlay.cxx src/overlay/overlay.h)
-target_link_libraries(Overlay PUBLIC "Xinput9_1_0" DearImgui DearImgui_Win32 DearImgui_DX9 Game)
+target_link_libraries(Overlay PRIVATE "Xinput9_1_0" imgui::imgui Game)
 
 add_library(Sidecar SHARED src/sidecar/sidecar.cxx)
-target_link_libraries(Sidecar PRIVATE Detours Game Overlay ValveFileVDF)
+target_include_directories(Sidecar PRIVATE ${VALVEFILEVDF_INCLUDE_DIRS})
+target_link_libraries(Sidecar PRIVATE ${LIB_DETOURS} Game Overlay)
 
 target_compile_definitions(Launcher PRIVATE -D_UNICODE -DUNICODE)
-target_compile_definitions(DearImgui_Win32 PRIVATE IMGUI_IMPL_WIN32_DISABLE_LINKING_XINPUT=1)
-
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
 
 install(
-  TARGETS Launcher Game Overlay Sidecar DearImgui DearImgui_Win32 DearImgui_DX9
+  TARGETS Launcher Sidecar
   CONFIGURATIONS Debug
   RUNTIME DESTINATION "."
 )
 install(
-  TARGETS Launcher Game Overlay Sidecar DearImgui DearImgui_Win32 DearImgui_DX9
+  TARGETS Launcher Sidecar
   CONFIGURATIONS Release
   RUNTIME DESTINATION "."
 )
-
 
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VENDOR "The ${PROJECT_NAME} Dev Team")
