@@ -1107,6 +1107,7 @@ void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
 	ImGui::StyleColorsDark();
 	ImGuiStyle& style = ImGui::GetStyle();
 	style.Alpha = DEFAULT_ALPHA;
+	ImGui::GetIO().SetPlatformImeDataFn = nullptr;
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX9_Init(lpDevice);
 	sf4e::Game::GameMementoKey::SizeLogger = GameMementoKeySizeLogger;
