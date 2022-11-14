@@ -101,6 +101,54 @@ namespace Dimps {
 			static __publicMethods publicMethods;
 			static __staticMethods staticMethods;
 		};
+
+		struct VsMode : Dimps::Event::EventBase {
+			struct ConfirmedCharaConditions {
+				BYTE charaID;
+				BYTE costume;
+				BYTE color;
+				BYTE _unused;
+				BYTE personalAction;
+				BYTE winQuote;
+				BYTE ultraCombo;
+				BYTE handicap;
+				BYTE unc_edition;
+			};
+
+			struct ConfirmedPlayerConditions {
+				BYTE pad[316];
+
+				static int* GetCharaID(ConfirmedPlayerConditions* c);
+				static int* GetSideActive(ConfirmedPlayerConditions* c);
+				static ConfirmedCharaConditions* GetCharaConditions(ConfirmedPlayerConditions* c);
+			};
+
+			static void Locate(HMODULE peRoot);
+			static ConfirmedPlayerConditions* GetConfirmedPlayerConditions(VsMode* e);
+			static Platform::dString* GetStageName(VsMode* e);
+			static int* GetStageCode(VsMode* e);
+
+			typedef struct __publicMethods {
+				void* (VsMode::* Destroy)(DWORD arg1);
+			} __publicMethods;
+
+			typedef struct __staticMethods {
+				VsMode* (*Factory)(DWORD arg1, DWORD arg2, DWORD arg3);
+			} __staticMethods;
+
+			static __publicMethods publicMethods;
+			static __staticMethods staticMethods;
+		};
+
+		struct VsPreBattle : Dimps::Event::EventBase {
+			static void Locate(HMODULE peRoot);
+
+			typedef struct __publicMethods {
+				void (VsPreBattle::* RegisterTasks)();
+			} __publicMethods;
+
+			static __publicMethods publicMethods;
+		};
 	
 		struct VsStageSelect : Dimps::Event::EventBase {
 			struct StageSelectState {

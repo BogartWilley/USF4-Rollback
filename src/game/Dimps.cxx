@@ -10,11 +10,17 @@
 #include "Dimps__UserApp.hxx"
 
 char** Dimps::characterCodes;
+char** Dimps::characterNames;
+char** Dimps::stageCodes;
+char** Dimps::stageNames;
 
 void Dimps::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	characterCodes = (char**)(peRootOffset + 0x66a8a8);
+	characterNames = (char**)(peRootOffset + 0x66a958);
+	stageCodes = (char**)(peRootOffset + 0x66b678);
+	stageNames = (char**)(peRootOffset + 0x66b600);
 
 	Dimps::Eva::Locate(peRoot);
 	Dimps::Event::Locate(peRoot);

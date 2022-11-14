@@ -1,22 +1,37 @@
 #include <windows.h>
 #include <detours/detours.h>
 
+#include "Dimps.hxx"
+#include "Dimps__Game.hxx"
 #include "Dimps__GameEvents.hxx"
+#include "Dimps__Platform.hxx"
+#include "sf4e__Event.hxx"
 #include "sf4e__GameEvents.hxx"
 
 namespace rGameEvents = Dimps::GameEvents;
 using rMainMenu = rGameEvents::MainMenu;
 using rRootEvent = rGameEvents::RootEvent;
 using rVsCharaSelect = rGameEvents::VsCharaSelect;
+using rVsMode = rGameEvents::VsMode;
+using rVsPreBattle = rGameEvents::VsPreBattle;
 using rVsStageSelect = rGameEvents::VsStageSelect;
 
 namespace fGameEvents = sf4e::GameEvents;
 using fMainMenu = fGameEvents::MainMenu;
 using fRootEvent = fGameEvents::RootEvent;
 using fVsCharaSelect = fGameEvents::VsCharaSelect;
+using fVsMode = fGameEvents::VsMode;
+using fVsPreBattle = fGameEvents::VsPreBattle;
 using fVsStageSelect = fGameEvents::VsStageSelect;
 
 rMainMenu* fMainMenu::instance;
+rVsMode* fVsMode::instance;
+
+int fVsPreBattle::skipP1Chara = 0;
+int fVsPreBattle::skipP2Chara = 0;
+int fVsPreBattle::skipStage = 0;
+bool fVsPreBattle::bSkipToVersus = false;
+
 char* fRootEvent::eventFlowDescription = R"(	Boot, 0, Title,										
 LogoCapcom, 0, LogoNvidia, BLACK, 10.0f, BLACK, 10.0f			
 tLogoCapcom, 1, Title, BLACK, 10.0f, BLACK, 10.0f			
@@ -94,6 +109,8 @@ void fGameEvents::Install() {
 	MainMenu::Install();
 	RootEvent::Install();
 	VsCharaSelect::Install();
+	VsMode::Install();
+	VsPreBattle::Install();
 	VsStageSelect::Install();
 }
 
@@ -147,6 +164,69 @@ void* fVsCharaSelect::Destroy(DWORD arg1) {
 	}
 	
 	return (_this->*rVsCharaSelect::publicMethods.Destroy)(arg1);
+}
+
+void fVsMode::Install() {
+	void* (fVsMode:: * _fDestroy)(DWORD) = &Destroy;
+	DetourAttach((PVOID*)&rVsMode::publicMethods.Destroy, *(PVOID*)&_fDestroy);
+	DetourAttach((PVOID*)&rVsMode::staticMethods.Factory, &Factory);
+}
+
+rVsMode* fVsMode::Factory(DWORD arg1, DWORD arg2, DWORD arg3) {
+	rVsMode* out = rVsMode::staticMethods.Factory(arg1, arg2, arg3);
+	instance = out;
+	return out;
+}
+
+void* fVsMode::Destroy(DWORD arg1) {
+	rVsMode* _this = (rVsMode*)this;
+	if (instance == this) {
+		instance = NULL;
+	}
+	else {
+		MessageBox(NULL, TEXT("VsMode that was not tracked was destroyed!"), NULL, MB_OK);
+	}
+
+	return (_this->*rVsMode::publicMethods.Destroy)(arg1);
+}
+
+void fVsPreBattle::Install() {
+	void (fVsPreBattle:: * _fRegisterTasks)() = &RegisterTasks;
+	DetourAttach((PVOID*)&fVsPreBattle::publicMethods.RegisterTasks, *(PVOID*)&_fRegisterTasks);
+}
+
+void fVsPreBattle::RegisterTasks() {
+	rVsPreBattle* _this = (rVsPreBattle*)this;
+	if (bSkipToVersus) {
+		rVsMode* parent = fVsMode::instance;
+		Dimps::Platform::dString* stageName = rVsMode::GetStageName(parent);
+		rVsMode::ConfirmedPlayerConditions* conditions = rVsMode::GetConfirmedPlayerConditions(parent);
+		rVsMode::ConfirmedCharaConditions* p1 = rVsMode::ConfirmedPlayerConditions::GetCharaConditions(&conditions[0]);
+		rVsMode::ConfirmedCharaConditions* p2 = rVsMode::ConfirmedPlayerConditions::GetCharaConditions(&conditions[1]);
+
+		*(rVsMode::ConfirmedPlayerConditions::GetCharaID(&conditions[0])) = skipP1Chara;
+		*(rVsMode::ConfirmedPlayerConditions::GetSideActive(&conditions[0])) = 1;
+		p1->charaID = skipP1Chara;
+		p1->color = 1;
+		p1->costume = 0;
+		p1->ultraCombo = 0;
+
+		*(rVsMode::ConfirmedPlayerConditions::GetCharaID(&conditions[1])) = skipP2Chara;
+		*(rVsMode::ConfirmedPlayerConditions::GetSideActive(&conditions[1])) = 1;
+		p2->charaID = skipP2Chara;
+		p2->color = 1;
+		p2->costume = 0;
+		p2->ultraCombo = 0;
+
+		(stageName->*Dimps::Platform::dString::publicMethods.assign)(Dimps::stageCodes[skipStage], 4);
+		*(rVsMode::GetStageCode(parent)) = skipStage;
+		sf4e::Event::EventController::ReplaceNextEvent("VersusFromChr");
+		(_this->*rVsPreBattle::publicMethods.RegisterTasks)();
+		bSkipToVersus = false;
+	}
+	else {
+		(_this->*rVsPreBattle::publicMethods.RegisterTasks)();
+	}
 }
 
 void fVsStageSelect::Install() {

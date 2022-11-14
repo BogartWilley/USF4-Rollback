@@ -75,6 +75,8 @@ using fSystem = sf4e::Game::Battle::System;
 using fColorFade = sf4e::Game::Battle::Vfx::ColorFade;
 using fMainMenu = sf4e::GameEvents::MainMenu;
 using fVsCharaSelect = sf4e::GameEvents::VsCharaSelect;
+using fVsMode = sf4e::GameEvents::VsMode;
+using fVsPreBattle = sf4e::GameEvents::VsPreBattle;
 using fVsStageSelect = sf4e::GameEvents::VsStageSelect;
 using fPadSystem = sf4e::Pad::System;
 using fUserApp = sf4e::UserApp;
@@ -274,12 +276,16 @@ void DrawCharaWindow(bool* pOpen) {
 
 					int actorID = (int)(a->*CharaActor::publicMethods.GetActorID)();
 					char* actorCode = actorID > -1 ? Dimps::characterCodes[actorID] : "";
+					char* actorName = actorID > -1 ? Dimps::characterNames[actorID] : "";
 
 					Text("Actor ID:"); NextColumn();
 					Text("%d", actorID); NextColumn();
 
 					Text("Actor code:"); NextColumn();
 					Text(actorCode); NextColumn();
+
+					Text("Actor name:"); NextColumn();
+					Text(actorName); NextColumn();
 
 					Text("Status:"); NextColumn();
 					Text("%d", (a->*CharaActor::publicMethods.GetStatus)()); NextColumn();
@@ -518,6 +524,12 @@ void DrawMainMenuWindow(bool* pOpen) {
 
 	Text("Instance: %p", fMainMenu::instance);
 	Text("Name: %s", EventBase::GetName(fMainMenu::instance));
+	ImGui::Checkbox("VS mode: Skip chara/stage select?", &fVsPreBattle::bSkipToVersus);
+	if (fVsPreBattle::bSkipToVersus) {
+		ImGui::Combo("P1 Character", &fVsPreBattle::skipP1Chara, Dimps::characterNames, 0x2c);
+		ImGui::Combo("P2 Character", &fVsPreBattle::skipP2Chara, Dimps::characterNames, 0x2c);
+		ImGui::Combo("Stage", &fVsPreBattle::skipStage, Dimps::stageNames, 30);
+	}
 	if (Button("Go to versus mode")) {
 		EventController* ec = *EventBase::GetSourceController(fMainMenu::instance);
 		(ec->*EventController::publicMethods.CreateEventWithFlow)(2, 0, 0, 0, 1);

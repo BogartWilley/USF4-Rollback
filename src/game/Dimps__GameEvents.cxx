@@ -9,6 +9,8 @@ namespace StageSelect = Dimps::GameEvents::StageSelect;
 using Dimps::GameEvents::MainMenu;
 using Dimps::GameEvents::RootEvent;
 using Dimps::GameEvents::VsCharaSelect;
+using Dimps::GameEvents::VsMode;
+using Dimps::GameEvents::VsPreBattle;
 using Dimps::GameEvents::VsStageSelect;
 using Dimps::Platform::dString;
 
@@ -17,6 +19,9 @@ MainMenu::__staticMethods MainMenu::staticMethods;
 char** RootEvent::eventFlowDefinition;
 VsCharaSelect::__publicMethods VsCharaSelect::publicMethods;
 VsCharaSelect::__staticMethods VsCharaSelect::staticMethods;
+VsMode::__publicMethods VsMode::publicMethods;
+VsMode::__staticMethods VsMode::staticMethods;
+VsPreBattle::__publicMethods VsPreBattle::publicMethods;
 VsStageSelect::__publicMethods VsStageSelect::publicMethods;
 VsStageSelect::__staticMethods VsStageSelect::staticMethods;
 StageSelect::Control::__publicMethods StageSelect::Control::publicMethods;
@@ -26,6 +31,8 @@ void GameEvents::Locate(HMODULE peRoot) {
 	RootEvent::Locate(peRoot);
 	StageSelect::Locate(peRoot);
 	VsCharaSelect::Locate(peRoot);
+	VsMode::Locate(peRoot);
+	VsPreBattle::Locate(peRoot);
 	VsStageSelect::Locate(peRoot);
 }
 
@@ -92,6 +99,44 @@ BYTE* VsCharaSelect::PlayerConditions::GetHandicap(PlayerConditions* c) {
 
 BYTE* VsCharaSelect::PlayerConditions::GetEdition(PlayerConditions* c) {
 	return (BYTE*)((unsigned int)c + 0x5e);
+}
+
+void VsMode::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&publicMethods.Destroy = (PVOID)(peRootOffset + 0x23dc60);
+
+	staticMethods.Factory = (VsMode * (*)(DWORD, DWORD, DWORD))(peRootOffset + 0x23dde0);
+}
+
+VsMode::ConfirmedPlayerConditions* VsMode::GetConfirmedPlayerConditions(VsMode* e) {
+	return (VsMode::ConfirmedPlayerConditions*)((unsigned int)e + 0x58);
+}
+
+dString* VsMode::GetStageName(VsMode* e) {
+	return (dString*)((unsigned int)e + 0x2d0);
+}
+
+int* VsMode::GetStageCode(VsMode* e) {
+	return (int*)((unsigned int)e + 0x2ec);
+}
+
+VsMode::ConfirmedCharaConditions* VsMode::ConfirmedPlayerConditions::GetCharaConditions(VsMode::ConfirmedPlayerConditions* c) {
+	return (VsMode::ConfirmedCharaConditions*)((unsigned int)c + 0x128);
+}
+
+int* VsMode::ConfirmedPlayerConditions::GetCharaID(VsMode::ConfirmedPlayerConditions* c) {
+	return (int*)((unsigned int)c + 0x134);
+}
+
+int* VsMode::ConfirmedPlayerConditions::GetSideActive(VsMode::ConfirmedPlayerConditions* c) {
+	return (int*)((unsigned int)c + 0x138);
+}
+
+void VsPreBattle::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&publicMethods.RegisterTasks = (PVOID)(peRootOffset + 0x23e1a0);
 }
 
 void VsStageSelect::Locate(HMODULE peRoot) {

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+
 #include "Dimps__Event.hxx"
 
 namespace sf4e {
@@ -12,7 +14,12 @@ namespace sf4e {
 			static bool bHaltAfterNext;
 			static bool bUpdateAllowed;
 
+			static void ReplaceNextEvent(char* replacementEventName);
+			void QueueEvent(char* eventName, DWORD arg1, DWORD arg2, DWORD arg3);
 			void RunUpdate();
+
+		private:
+			static char* replacementEvent;
 		};
 	}
 }
