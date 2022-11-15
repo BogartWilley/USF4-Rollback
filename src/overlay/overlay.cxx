@@ -577,6 +577,8 @@ void DrawPadTable(DWORD* padData) {
 }
 
 void DrawPadWindow(bool* pOpen) {
+	static bool bShouldCapture = false;
+
 	Begin(
 		"Pad",
 		pOpen,
@@ -584,51 +586,87 @@ void DrawPadWindow(bool* pOpen) {
 	);
 
 	PadSystem* p = PadSystem::staticMethods.GetSingleton();
+	PadSystem::__publicMethods& methods = PadSystem::publicMethods;
 	DWORD padData[2];
+	if (BeginTabBar("Pad views", ImGuiTabBarFlags_None)) {
+		if (BeginTabItem("Switch data")) {
+			if (BeginTabBar("Pad types", ImGuiTabBarFlags_None)) {
+				if (BeginTabItem("On")) {
+					for (int i = 0; i < 2; i++) {
+						padData[i] = (p->*methods.GetButtons_On)(i);
+					}
 
-	if (BeginTabBar("Pad types", ImGuiTabBarFlags_None)) {
-		if (BeginTabItem("On")) {
-			for (int i = 0; i < 2; i++) {
-				padData[i] = (p->*PadSystem::publicMethods.GetButtons_On)(i);
+					DrawPadTable(padData);
+					EndTabItem();
+				}
+
+				if (BeginTabItem("Rising")) {
+					for (int i = 0; i < 2; i++) {
+						padData[i] = (p->*methods.GetButtons_Rising)(i);
+					}
+
+					DrawPadTable(padData);
+					EndTabItem();
+				}
+
+				if (BeginTabItem("Falling")) {
+					for (int i = 0; i < 2; i++) {
+						padData[i] = (p->*methods.GetButtons_Falling)(i);
+					}
+
+					DrawPadTable(padData);
+					EndTabItem();
+				}
+
+				if (BeginTabItem("Repeat")) {
+					for (int i = 0; i < 2; i++) {
+						padData[i] = (p->*methods.GetButtons_RisingWithRepeat)(i);
+					}
+
+					DrawPadTable(padData);
+					EndTabItem();
+				}
+
+				if (BeginTabItem("Mapped")) {
+					for (int i = 0; i < 2; i++) {
+						padData[i] = (p->*methods.GetButtons_Mapped)(i);
+					}
+
+					DrawPadTable(padData);
+					EndTabItem();
+				}
+
+				EndTabBar();
 			}
 
-			DrawPadTable(padData);
 			EndTabItem();
 		}
 
-		if (BeginTabItem("Rising")) {
-			for (int i = 0; i < 2; i++) {
-				padData[i] = (p->*PadSystem::publicMethods.GetButtons_Rising)(i);
+		if (BeginTabItem("Device Data")) {
+			int deviceCount = (p->*methods.GetAllDeviceCount)();
+			int okCount = (p->*methods.GetOKDeviceCount)();
+			Text("Device count: %d", deviceCount);
+			Text("Device OK count: %d", okCount);
+			for (int i = 0; i < deviceCount; i++) {
+				Text("Device %d: %s", i, (p->*methods.GetDeviceName)(i));
 			}
-
-			DrawPadTable(padData);
 			EndTabItem();
 		}
 
-		if (BeginTabItem("Falling")) {
+		if (BeginTabItem("Player Data")) {
+			int deviceCount = (p->*methods.GetAllDeviceCount)();
+			int okCount = (p->*methods.GetOKDeviceCount)();
+			Text("Device count: %d", deviceCount);
+			Text("Device OK count: %d", okCount);
 			for (int i = 0; i < 2; i++) {
-				padData[i] = (p->*PadSystem::publicMethods.GetButtons_Falling)(i);
+				Text(
+					"Player %d: device index %d, type %d, is assigned %d",
+					i,
+					(p->*methods.GetDeviceIndexForPlayer)(i),
+					(p->*methods.GetDeviceTypeForPlayer)(i),
+					(p->*methods.GetAssigmentStatusForPlayer)(i)
+				);
 			}
-
-			DrawPadTable(padData);
-			EndTabItem();
-		}
-
-		if (BeginTabItem("Repeat")) {
-			for (int i = 0; i < 2; i++) {
-				padData[i] = (p->*PadSystem::publicMethods.GetButtons_RisingWithRepeat)(i);
-			}
-
-			DrawPadTable(padData);
-			EndTabItem();
-		}
-
-		if (BeginTabItem("Mapped")) {
-			for (int i = 0; i < 2; i++) {
-				padData[i] = (p->*PadSystem::publicMethods.GetButtons_Mapped)(i);
-			}
-
-			DrawPadTable(padData);
 			EndTabItem();
 		}
 
