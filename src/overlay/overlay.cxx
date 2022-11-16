@@ -64,6 +64,7 @@ using Dimps::Game::Battle::Vfx::ColorFade;
 using Dimps::Game::Battle::Vfx::ColorFadeUnit;
 using Dimps::Game::GameMementoKey;
 using Dimps::GameEvents::VsCharaSelect;
+using rVsMode = Dimps::GameEvents::VsMode;
 using Dimps::GameEvents::VsStageSelect;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
@@ -86,6 +87,7 @@ using ImGui::BeginMainMenuBar;
 using ImGui::BeginMenu;
 using ImGui::BeginTabBar;
 using ImGui::BeginTabItem;
+using ImGui::BeginTable;
 using ImGui::Button;
 using ImGui::CheckboxFlags;
 using ImGui::Columns;
@@ -94,10 +96,16 @@ using ImGui::EndFrame;
 using ImGui::EndMainMenuBar;
 using ImGui::EndTabBar;
 using ImGui::EndTabItem;
+using ImGui::EndTable;
 using ImGui::MenuItem;
 using ImGui::NewFrame;
 using ImGui::NextColumn;
 using ImGui::Separator;
+using ImGui::TableHeadersRow;
+using ImGui::TableNextColumn;
+using ImGui::TableNextRow;
+using ImGui::TableSetColumnIndex;
+using ImGui::TableSetupColumn;
 using ImGui::Text;
 
 IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -118,6 +126,12 @@ static bool show_vfx_window = false;
 static bool show_vscharaselect_window = false;
 static bool show_vsstageselect_window = false;
 static int nExtraFramesToSimulate = 1;
+
+static bool mainMenuShouldJump = false;
+static int mainMenuCharaIDs[2] = { 0 };
+static Dimps::GameEvents::VsMode::ConfirmedCharaConditions mainMenuJumpCharaConditions[2] = { 0 };
+static int mainMenuJumpCharaCount = 2;
+static int mainMenuJumpStageID = 0;
 
 // Copied directly from the `imgui_demo.cpp` source:
 // https://github.com/ocornut/imgui/blob/a241dc7990b631fde6575771173c2442d43d2812/imgui_demo.cpp#L6919
@@ -509,7 +523,29 @@ void DrawEventWindow(bool* pOpen) {
 	End();
 }
 
+void _OnPreBattleTasksRegistered() {
+	// XXX (adanducci): this is fragile- passing in the VsPreBattle event and
+	// traversing the parent events would avoid the need to track state that
+	// could potentially interleave with other event construction and
+	// destruction.
+	rVsMode* mode = fVsMode::instance;
+	Dimps::Platform::dString* stageName = rVsMode::GetStageName(mode);
+	rVsMode::ConfirmedPlayerConditions* conditions = rVsMode::GetConfirmedPlayerConditions(mode);
+	size_t charaConditionSize = sizeof(rVsMode::ConfirmedCharaConditions);
+	for (int i = 0; i < mainMenuJumpCharaCount; i++) {
+		*(rVsMode::ConfirmedPlayerConditions::GetCharaID(&conditions[i])) = mainMenuJumpCharaConditions->charaID;
+		*(rVsMode::ConfirmedPlayerConditions::GetSideActive(&conditions[i])) = 1;
+		rVsMode::ConfirmedCharaConditions* charaConditions = rVsMode::ConfirmedPlayerConditions::GetCharaConditions(&conditions[i]);
+		memcpy_s(charaConditions, charaConditionSize, &mainMenuJumpCharaConditions[i], charaConditionSize);
+	}
+
+	(stageName->*Dimps::Platform::dString::publicMethods.assign)(Dimps::stageCodes[mainMenuJumpStageID], 4);
+	*(rVsMode::GetStageCode(mode)) = mainMenuJumpStageID;
+}
+
 void DrawMainMenuWindow(bool* pOpen) {
+	static BYTE skipStep = 1;
+
 	Begin(
 		"MainMenu",
 		pOpen,
@@ -524,15 +560,62 @@ void DrawMainMenuWindow(bool* pOpen) {
 
 	Text("Instance: %p", fMainMenu::instance);
 	Text("Name: %s", EventBase::GetName(fMainMenu::instance));
-	ImGui::Checkbox("VS mode: Skip chara/stage select?", &fVsPreBattle::bSkipToVersus);
-	if (fVsPreBattle::bSkipToVersus) {
-		ImGui::Combo("P1 Character", &fVsPreBattle::skipP1Chara, Dimps::characterNames, 0x2c);
-		ImGui::Combo("P2 Character", &fVsPreBattle::skipP2Chara, Dimps::characterNames, 0x2c);
-		ImGui::Combo("Stage", &fVsPreBattle::skipStage, Dimps::stageNames, 30);
+	ImGui::Checkbox("VS mode: Skip chara/stage select?", &mainMenuShouldJump);
+	if (mainMenuShouldJump) {
+		ImGui::Combo("Stage", &mainMenuJumpStageID, Dimps::stageNames, 30);
+		if (BeginTable("Main Menu", 3)) {
+			TableSetupColumn("Property");
+			TableSetupColumn("P1");
+			TableSetupColumn("P2");
+			TableHeadersRow();
+			TableNextRow();
+			TableSetColumnIndex(0);
+
+			Text("Chara"); TableNextColumn();
+			ImGui::Combo("##P1 Character", (int*)&mainMenuCharaIDs[0], Dimps::characterNames, 0x2c); TableNextColumn();
+			ImGui::Combo("##P2 Character", (int*)&mainMenuCharaIDs[1], Dimps::characterNames, 0x2c); TableNextColumn();
+			mainMenuJumpCharaConditions[0].charaID = mainMenuCharaIDs[0];
+			mainMenuJumpCharaConditions[1].charaID = mainMenuCharaIDs[1];
+
+			Text("Color"); TableNextColumn();
+			ImGui::InputScalar("##P1 Color", ImGuiDataType_U8, &mainMenuJumpCharaConditions[0].color, &skipStep); TableNextColumn();
+			ImGui::InputScalar("##P2 Color", ImGuiDataType_U8, &mainMenuJumpCharaConditions[1].color, &skipStep); TableNextColumn();
+
+			Text("Costume"); TableNextColumn();
+			ImGui::InputScalar("##P1 Costume", ImGuiDataType_U8, &mainMenuJumpCharaConditions[0].costume, &skipStep); TableNextColumn();
+			ImGui::InputScalar("##P2 Costume", ImGuiDataType_U8, &mainMenuJumpCharaConditions[1].costume, &skipStep); TableNextColumn();
+
+			Text("Handicap"); TableNextColumn();
+			// 1: 1 hit, 2: 25%, 3: 50%, 4: 75%
+			ImGui::InputScalar("##P1 Handicap", ImGuiDataType_U8, &mainMenuJumpCharaConditions[0].handicap, &skipStep); TableNextColumn();
+			ImGui::InputScalar("##P2 Handicap", ImGuiDataType_U8, &mainMenuJumpCharaConditions[1].handicap, &skipStep); TableNextColumn();
+
+			Text("Personal action"); TableNextColumn();
+			ImGui::InputScalar("##P1 Personal action", ImGuiDataType_U8, &mainMenuJumpCharaConditions[0].personalAction, &skipStep); TableNextColumn();
+			ImGui::InputScalar("##P2 Personal action", ImGuiDataType_U8, &mainMenuJumpCharaConditions[1].personalAction, &skipStep); TableNextColumn();
+
+			Text("Ultra Combo"); TableNextColumn();
+			ImGui::InputScalar("##P1 Ultra Combo", ImGuiDataType_U8, &mainMenuJumpCharaConditions[0].ultraCombo, &skipStep); TableNextColumn();
+			ImGui::InputScalar("##P2 Ultra Combo", ImGuiDataType_U8, &mainMenuJumpCharaConditions[1].ultraCombo, &skipStep); TableNextColumn();
+
+			Text("Edition"); TableNextColumn();
+			// 16: Omega, 13: Vanilla, 1: SSF4, 2: AE, 4: AE2012, 14: Ultra
+			ImGui::InputScalar("##P1 Edition", ImGuiDataType_U8, &mainMenuJumpCharaConditions[0].unc_edition, &skipStep); TableNextColumn();
+			ImGui::InputScalar("##P2 Edition", ImGuiDataType_U8, &mainMenuJumpCharaConditions[1].unc_edition, &skipStep); TableNextColumn();
+
+			Text("Win quote"); TableNextColumn();
+			ImGui::InputScalar("##P1 Win quote", ImGuiDataType_U8, &mainMenuJumpCharaConditions[0].winQuote, &skipStep); TableNextColumn();
+			ImGui::InputScalar("##P2 Win quote", ImGuiDataType_U8, &mainMenuJumpCharaConditions[1].winQuote, &skipStep); TableNextColumn();
+
+			EndTable();
+		}
 	}
 	if (Button("Go to versus mode")) {
-		EventController* ec = *EventBase::GetSourceController(fMainMenu::instance);
-		(ec->*EventController::publicMethods.CreateEventWithFlow)(2, 0, 0, 0, 1);
+		if (mainMenuShouldJump) {
+			fVsPreBattle::bSkipToVersus = true;
+			fVsPreBattle::OnTasksRegistered = _OnPreBattleTasksRegistered;
+		}
+		fMainMenu::GoToVersusBattle();
 	}
 
 	End();

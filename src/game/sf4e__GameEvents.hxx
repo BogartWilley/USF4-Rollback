@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include "Dimps__GameEvents.hxx"
+#include "Dimps__Platform.hxx"
 
 namespace sf4e {
 	namespace GameEvents {
@@ -15,6 +16,7 @@ namespace sf4e {
 			static Dimps::GameEvents::MainMenu* instance;
 			static Dimps::GameEvents::MainMenu* Factory(DWORD arg1, DWORD arg2, DWORD arg3);
 			static void Install();
+			static void GoToVersusBattle();
 		};
 
 		struct RootEvent : Dimps::GameEvents::RootEvent
@@ -43,10 +45,8 @@ namespace sf4e {
 
 		struct VsPreBattle : Dimps::GameEvents::VsPreBattle
 		{
+			static void (*OnTasksRegistered)();
 			static bool bSkipToVersus;
-			static int skipP1Chara;
-			static int skipP2Chara;
-			static int skipStage;
 
 			void RegisterTasks();
 			static void Install();
