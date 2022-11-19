@@ -77,6 +77,7 @@ namespace Dimps {
 
 			typedef struct __publicMethods {
 				int (Main::* Initialize)(void*, void*, void*);
+				void (Main::* Destroy)();
 			} __publicMethods;
 
 			typedef struct __staticMethods {

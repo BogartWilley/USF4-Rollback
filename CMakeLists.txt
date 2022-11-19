@@ -14,9 +14,11 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_compile_definitions(WIN32_LEAN_AND_MEAN)
 
-find_package(asio CONFIG REQUIRED)
 find_library(LIB_DETOURS "detours")
+find_package(GameNetworkingSockets CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(protobuf CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_path(VALVEFILEVDF_INCLUDE_DIRS "vdf_parser.hpp")
 
@@ -92,13 +94,18 @@ add_library(Game STATIC
     "src/game/sf4e__Pad.cxx"
     "src/game/sf4e__Platform.hxx"
     "src/game/sf4e__Platform.cxx"
+    "src/game/sf4e__SessionClient.hxx"
+    "src/game/sf4e__SessionClient.cxx"
+    "src/game/sf4e__SessionProtocol.hxx"
+    "src/game/sf4e__SessionServer.hxx"
+    "src/game/sf4e__SessionServer.cxx"
     "src/game/sf4e__UserApp.hxx"
     "src/game/sf4e__UserApp.cxx"
 )
 target_link_libraries(
     Game
-    PRIVATE asio::asio ${LIB_DETOURS} "ws2_32" "Mswsock" "AdvApi32" "Shlwapi"
-    PUBLIC spdlog::spdlog
+    PRIVATE ${LIB_DETOURS} "ws2_32" "Mswsock" "AdvApi32" "Shlwapi"
+    PUBLIC nlohmann_json::nlohmann_json spdlog::spdlog GameNetworkingSockets::shared
 )
 
 add_executable(Launcher WIN32 src/launcher/launcher.cxx)

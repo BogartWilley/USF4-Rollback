@@ -2,13 +2,14 @@
   "name": "sf4e",
   "version-string": "0.0.1",
   "dependencies": [
-    "asio",
     "detours",
+    "gamenetworkingsockets",
     {
 
       "name": "imgui",
       "features": [ "dx9-binding", "win32-binding" ]
     },
+    "nlohmann-json",
     {
 
       "name": "spdlog",

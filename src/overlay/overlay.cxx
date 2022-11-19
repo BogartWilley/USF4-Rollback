@@ -621,24 +621,73 @@ void DrawMainMenuWindow(bool* pOpen) {
 	End();
 }
 
-void _NetworkTestCallback(const asio::error_code& error) {
-	MessageBox(NULL, TEXT("Network test callback done"), NULL, 0);
+void DrawNetworkCharaConfig(int& menuCharaID, rVsMode::ConfirmedCharaConditions& charaConditions) {
+	static const int stepSize = 1;
+	ImGui::Combo("Chara", &menuCharaID, Dimps::characterNames, 0x2c);
+	charaConditions.charaID = menuCharaID;
+	ImGui::InputScalar("Color", ImGuiDataType_U8, &charaConditions.color, &stepSize);
+	ImGui::InputScalar("Costume", ImGuiDataType_U8, &charaConditions.costume, &stepSize);
+	ImGui::InputScalar("Handicap", ImGuiDataType_U8, &charaConditions.handicap, &stepSize);
+	ImGui::InputScalar("Personal action", ImGuiDataType_U8, &charaConditions.personalAction, &stepSize);
+	ImGui::InputScalar("Ultra Combo", ImGuiDataType_U8, &charaConditions.ultraCombo, &stepSize);
+	ImGui::InputScalar("Edition", ImGuiDataType_U8, &charaConditions.unc_edition, &stepSize);
+	ImGui::InputScalar("Win quote", ImGuiDataType_U8, &charaConditions.winQuote, &stepSize);
 }
 
 void DrawNetworkWindow(bool* pOpen) {
-	static std::unique_ptr<asio::steady_timer> testTimer;
+	static uint16 hostPort = 23456;
+	static char joinAddr[64];
+	static int menuCharaID = 0;
+	static int stageID = 0;
+	static rVsMode::ConfirmedCharaConditions myConditions = { 0 };
+
 	Begin(
 		"Network",
 		pOpen,
 		ImGuiWindowFlags_None
 	);
 
-	if (Button("Set test Asio callback")) {
-		if (testTimer.get() == nullptr) {
-			testTimer.reset(new asio::steady_timer(*fUserApp::io_context));
+	if (BeginTabBar("Network window", ImGuiTabBarFlags_None)) {
+		if (BeginTabItem("Server")) {
+			if (!fUserApp::server) {
+				ImGui::InputScalar("Host port", ImGuiDataType_U16, &hostPort);
+				ImGui::Combo("Stage", &stageID, Dimps::stageNames, 30);
+				DrawNetworkCharaConfig(menuCharaID, myConditions);
+
+				if (fMainMenu::instance) {
+					if (Button("Listen")) {
+						fUserApp::StartServer(hostPort, myConditions, stageID);
+					}
+				}
+				else {
+					Text("Must be on the main menu to listen");
+				}
+			}
+			else {
+				Text("Server initialized");
+			}
+			EndTabItem();
 		}
-		testTimer->expires_after(std::chrono::seconds(5));
-		testTimer->async_wait(&_NetworkTestCallback);
+
+		if (BeginTabItem("Client")) {
+			if (!fUserApp::client) {
+				ImGui::InputText("Join addr", joinAddr, 64);
+				DrawNetworkCharaConfig(menuCharaID, myConditions);
+				if (fMainMenu::instance) {
+					if (Button("Join")) {
+						fUserApp::StartClient(joinAddr, myConditions);
+					}
+				}
+				else {
+					Text("Must be on the main menu to join");
+				}
+			}
+			else {
+				Text("Connecting or connected...");
+			}
+			EndTabItem();
+		}
+		EndTabBar();
 	}
 
 	End();
@@ -660,8 +709,6 @@ void DrawPadTable(DWORD* padData) {
 }
 
 void DrawPadWindow(bool* pOpen) {
-	static bool bShouldCapture = false;
-
 	Begin(
 		"Pad",
 		pOpen,
@@ -750,6 +797,7 @@ void DrawPadWindow(bool* pOpen) {
 					(p->*methods.GetAssigmentStatusForPlayer)(i)
 				);
 			}
+
 			EndTabItem();
 		}
 

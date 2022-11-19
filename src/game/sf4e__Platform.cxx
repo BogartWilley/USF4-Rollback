@@ -5,13 +5,17 @@
 #include <ShlObj.h>
 #include <Shlwapi.h>
 #include <strsafe.h>
+
 #include <detours/detours.h>
+#include <steam/steamnetworkingsockets.h>
+#include <steam/isteamnetworkingutils.h>
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 
 #include "Dimps__Platform.hxx"
 #include "sf4e__Platform.hxx"
+#include "sf4e__UserApp.hxx"
 #include "../overlay/overlay.h"
 
 namespace rPlatform = Dimps::Platform;
@@ -21,6 +25,7 @@ using rMain = rPlatform::Main;
 namespace fPlatform = sf4e::Platform;
 using fD3D = fPlatform::D3D;
 using fMain = fPlatform::Main;
+using fUserApp = sf4e::UserApp;
 
 void fPlatform::Install() {
     D3D::Install();
@@ -45,17 +50,14 @@ void fD3D::Destroy() {
 
 void fMain::Install() {
     int (fMain:: * _fInitialize)(void*, void*, void*) = &Initialize;
+    void (fMain:: * _fDestroy)() = &Destroy;
     DetourAttach((PVOID*)&rMain::publicMethods.Initialize, *(PVOID*)&_fInitialize);
+    DetourAttach((PVOID*)&rMain::publicMethods.Destroy, *(PVOID*)&_fDestroy);
     DetourAttach((PVOID*)&rMain::staticMethods.RunWindowFunc, &RunWindowFunc);
 }
 
 int fMain::Initialize(void* a, void* b, void* c) {
     int rval = (this->*(rMain::publicMethods.Initialize))(a, b, c);
-
-    // Once Dimps::Platform::Main is fully specified, we can stop doing this
-    // pointer math.
-    rMain::Win32_WindowData** windowData = (rMain::Win32_WindowData**)((unsigned int)this + 0x490);
-    InitializeOverlay((*windowData)->hWnd, Dimps::Platform::D3D::staticMethods.GetSingleton()->lpD3DDevice);
 
     // Set up spdlog
     PWSTR path;
@@ -82,7 +84,29 @@ int fMain::Initialize(void* a, void* b, void* c) {
     }
     CoTaskMemFree(path);
 
+    // Once Dimps::Platform::Main is fully specified, we can stop doing this
+    // pointer math.
+    rMain::Win32_WindowData** windowData = (rMain::Win32_WindowData**)((unsigned int)this + 0x490);
+    InitializeOverlay((*windowData)->hWnd, Dimps::Platform::D3D::staticMethods.GetSingleton()->lpD3DDevice);
+
+    SteamDatagramErrMsg errMsg;
+    if (!GameNetworkingSockets_Init(nullptr, errMsg)) {
+        spdlog::error("GameNetworkingSockets_Init failed.  {}", errMsg);
+    }
+
     return rval;
+}
+
+void fMain::Destroy() {
+    if (fUserApp::client) {
+        fUserApp::client.release();
+    }
+    if (fUserApp::server) {
+        fUserApp::server.release();
+    }
+    GameNetworkingSockets_Kill();
+    spdlog::shutdown();
+    (this->*rMain::publicMethods.Destroy)();
 }
 
 void WINAPI fMain::RunWindowFunc(rMain* lpMain, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {

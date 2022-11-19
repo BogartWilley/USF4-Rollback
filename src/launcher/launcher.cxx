@@ -63,11 +63,30 @@ int FindSF4(LPWSTR szGameDirectory, LPWSTR szExePath) {
 	return 1;
 }
 
+void FindCrypto(LPSTR szDllPathA) {
+	char szCwdBuffer[1024] = { 0 };
+	GetCurrentDirectoryA(1024, szCwdBuffer);
+	PathCombineA(szDllPathA, szCwdBuffer, "libcrypto-3.dll");
+}
+
 void FindFmt(LPSTR szDllPathA) {
 	char szCwdBuffer[1024] = { 0 };
 	GetCurrentDirectoryA(1024, szCwdBuffer);
 	PathCombineA(szDllPathA, szCwdBuffer, "fmtd.dll");
 }
+
+void FindGameNetworkingSockets(LPSTR szDllPathA) {
+	char szCwdBuffer[1024] = { 0 };
+	GetCurrentDirectoryA(1024, szCwdBuffer);
+	PathCombineA(szDllPathA, szCwdBuffer, "GameNetworkingSockets.dll");
+}
+
+void FindProtobuf(LPSTR szDllPathA) {
+	char szCwdBuffer[1024] = { 0 };
+	GetCurrentDirectoryA(1024, szCwdBuffer);
+	PathCombineA(szDllPathA, szCwdBuffer, "libprotobufd.dll");
+}
+
 
 void FindSidecar(LPSTR szDllPathA) {
 	char szCwdBuffer[1024] = { 0 };
@@ -165,10 +184,13 @@ int WINAPI wWinMain(
 ) {
 	wchar_t szGameDirectory[1024] = { 0 };
 	wchar_t szExePath[1024] = { 0 };
+	char szCryptoDllPathA[1024] = { 0 };
 	char szFmtDllPathA[1024] = { 0 };
+	char szGameNetworkingSocketsDllPathA[1024] = { 0 };
+	char szProtobufDllPathA[1024] = { 0 };
 	char szSidecarDllPathA[1024] = { 0 };
 	char szSpdlogDllPathA[1024] = { 0 };
-	int nDlls = 3;
+	int nDlls = 6;
 
 	// To prevent the need for manipulating the subprocess's import table,
 	// manipulating the subprocess's DLL search paths, or copying sf4e's
@@ -177,9 +199,12 @@ int WINAPI wWinMain(
 	// if the sidecar DLL depends on spdlog and spdlog is not injected first,
 	// spdlog won't be found via normal search paths and the SF4 will halt
 	// with an error.
-	const char* dlls[3] = {
+	const char* dlls[6] = {
 		szFmtDllPathA,
 		szSpdlogDllPathA,
+		szCryptoDllPathA,
+		szProtobufDllPathA,
+		szGameNetworkingSocketsDllPathA,
 		szSidecarDllPathA,
 	};
 
@@ -192,7 +217,10 @@ int WINAPI wWinMain(
 	else {
 		FindSF4(szGameDirectory, szExePath);
 	}
+	FindCrypto(szCryptoDllPathA);
 	FindFmt(szFmtDllPathA);
+	FindGameNetworkingSockets(szGameNetworkingSocketsDllPathA);
+	FindProtobuf(szProtobufDllPathA);
 	FindSidecar(szSidecarDllPathA);
 	FindSpdlog(szSpdlogDllPathA);
 	CreateAppIDFile(szGameDirectory);

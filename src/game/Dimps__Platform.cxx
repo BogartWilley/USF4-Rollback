@@ -35,5 +35,6 @@ void D3D::Locate(HMODULE peRoot) {
 void Main::Locate(HMODULE peRoot) {
     unsigned int peRootOffset = (unsigned int)peRoot;
     *(PVOID*)&publicMethods.Initialize = (PVOID)(peRootOffset + 0x37e3e0);
+    *(PVOID*)&publicMethods.Destroy = (PVOID)(peRootOffset + 0x37e6c0);
     staticMethods.RunWindowFunc = (void(WINAPI*)(Main*, HWND, UINT, WPARAM, LPARAM))(peRootOffset + 0x37eb20);
 }

@@ -59,11 +59,14 @@ provide the following dependencies:
 * [Dear Imgui](https://github.com/ocornut/imgui). Dear Imgui is used to
   provide custom overlays for new features and non-durable,
   development-time debugging.
-* [spdlog](https://github.com/gabime/spdlog). spdlog is used to provide
+* [spdlog](https://github.com/gabime/spdlog). `spdlog` is used to provide
   durable file logging, both at development time and in release builds.
-* [asio](https://think-async.com/Asio/). asio is used to provide
-  cross-platform asynchronous networking with a
-  [built-in duration-bound event processing loop method](https://think-async.com/Asio/asio-1.24.0/doc/asio/reference/io_context/run_for.html).
+* [nlohmann/json](https://github.com/nlohmann/json). `json` is used for
+  message serialization.
+* [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets/).
+  `GamenNetworkingSockets` provides a very helpful high-level API on top
+  of message passing, and additionally supports NAT hole punching if
+  a signalling server is run.
 
 ## License
 
@@ -92,5 +95,8 @@ Copyright © Omar Cornut
 spdlog
 Copyright © 2016 Gabi Melman.
 
-Asio
-Copyright © 2003-2022 Christopher M. Kohlhoff
+nlohmann/json
+Copyright © 2013-2022 Niels Lohmann
+
+GameNetworkingSockets
+Copyright © 2018, Valve Corporation

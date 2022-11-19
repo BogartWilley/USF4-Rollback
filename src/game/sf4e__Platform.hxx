@@ -20,6 +20,7 @@ namespace sf4e {
 			static void Install();
 
 			int Initialize(void*, void*, void*);
+			void Destroy();
 			static void WINAPI RunWindowFunc(Dimps::Platform::Main* lpMain, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 		};
 	}

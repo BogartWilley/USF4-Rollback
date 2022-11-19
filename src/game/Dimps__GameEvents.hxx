@@ -3,6 +3,8 @@
 #include <string>
 #include <windows.h>
 
+#include <nlohmann/json.hpp>
+
 #include "Dimps__Event.hxx"
 #include "Dimps__Platform.hxx"
 
@@ -177,5 +179,18 @@ namespace Dimps {
 			static __publicMethods publicMethods;
 			static __staticMethods staticMethods;
 		};
+
+		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+			VsMode::ConfirmedCharaConditions,
+			charaID,
+			costume,
+			color,
+			_unused,
+			personalAction,
+			winQuote,
+			ultraCombo,
+			handicap,
+			unc_edition
+		);
 	}
 }
