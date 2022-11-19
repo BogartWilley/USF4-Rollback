@@ -1421,7 +1421,7 @@ void DrawOverlay() {
 	}
 
 	if (show_system_window) {
-		DrawSystemWindow(&show_chara_window);
+		DrawSystemWindow(&show_system_window);
 	}
 
 	if (show_vfx_window) {
