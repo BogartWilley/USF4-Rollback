@@ -30,9 +30,11 @@
 
 #include "../game/sf4e__Event.hxx"
 #include "../game/sf4e__Game.hxx"
-#include "../game/sf4e__GameEvents.hxx"
+#include "../game/sf4e__Game__Battle.hxx"
+#include "../game/sf4e__Game__Battle__Hud.hxx"
 #include "../game/sf4e__Game__Battle__System.hxx"
 #include "../game/sf4e__Game__Battle__Vfx.hxx"
+#include "../game/sf4e__GameEvents.hxx"
 #include "../game/sf4e__Pad.hxx"
 #include "../game/sf4e__UserApp.hxx"
 
@@ -41,6 +43,7 @@
 
 namespace rVfx = Dimps::Game::Battle::Vfx;
 namespace rStageSelect = Dimps::GameEvents::StageSelect;
+namespace fHud = sf4e::Game::Battle::Hud;
 
 using CameraUnit = Dimps::Game::Battle::Camera::Unit;
 using CharaActor = Dimps::Game::Battle::Chara::Actor;
@@ -71,6 +74,7 @@ using Dimps::Math::FixedToFloat;
 using Dimps::Platform::dString;
 
 using fEventController = sf4e::Event::EventController;
+using fIUnit = sf4e::Game::Battle::IUnit;
 using fKey = sf4e::Game::GameMementoKey;
 using fSystem = sf4e::Game::Battle::System;
 using fColorFade = sf4e::Game::Battle::Vfx::ColorFade;
@@ -115,6 +119,7 @@ static bool show_command_window = false;
 static bool show_demo_window = false;
 static bool show_event_window = false;
 static bool show_help_window = false;
+static bool show_hud_window = false;
 static bool show_log_window = false;
 static bool show_main_menu_window = false;
 static bool show_memento_window = false;
@@ -1176,6 +1181,29 @@ void DrawHelpWindow(bool* pOpen) {
 	End();
 }
 
+void DrawHudWindow(bool* pOpen) {
+	Begin(
+		"HUD",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	if (fHud::bAllowHudUpdate) {
+		if (Button("Disable HUD updates")) {
+			fHud::bAllowHudUpdate = false;
+			fIUnit::bAllowHudUpdate = false;
+		}
+	}
+	else {
+		if (Button("Enable HUD updates")) {
+			fHud::bAllowHudUpdate = true;
+			fIUnit::bAllowHudUpdate = true;
+		}
+	}
+
+	End();
+}
+
 void DrawMementoWindow(bool* pOpen) {
 	static DWORD targetID = 2;
 	Begin(
@@ -1344,6 +1372,10 @@ void DrawOverlay() {
 					show_command_window = true;
 				}
 
+				if (MenuItem("HUD")) {
+					show_hud_window = true;
+				}
+
 				if (MenuItem("System")) {
 					show_system_window = true;
 				}
@@ -1402,6 +1434,10 @@ void DrawOverlay() {
 
 	if (show_event_window) {
 		DrawEventWindow(&show_event_window);
+	}
+
+	if (show_hud_window) {
+		DrawHudWindow(&show_hud_window);
 	}
 
 	if (show_log_window) {

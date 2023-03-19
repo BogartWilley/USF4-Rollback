@@ -7,10 +7,7 @@
 
 #include "Dimps__Game.hxx"
 #include "sf4e__Game.hxx"
-#include "sf4e__Game__Battle__Action.hxx"
-#include "sf4e__Game__Battle__Effect.hxx"
-#include "sf4e__Game__Battle__System.hxx"
-#include "sf4e__Game__Battle__Vfx.hxx"
+#include "sf4e__Game__Battle.hxx"
 
 namespace rGame = Dimps::Game;
 using rKey = rGame::GameMementoKey;
@@ -23,10 +20,7 @@ std::set<rKey*> fKey::trackedKeys;
 void (*fKey::SizeLogger)(rKey* k, int oldSize);
 
 void fGame::Install() {
-    Battle::Action::Install();
-    Battle::Effect::Install();
-    Battle::System::Install();
-    Battle::Vfx::Install();
+    Battle::Install();
     GameMementoKey::Install();
 }
 
