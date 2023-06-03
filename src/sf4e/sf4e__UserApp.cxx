@@ -8,10 +8,11 @@
 #include <GameNetworkingSockets/steam/isteamnetworkingutils.h>
 #include "spdlog/spdlog.h"
 
-#include "Dimps__GameEvents.hxx"
-#include "Dimps__UserApp.hxx"
-#include "sf4e__SessionClient.hxx"
-#include "sf4e__SessionServer.hxx"
+#include "../session/sf4e__SessionClient.hxx"
+#include "../session/sf4e__SessionServer.hxx"
+
+#include "../Dimps/Dimps__GameEvents.hxx"
+#include "../Dimps/Dimps__UserApp.hxx"
 #include "sf4e__UserApp.hxx"
 
 using rVsMode = Dimps::GameEvents::VsMode;

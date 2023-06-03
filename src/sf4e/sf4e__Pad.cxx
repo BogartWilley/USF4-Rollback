@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <detours/detours.h>
 
-#include "Dimps__Pad.hxx"
+#include "../Dimps/Dimps__Pad.hxx"
 #include "sf4e__Pad.hxx"
 
 namespace rPad = Dimps::Pad;

@@ -1,5 +1,5 @@
-#include "Dimps__Eva.hxx"
-#include "Dimps__Game__Battle.hxx"
+#include "../Dimps/Dimps__Eva.hxx"
+#include "../Dimps/Dimps__Game__Battle.hxx"
 
 #include "sf4e__Game__Battle.hxx"
 #include "sf4e__Game__Battle__Action.hxx"

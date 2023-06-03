@@ -1,11 +1,11 @@
 #include <windows.h>
 #include <detours/detours.h>
 
-#include "Dimps.hxx"
-#include "Dimps__Event.hxx"
-#include "Dimps__Game.hxx"
-#include "Dimps__GameEvents.hxx"
-#include "Dimps__Platform.hxx"
+#include "../Dimps/Dimps.hxx"
+#include "../Dimps/Dimps__Event.hxx"
+#include "../Dimps/Dimps__Game.hxx"
+#include "../Dimps/Dimps__GameEvents.hxx"
+#include "../Dimps/Dimps__Platform.hxx"
 #include "sf4e__Event.hxx"
 #include "sf4e__GameEvents.hxx"
 

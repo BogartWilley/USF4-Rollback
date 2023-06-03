@@ -1,7 +1,7 @@
 #pragma once
 
 #include <windows.h>
-#include "Dimps__Platform.hxx"
+#include "../Dimps/Dimps__Platform.hxx"
 
 namespace sf4e {
 	namespace Platform {

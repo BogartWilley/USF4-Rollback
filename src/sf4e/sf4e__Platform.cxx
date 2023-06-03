@@ -13,7 +13,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 
-#include "Dimps__Platform.hxx"
+#include "../Dimps/Dimps__Platform.hxx"
 #include "sf4e__Platform.hxx"
 #include "sf4e__UserApp.hxx"
 #include "../overlay/overlay.h"

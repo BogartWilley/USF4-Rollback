@@ -4,10 +4,10 @@
 
 #include <windows.h>
 
-#include "Dimps__GameEvents.hxx"
-#include "Dimps__UserApp.hxx"
-#include "sf4e__SessionClient.hxx"
-#include "sf4e__SessionServer.hxx"
+#include "../Dimps/Dimps__GameEvents.hxx"
+#include "../Dimps/Dimps__UserApp.hxx"
+#include "../session/sf4e__SessionClient.hxx"
+#include "../session/sf4e__SessionServer.hxx"
 
 namespace sf4e {
     struct UserApp : Dimps::UserApp

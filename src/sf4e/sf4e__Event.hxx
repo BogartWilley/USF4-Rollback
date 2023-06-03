@@ -2,7 +2,7 @@
 
 #include <windows.h>
 
-#include "Dimps__Event.hxx"
+#include "../Dimps/Dimps__Event.hxx"
 
 namespace sf4e {
 	namespace Event {

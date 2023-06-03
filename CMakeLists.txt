@@ -22,93 +22,105 @@ find_package(protobuf CONFIG REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
 find_path(VALVEFILEVDF_INCLUDE_DIRS "vdf_parser.hpp")
 
-add_library(Game STATIC
-    "src/game/Dimps.hxx"
-    "src/game/Dimps.cxx"
-    "src/game/Dimps__Eva.hxx"
-    "src/game/Dimps__Eva.cxx"
-    "src/game/Dimps__Event.hxx"
-    "src/game/Dimps__Event.cxx"
-    "src/game/Dimps__Game.hxx"
-    "src/game/Dimps__Game.cxx"
-
-    "src/game/Dimps__Game__Battle.hxx"
-    "src/game/Dimps__Game__Battle.cxx"
-    "src/game/Dimps__Game__Battle__Action.hxx"
-    "src/game/Dimps__Game__Battle__Action.cxx"
-    "src/game/Dimps__Game__Battle__Camera.hxx"
-    "src/game/Dimps__Game__Battle__Camera.cxx"
-    "src/game/Dimps__Game__Battle__Chara.hxx"
-    "src/game/Dimps__Game__Battle__Chara.cxx"
-    "src/game/Dimps__Game__Battle__Chara__Actor.hxx"
-    "src/game/Dimps__Game__Battle__Chara__Actor.cxx"
-    "src/game/Dimps__Game__Battle__Chara__Unit.hxx"
-    "src/game/Dimps__Game__Battle__Chara__Unit.cxx"
-    "src/game/Dimps__Game__Battle__Command.hxx"
-    "src/game/Dimps__Game__Battle__Command.cxx"
-    "src/game/Dimps__Game__Battle__Command__CommandImpl.hxx"
-    "src/game/Dimps__Game__Battle__Command__CommandImpl.cxx"
-    "src/game/Dimps__Game__Battle__Command__Unit.hxx"
-    "src/game/Dimps__Game__Battle__Command__Unit.cxx"
-    "src/game/Dimps__Game__Battle__Effect.hxx"
-    "src/game/Dimps__Game__Battle__Effect.cxx"
-    "src/game/Dimps__Game__Battle__GameManager.hxx"
-    "src/game/Dimps__Game__Battle__GameManager.cxx"
-    "src/game/Dimps__Game__Battle__Hud.hxx"
-    "src/game/Dimps__Game__Battle__Hud.cxx"
-    "src/game/Dimps__Game__Battle__System.hxx"
-    "src/game/Dimps__Game__Battle__System.cxx"
-    "src/game/Dimps__Game__Battle__Training.hxx"
-    "src/game/Dimps__Game__Battle__Training.cxx"
-    "src/game/Dimps__Game__Battle__Vfx.hxx"
-    "src/game/Dimps__Game__Battle__Vfx.cxx"
-
-    "src/game/Dimps__GameEvents.hxx"
-    "src/game/Dimps__GameEvents.cxx"
-    "src/game/Dimps__Math.hxx"
-    "src/game/Dimps__Math.cxx"
-    "src/game/Dimps__Pad.hxx"
-    "src/game/Dimps__Pad.cxx"
-    "src/game/Dimps__Platform.hxx"
-    "src/game/Dimps__Platform.cxx"
-    "src/game/Dimps__UserApp.hxx"
-    "src/game/Dimps__UserApp.cxx"
-
-    "src/game/sf4e.hxx"
-    "src/game/sf4e.cxx"
-    "src/game/sf4e__Event.hxx"
-    "src/game/sf4e__Event.cxx"
-    "src/game/sf4e__Game.hxx"
-    "src/game/sf4e__Game.cxx"
-    "src/game/sf4e__Game__Battle.hxx"
-    "src/game/sf4e__Game__Battle.cxx"
-    "src/game/sf4e__Game__Battle__Action.hxx"
-    "src/game/sf4e__Game__Battle__Action.cxx"
-    "src/game/sf4e__Game__Battle__Effect.hxx"
-    "src/game/sf4e__Game__Battle__Effect.cxx"
-    "src/game/sf4e__Game__Battle__Hud.hxx"
-    "src/game/sf4e__Game__Battle__Hud.cxx"
-    "src/game/sf4e__Game__Battle__System.hxx"
-    "src/game/sf4e__Game__Battle__System.cxx"
-    "src/game/sf4e__Game__Battle__Vfx.hxx"
-    "src/game/sf4e__Game__Battle__Vfx.cxx"
-    "src/game/sf4e__GameEvents.hxx"
-    "src/game/sf4e__GameEvents.cxx"
-    "src/game/sf4e__Pad.hxx"
-    "src/game/sf4e__Pad.cxx"
-    "src/game/sf4e__Platform.hxx"
-    "src/game/sf4e__Platform.cxx"
-    "src/game/sf4e__SessionClient.hxx"
-    "src/game/sf4e__SessionClient.cxx"
-    "src/game/sf4e__SessionProtocol.hxx"
-    "src/game/sf4e__SessionServer.hxx"
-    "src/game/sf4e__SessionServer.cxx"
-    "src/game/sf4e__UserApp.hxx"
-    "src/game/sf4e__UserApp.cxx"
+add_library(Dimps STATIC
+    "src/Dimps/Dimps.hxx"
+    "src/Dimps/Dimps.cxx"
+    "src/Dimps/Dimps__Eva.hxx"
+    "src/Dimps/Dimps__Eva.cxx"
+    "src/Dimps/Dimps__Event.hxx"
+    "src/Dimps/Dimps__Event.cxx"
+    "src/Dimps/Dimps__Game.hxx"
+    "src/Dimps/Dimps__Game.cxx"
+    "src/Dimps/Dimps__Game__Battle.hxx"
+    "src/Dimps/Dimps__Game__Battle.cxx"
+    "src/Dimps/Dimps__Game__Battle__Action.hxx"
+    "src/Dimps/Dimps__Game__Battle__Action.cxx"
+    "src/Dimps/Dimps__Game__Battle__Camera.hxx"
+    "src/Dimps/Dimps__Game__Battle__Camera.cxx"
+    "src/Dimps/Dimps__Game__Battle__Chara.hxx"
+    "src/Dimps/Dimps__Game__Battle__Chara.cxx"
+    "src/Dimps/Dimps__Game__Battle__Chara__Actor.hxx"
+    "src/Dimps/Dimps__Game__Battle__Chara__Actor.cxx"
+    "src/Dimps/Dimps__Game__Battle__Chara__Unit.hxx"
+    "src/Dimps/Dimps__Game__Battle__Chara__Unit.cxx"
+    "src/Dimps/Dimps__Game__Battle__Command.hxx"
+    "src/Dimps/Dimps__Game__Battle__Command.cxx"
+    "src/Dimps/Dimps__Game__Battle__Command__CommandImpl.hxx"
+    "src/Dimps/Dimps__Game__Battle__Command__CommandImpl.cxx"
+    "src/Dimps/Dimps__Game__Battle__Command__Unit.hxx"
+    "src/Dimps/Dimps__Game__Battle__Command__Unit.cxx"
+    "src/Dimps/Dimps__Game__Battle__Effect.hxx"
+    "src/Dimps/Dimps__Game__Battle__Effect.cxx"
+    "src/Dimps/Dimps__Game__Battle__GameManager.hxx"
+    "src/Dimps/Dimps__Game__Battle__GameManager.cxx"
+    "src/Dimps/Dimps__Game__Battle__Hud.hxx"
+    "src/Dimps/Dimps__Game__Battle__Hud.cxx"
+    "src/Dimps/Dimps__Game__Battle__System.hxx"
+    "src/Dimps/Dimps__Game__Battle__System.cxx"
+    "src/Dimps/Dimps__Game__Battle__Training.hxx"
+    "src/Dimps/Dimps__Game__Battle__Training.cxx"
+    "src/Dimps/Dimps__Game__Battle__Vfx.hxx"
+    "src/Dimps/Dimps__Game__Battle__Vfx.cxx"
+    "src/Dimps/Dimps__GameEvents.hxx"
+    "src/Dimps/Dimps__GameEvents.cxx"
+    "src/Dimps/Dimps__Math.hxx"
+    "src/Dimps/Dimps__Math.cxx"
+    "src/Dimps/Dimps__Pad.hxx"
+    "src/Dimps/Dimps__Pad.cxx"
+    "src/Dimps/Dimps__Platform.hxx"
+    "src/Dimps/Dimps__Platform.cxx"
+    "src/Dimps/Dimps__UserApp.hxx"
+    "src/Dimps/Dimps__UserApp.cxx"
 )
 target_link_libraries(
-    Game
-    PRIVATE ${LIB_DETOURS} "ws2_32" "Mswsock" "AdvApi32" "Shlwapi"
+    Dimps
+    PUBLIC nlohmann_json::nlohmann_json
+)
+
+add_library(sf4e STATIC
+    "src/sf4e/sf4e.hxx"
+    "src/sf4e/sf4e.cxx"
+    "src/sf4e/sf4e__Event.hxx"
+    "src/sf4e/sf4e__Event.cxx"
+    "src/sf4e/sf4e__Game.hxx"
+    "src/sf4e/sf4e__Game.cxx"
+    "src/sf4e/sf4e__Game__Battle.hxx"
+    "src/sf4e/sf4e__Game__Battle.cxx"
+    "src/sf4e/sf4e__Game__Battle__Action.hxx"
+    "src/sf4e/sf4e__Game__Battle__Action.cxx"
+    "src/sf4e/sf4e__Game__Battle__Effect.hxx"
+    "src/sf4e/sf4e__Game__Battle__Effect.cxx"
+    "src/sf4e/sf4e__Game__Battle__Hud.hxx"
+    "src/sf4e/sf4e__Game__Battle__Hud.cxx"
+    "src/sf4e/sf4e__Game__Battle__System.hxx"
+    "src/sf4e/sf4e__Game__Battle__System.cxx"
+    "src/sf4e/sf4e__Game__Battle__Vfx.hxx"
+    "src/sf4e/sf4e__Game__Battle__Vfx.cxx"
+    "src/sf4e/sf4e__GameEvents.hxx"
+    "src/sf4e/sf4e__GameEvents.cxx"
+    "src/sf4e/sf4e__Pad.hxx"
+    "src/sf4e/sf4e__Pad.cxx"
+    "src/sf4e/sf4e__Platform.hxx"
+    "src/sf4e/sf4e__Platform.cxx"
+    "src/sf4e/sf4e__UserApp.hxx"
+    "src/sf4e/sf4e__UserApp.cxx"
+)
+target_link_libraries(
+    sf4e
+    PRIVATE ${LIB_DETOURS} Session "Shlwapi"
+    PUBLIC nlohmann_json::nlohmann_json spdlog::spdlog
+)
+
+add_library(Session STATIC
+    "src/session/sf4e__SessionClient.hxx"
+    "src/session/sf4e__SessionClient.cxx"
+    "src/session/sf4e__SessionProtocol.hxx"
+    "src/session/sf4e__SessionServer.hxx"
+    "src/session/sf4e__SessionServer.cxx"
+)
+target_link_libraries(
+    Session
+    PRIVATE Dimps
     PUBLIC nlohmann_json::nlohmann_json spdlog::spdlog GameNetworkingSockets::shared
 )
 
@@ -117,11 +129,11 @@ target_include_directories(Launcher PRIVATE ${VALVEFILEVDF_INCLUDE_DIRS})
 target_link_libraries(Launcher PRIVATE ${LIB_DETOURS} "shlwapi")
 
 add_library(Overlay STATIC src/overlay/overlay.cxx src/overlay/overlay.h)
-target_link_libraries(Overlay PRIVATE "Xinput9_1_0" imgui::imgui Game)
+target_link_libraries(Overlay PRIVATE "Xinput9_1_0" imgui::imgui Dimps sf4e Session)
 
 add_library(Sidecar SHARED src/sidecar/sidecar.cxx)
 target_include_directories(Sidecar PRIVATE ${VALVEFILEVDF_INCLUDE_DIRS})
-target_link_libraries(Sidecar PRIVATE ${LIB_DETOURS} Game Overlay)
+target_link_libraries(Sidecar PRIVATE ${LIB_DETOURS} Dimps sf4e Overlay)
 
 target_compile_definitions(Launcher PRIVATE -D_UNICODE -DUNICODE)
 

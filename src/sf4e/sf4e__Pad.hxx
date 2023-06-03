@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Dimps__Pad.hxx"
+#include "../Dimps/Dimps__Pad.hxx"
 
 namespace sf4e {
 	namespace Pad {

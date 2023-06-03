@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Dimps__Game__Battle__Action.hxx"
+#include "../Dimps/Dimps__Game__Battle__Action.hxx"
 
 namespace sf4e {
 	namespace Game {

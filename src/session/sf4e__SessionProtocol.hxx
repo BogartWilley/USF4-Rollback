@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "Dimps__GameEvents.hxx"
+#include "../Dimps/Dimps__GameEvents.hxx"
 
 namespace sf4e {
 	namespace SessionProtocol {

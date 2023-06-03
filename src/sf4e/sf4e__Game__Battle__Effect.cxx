@@ -3,7 +3,7 @@
 
 #include "spdlog/spdlog.h"
 
-#include "Dimps__Game__Battle__Effect.hxx"
+#include "../Dimps/Dimps__Game__Battle__Effect.hxx"
 #include "sf4e__Game__Battle__Effect.hxx"
 
 namespace fEffect = sf4e::Game::Battle::Effect;

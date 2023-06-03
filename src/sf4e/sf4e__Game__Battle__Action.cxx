@@ -3,7 +3,7 @@
 
 #include "spdlog/spdlog.h"
 
-#include "Dimps__Game__Battle__Action.hxx"
+#include "../Dimps/Dimps__Game__Battle__Action.hxx"
 #include "sf4e__Game__Battle__Action.hxx"
 
 namespace fAction = sf4e::Game::Battle::Action;

@@ -7,6 +7,8 @@
 #include <GameNetworkingSockets/steam/steamnetworkingsockets.h>
 #include <GameNetworkingSockets/steam/isteamnetworkingutils.h>
 
+#include "../Dimps/Dimps__GameEvents.hxx"
+
 namespace sf4e {
 	const int SESSION_CLIENT_MAX_MESSAGES_PER_POLL = 20;
 

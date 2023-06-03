@@ -3,8 +3,8 @@
 
 #include "spdlog/spdlog.h"
 
-#include "Dimps__Game__Battle__Vfx.hxx"
-#include "Dimps__Platform.hxx"
+#include "../Dimps/Dimps__Game__Battle__Vfx.hxx"
+#include "../Dimps/Dimps__Platform.hxx"
 #include "sf4e__Game__Battle__Vfx.hxx"
 
 using Dimps::Platform::list_entry;

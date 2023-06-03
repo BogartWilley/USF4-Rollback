@@ -1,17 +1,17 @@
 #include <windows.h>
 #include <detours/detours.h>
 
-#include "Dimps__Game.hxx"
-#include "Dimps__Game__Battle__Camera.hxx"
-#include "Dimps__Game__Battle__Chara__Actor.hxx"
-#include "Dimps__Game__Battle__Chara__Unit.hxx"
-#include "Dimps__Game__Battle__Command__Unit.hxx"
-#include "Dimps__Game__Battle__Effect.hxx"
-#include "Dimps__Game__Battle__GameManager.hxx"
-#include "Dimps__Game__Battle__Hud.hxx"
-#include "Dimps__Game__Battle__System.hxx"
-#include "Dimps__Game__Battle__Training.hxx"
-#include "Dimps__Game__Battle__Vfx.hxx"
+#include "../Dimps/Dimps__Game.hxx"
+#include "../Dimps/Dimps__Game__Battle__Camera.hxx"
+#include "../Dimps/Dimps__Game__Battle__Chara__Actor.hxx"
+#include "../Dimps/Dimps__Game__Battle__Chara__Unit.hxx"
+#include "../Dimps/Dimps__Game__Battle__Command__Unit.hxx"
+#include "../Dimps/Dimps__Game__Battle__Effect.hxx"
+#include "../Dimps/Dimps__Game__Battle__GameManager.hxx"
+#include "../Dimps/Dimps__Game__Battle__Hud.hxx"
+#include "../Dimps/Dimps__Game__Battle__System.hxx"
+#include "../Dimps/Dimps__Game__Battle__Training.hxx"
+#include "../Dimps/Dimps__Game__Battle__Vfx.hxx"
 
 #include "sf4e__Game__Battle__System.hxx"
 #include "sf4e__Pad.hxx"

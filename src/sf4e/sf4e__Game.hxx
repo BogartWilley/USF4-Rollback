@@ -2,7 +2,7 @@
 
 #include <set>
 
-#include "Dimps__Game.hxx"
+#include "../Dimps/Dimps__Game.hxx"
 
 namespace sf4e {
 	namespace Game {

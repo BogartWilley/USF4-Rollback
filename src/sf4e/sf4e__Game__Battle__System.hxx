@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Dimps__Game.hxx"
-#include "Dimps__Game__Battle__System.hxx"
+#include "../Dimps/Dimps__Game.hxx"
+#include "../Dimps/Dimps__Game__Battle__System.hxx"
 
 namespace sf4e {
 	namespace Game {

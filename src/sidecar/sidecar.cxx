@@ -13,8 +13,8 @@
 
 #include <detours/detours.h>
 
-#include "../game/Dimps.hxx"
-#include "../game/sf4e.hxx"
+#include "../Dimps/Dimps.hxx"
+#include "../sf4e/sf4e.hxx"
 
 #include "sidecar.h"
 

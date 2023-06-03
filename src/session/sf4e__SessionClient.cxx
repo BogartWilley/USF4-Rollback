@@ -7,10 +7,10 @@
 #include <GameNetworkingSockets/steam/steamnetworkingsockets.h>
 #include <GameNetworkingSockets/steam/isteamnetworkingutils.h>
 
-#include "Dimps.hxx"
-#include "Dimps__Event.hxx"
-#include "Dimps__GameEvents.hxx"
-#include "sf4e__GameEvents.hxx"
+#include "../Dimps/Dimps.hxx"
+#include "../Dimps/Dimps__Event.hxx"
+#include "../Dimps/Dimps__GameEvents.hxx"
+#include "../sf4e/sf4e__GameEvents.hxx"
 #include "sf4e__SessionClient.hxx"
 #include "sf4e__SessionProtocol.hxx"
 

@@ -2,8 +2,8 @@
 
 #include <windows.h>
 
-#include "Dimps__Eva.hxx"
-#include "Dimps__Game__Battle__Hud.hxx"
+#include "../Dimps/Dimps__Eva.hxx"
+#include "../Dimps/Dimps__Game__Battle__Hud.hxx"
 
 namespace sf4e {
 	namespace Game {

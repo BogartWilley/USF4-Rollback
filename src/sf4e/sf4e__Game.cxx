@@ -5,7 +5,7 @@
 
 #include "spdlog/spdlog.h"
 
-#include "Dimps__Game.hxx"
+#include "../Dimps/Dimps__Game.hxx"
 #include "sf4e__Game.hxx"
 #include "sf4e__Game__Battle.hxx"
 
