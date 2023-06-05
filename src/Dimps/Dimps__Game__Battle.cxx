@@ -5,7 +5,6 @@
 #include "Dimps__Game__Battle__Camera.hxx"
 #include "Dimps__Game__Battle__Chara.hxx"
 #include "Dimps__Game__Battle__Command.hxx"
-#include "Dimps__Game__Battle__GameManager.hxx"
 #include "Dimps__Game__Battle__Effect.hxx"
 #include "Dimps__Game__Battle__Hud.hxx"
 #include "Dimps__Game__Battle__System.hxx"
@@ -13,8 +12,11 @@
 #include "Dimps__Game__Battle__Vfx.hxx"
 
 namespace Battle = Dimps::Game::Battle;
+using Battle::GameManager;
+using Battle::IUnit;
 
-Battle::IUnit::__publicMethods Battle::IUnit::publicMethods;
+GameManager::__publicMethods GameManager::publicMethods;
+IUnit::__publicMethods IUnit::publicMethods;
 
 void Battle::Locate(HMODULE peRoot) {
 	Action::Locate(peRoot);
@@ -30,8 +32,13 @@ void Battle::Locate(HMODULE peRoot) {
 	Vfx::Locate(peRoot);
 }
 
-void Battle::IUnit::Locate(HMODULE peRoot) {
+void IUnit::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	*(PVOID*)&publicMethods.SharedHudUpdate = (PVOID)(peRootOffset + 0x18ae90);
+}
+
+void GameManager::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+	*(PVOID*)&publicMethods.GetRoundTime = (PVOID)(peRootOffset + 0x1d14d0);
 }

@@ -4,17 +4,15 @@
 
 #include "Dimps__Eva.hxx"
 #include "Dimps__Game.hxx"
-#include "Dimps__Game__Battle__Chara__Unit.hxx"
-#include "Dimps__Game__Battle__GameManager.hxx"
+#include "Dimps__Game__Battle.hxx"
+#include "Dimps__Game__Battle__Chara.hxx"
 #include "Dimps__Math.hxx"
-
-using Dimps::Game::Battle::GameManager;
-using Dimps::Game::GameMementoKey;
-using Dimps::Math::FixedPoint;
 
 namespace Dimps {
     namespace Game {
         namespace Battle {
+            using Dimps::Math::FixedPoint;
+
             struct System
             {
                 enum BattleFlow {
