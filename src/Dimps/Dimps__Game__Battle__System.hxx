@@ -56,9 +56,18 @@ namespace Dimps {
                     TCI_RENDER = 1
                 };
 
-                typedef struct __privateMethods {
-                    // TODO
-                } __privateMethods;
+                typedef struct __staticVars {
+                    DWORD* CurrentBattleFlow;
+                    DWORD* PreviousBattleFlow;
+                    DWORD* CurrentBattleFlowSubstate;
+                    DWORD* PreviousBattleFlowSubstate;
+                    FixedPoint* CurrentBattleFlowFrame;
+                    FixedPoint* CurrentBattleFlowSubstateFrame;
+                    FixedPoint* PreviousBattleFlowSubstateFrame;
+                    FixedPoint* PreviousBattleFlowFrame;
+                    void(**BattleFlowCallback_CallEveryFrame_aa9254)(System* sys);
+                    void(**BattleFlowSubstateCallable_aa9258)(System* sys);
+                } __staticVars;
 
                 typedef struct __publicMethods {
                     void (System::* BattleUpdate)();
@@ -87,11 +96,9 @@ namespace Dimps {
                 } __staticMethods;
 
                 static void Locate(HMODULE peRoot);
-                static __privateMethods privateMethods;
                 static __publicMethods publicMethods;
                 static __staticMethods staticMethods;
-
-                // Instance values here
+                static __staticVars staticVars;
             };
         }
     }

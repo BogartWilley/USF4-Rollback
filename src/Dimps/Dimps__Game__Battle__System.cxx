@@ -1,12 +1,14 @@
 #include <windows.h>
 
 #include "Dimps__Game__Battle__System.hxx"
+#include "Dimps__Math.hxx"
 
 using Dimps::Game::Battle::System;
+using Dimps::Math::FixedPoint;
 
-System::__privateMethods System::privateMethods;
 System::__publicMethods System::publicMethods;
 System::__staticMethods System::staticMethods;
+System::__staticVars System::staticVars;
 
 void System::Locate(HMODULE peRoot) {
     unsigned int peRootOffset = (unsigned int)peRoot;
@@ -26,4 +28,15 @@ void System::Locate(HMODULE peRoot) {
     *(PVOID*)&publicMethods.GetTaskCore = (PVOID)(peRootOffset + 0x1d9930);
 
     staticMethods.GetSingleton = (System* (*)())(peRootOffset + 0x1dba30);
+
+    staticVars.CurrentBattleFlow = (DWORD*)(peRootOffset + 0x664994);
+    staticVars.PreviousBattleFlow = (DWORD*)(peRootOffset + 0x664998);
+    staticVars.CurrentBattleFlowSubstate = (DWORD*)(peRootOffset + 0x66499c);
+    staticVars.PreviousBattleFlowSubstate = (DWORD*)(peRootOffset + 0x6649a0);
+    staticVars.BattleFlowCallback_CallEveryFrame_aa9254 = (void(**)(System*))(peRootOffset + 0x6a9254);
+    staticVars.BattleFlowSubstateCallable_aa9258 = (void(**)(System*))(peRootOffset + 0x6a9258);
+    staticVars.PreviousBattleFlowSubstateFrame = (FixedPoint*)(peRootOffset + 0x6a925c);
+    staticVars.PreviousBattleFlowFrame = (FixedPoint*)(peRootOffset + 0x6a9260);
+    staticVars.CurrentBattleFlowFrame = (FixedPoint*)(peRootOffset + 0x6a9264);
+    staticVars.CurrentBattleFlowSubstateFrame = (FixedPoint*)(peRootOffset + 0x6a9268);
 }

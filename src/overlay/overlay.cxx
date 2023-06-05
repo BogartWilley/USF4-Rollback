@@ -858,9 +858,34 @@ void DrawSystemWindow(bool* pOpen) {
 
 	System* system = System::staticMethods.GetSingleton();
 	System::__publicMethods& methods = System::publicMethods;
-	int isFight = (system->*System::publicMethods.IsFight)();
+	System::__staticVars& staticVars = System::staticVars;
 
 	if (BeginTabBar("System tabs", ImGuiTabBarFlags_None)) {
+		if (BeginTabItem("Global state")) {
+			Text(
+				"Current battle flow: %d (previous %d)",
+				*staticVars.CurrentBattleFlow,
+				*staticVars.PreviousBattleFlow
+			);
+			Text(
+				"Current battle flow substate: %d (previous %d)",
+				*staticVars.CurrentBattleFlowSubstate,
+				*staticVars.PreviousBattleFlowSubstate
+			);
+			Text("Current every-frame callable: %p", *staticVars.BattleFlowCallback_CallEveryFrame_aa9254);
+			Text("Current substate callable: %p", *staticVars.BattleFlowSubstateCallable_aa9258);
+			Text(
+				"Battle flow moved from frame %d to frame %d",
+				staticVars.PreviousBattleFlowFrame->integral,
+				staticVars.CurrentBattleFlowFrame->integral
+			);
+			Text(
+				"Battle flow substate moved from frame %d to frame %d",
+				staticVars.PreviousBattleFlowSubstateFrame->integral,
+				staticVars.CurrentBattleFlowSubstateFrame->integral
+			);
+			EndTabItem();
+		}
 		if (BeginTabItem("Simulation control")) {
 			Text("Halt after next: %s", fSystem::bHaltAfterNext ? "true" : "false");
 			Text("Update allowed: %s", fSystem::bUpdateAllowed ? "true" : "false");
