@@ -545,6 +545,17 @@ void _OnPreBattleTasksRegistered() {
 
 	(stageName->*Dimps::Platform::dString::publicMethods.assign)(Dimps::stageCodes[mainMenuJumpStageID], 4);
 	*(rVsMode::GetStageCode(mode)) = mainMenuJumpStageID;
+
+	// Force some default input handling
+	PadSystem* padSys = PadSystem::staticMethods.GetSingleton();
+	PadSystem::__publicMethods& padSysMethods = Dimps::Pad::System::publicMethods;
+	(padSys->*padSysMethods.AssociatePlayerAndGamepad)(0, 0);
+	(padSys->*padSysMethods.SetDeviceTypeForPlayer)(0, 1);
+	(padSys->*padSysMethods.SetSideHasAssignedController)(0, 1);
+	(padSys->*padSysMethods.AssociatePlayerAndGamepad)(1, 1);
+	(padSys->*padSysMethods.SetDeviceTypeForPlayer)(1, 1);
+	(padSys->*padSysMethods.SetSideHasAssignedController)(1, 1);
+	(padSys->*padSysMethods.SetActiveButtonMapping)(PadSystem::BUTTON_MAPPING_FIGHT);
 }
 
 void DrawMainMenuWindow(bool* pOpen) {

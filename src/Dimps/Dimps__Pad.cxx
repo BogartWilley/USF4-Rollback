@@ -8,6 +8,9 @@ using Pad::System;
 System::__publicMethods System::publicMethods;
 System::__staticMethods System::staticMethods;
 
+const int System::BUTTON_MAPPING_FIGHT = 0;
+const int System::BUTTON_MAPPING_MENU = 1;
+
 void Pad::Locate(HMODULE peRoot) {
 	System::Locate(peRoot);
 }
@@ -25,6 +28,10 @@ void System::Locate(HMODULE peRoot) {
 	*(PVOID*)(&publicMethods.GetDeviceIndexForPlayer) = (PVOID)(peRootOffset + 0x117240);
 	*(PVOID*)(&publicMethods.GetDeviceTypeForPlayer) = (PVOID)(peRootOffset + 0x117290);
 	*(PVOID*)(&publicMethods.GetAssigmentStatusForPlayer) = (PVOID)(peRootOffset + 0x1173c0);
+	*(PVOID*)(&publicMethods.AssociatePlayerAndGamepad) = (PVOID)(peRootOffset + 0x117530);
+	*(PVOID*)(&publicMethods.SetSideHasAssignedController) = (PVOID)(peRootOffset + 0x117360);
+	*(PVOID*)(&publicMethods.SetDeviceTypeForPlayer) = (PVOID)(peRootOffset + 0x117270);
+	*(PVOID*)(&publicMethods.SetActiveButtonMapping) = (PVOID)(peRootOffset + 0x110170);
 
 	staticMethods.GetSingleton = (System * (*)())(peRootOffset + 0x119480);
 }
