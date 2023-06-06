@@ -27,6 +27,8 @@ void System::Locate(HMODULE peRoot) {
 
     *(PVOID*)&publicMethods.GetTaskCore = (PVOID)(peRootOffset + 0x1d9930);
 
+    *(PVOID*)&publicMethods.GetGameMode = (PVOID)(peRootOffset + 0x1d97c0);
+
     staticMethods.GetSingleton = (System* (*)())(peRootOffset + 0x1dba30);
 
     staticVars.CurrentBattleFlow = (DWORD*)(peRootOffset + 0x664994);
@@ -39,4 +41,8 @@ void System::Locate(HMODULE peRoot) {
     staticVars.PreviousBattleFlowFrame = (FixedPoint*)(peRootOffset + 0x6a9260);
     staticVars.CurrentBattleFlowFrame = (FixedPoint*)(peRootOffset + 0x6a9264);
     staticVars.CurrentBattleFlowSubstateFrame = (FixedPoint*)(peRootOffset + 0x6a9268);
+}
+
+int* System::GetBattleExitType(System* s) {
+    return (int*)((unsigned int)s + 0xe40);
 }

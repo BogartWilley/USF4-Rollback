@@ -56,6 +56,36 @@ namespace Dimps {
                     TCI_RENDER = 1
                 };
 
+                enum BattleExitType {
+                    // A non-arcade battle has ended, or an arcade battle has
+                    // ended in the player's favor. This may mean displaying
+                    // a menu to the users (like versus mode), or it may not
+                    // (like network mode).
+                    BET_RESULT = 0x0,
+
+                    // Only used by Arcade mode, to return to the main menu
+                    // when the player doesn't continue.
+                    BET_GAMEOVER = 0x1,
+
+                    // Only used by Arcade mode, to return to the character
+                    // select screen when the player continues.
+                    BET_CONTINUE = 0x2,
+
+                    // A user paused and selected "exit to main menu", "stop
+                    // replay", or otherwise backed completely out of the game.
+                    BET_PAUSE_TOMAINMENU = 0x3,
+
+                    // A user paused and selected "exit to character select",
+                    // from any of the modes that support that.
+                    BET_PAUSE_TOCHARACTER = 0x4,
+
+                    // In trials, the user selected "to next trial" from the
+                    // pause menu.
+                    BET_TRIAL_TONEXTTRIAL = 0x7,
+
+                    BET_UNDEFINED = 0xffffffff
+                };
+
                 typedef struct __staticVars {
                     DWORD* CurrentBattleFlow;
                     DWORD* PreviousBattleFlow;
@@ -89,6 +119,8 @@ namespace Dimps {
 
                     void (System::* RecordToInternalMementoKey)(GameMementoKey::MementoID* id);
                     void (System::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
+
+                    int (System::* GetGameMode)();
                 } __publicMethods;
 
                 typedef struct __staticMethods {
@@ -96,6 +128,7 @@ namespace Dimps {
                 } __staticMethods;
 
                 static void Locate(HMODULE peRoot);
+                static int* GetBattleExitType(System* s);
                 static __publicMethods publicMethods;
                 static __staticMethods staticMethods;
                 static __staticVars staticVars;

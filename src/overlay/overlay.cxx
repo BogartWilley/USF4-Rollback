@@ -862,6 +862,8 @@ void DrawSystemWindow(bool* pOpen) {
 
 	if (BeginTabBar("System tabs", ImGuiTabBarFlags_None)) {
 		if (BeginTabItem("Global state")) {
+			Text("Game mode: %d", (system->*methods.GetGameMode)());
+			ImGui::InputInt("Battle exit type", System::GetBattleExitType(system));
 			Text(
 				"Current battle flow: %d (previous %d)",
 				*staticVars.CurrentBattleFlow,

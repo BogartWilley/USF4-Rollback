@@ -33,7 +33,7 @@ bool fVsPreBattle::bSkipToVersus = false;
 
 char* fRootEvent::eventFlowDescription = R"(	Boot, 0, Title,										
 LogoCapcom, 0, LogoNvidia, BLACK, 10.0f, BLACK, 10.0f			
-tLogoCapcom, 1, Title, BLACK, 10.0f, BLACK, 10.0f			
+LogoCapcom, 1, Title, BLACK, 10.0f, BLACK, 10.0f			
 	LogoNvidia, 0, LogoDolby, BLACK, 10.0f, BLACK, 10.0f			
 	LogoNvidia, 1, Title, BLACK, 10.0f, BLACK, 10.0f			
 LogoDolby, 0, LogoCRI, BLACK, 10.0f, BLACK, 10.0f			
