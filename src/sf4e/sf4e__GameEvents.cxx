@@ -10,8 +10,11 @@
 #include "sf4e__GameEvents.hxx"
 
 namespace rGameEvents = Dimps::GameEvents;
+using rEventBase = Dimps::Event::EventBase;
+using rEventController = Dimps::Event::EventController;
 using rMainMenu = rGameEvents::MainMenu;
 using rRootEvent = rGameEvents::RootEvent;
+using rVsBattle = rGameEvents::VsBattle;
 using rVsCharaSelect = rGameEvents::VsCharaSelect;
 using rVsMode = rGameEvents::VsMode;
 using rVsPreBattle = rGameEvents::VsPreBattle;
@@ -20,6 +23,7 @@ using rVsStageSelect = rGameEvents::VsStageSelect;
 namespace fGameEvents = sf4e::GameEvents;
 using fMainMenu = fGameEvents::MainMenu;
 using fRootEvent = fGameEvents::RootEvent;
+using fVsBattle = fGameEvents::VsBattle;
 using fVsCharaSelect = fGameEvents::VsCharaSelect;
 using fVsMode = fGameEvents::VsMode;
 using fVsPreBattle = fGameEvents::VsPreBattle;
@@ -29,6 +33,7 @@ rMainMenu* fMainMenu::instance = nullptr;
 rVsMode* fVsMode::instance = nullptr;
 void (*fVsPreBattle::OnTasksRegistered)() = nullptr;
 
+bool fVsBattle::bGoToMainMenuOnEnd = false;
 bool fVsPreBattle::bSkipToVersus = false;
 
 char* fRootEvent::eventFlowDescription = R"(	Boot, 0, Title,										
@@ -107,6 +112,7 @@ rVsStageSelect* fVsStageSelect::instance;
 void fGameEvents::Install() {
 	MainMenu::Install();
 	RootEvent::Install();
+	VsBattle::Install();
 	VsCharaSelect::Install();
 	VsMode::Install();
 	VsPreBattle::Install();
@@ -146,8 +152,29 @@ void fRootEvent::Install() {
 	*rRootEvent::eventFlowDefinition = fRootEvent::eventFlowDescription;
 }
 
+void fVsBattle::Install() {
+	int (fVsBattle:: * _fCheckAndMaybeExitBasedOnBattleType)() = &CheckAndMaybeExitBasedOnExitType;
+	DetourAttach(
+		(PVOID*)&fVsBattle::privateMethods.CheckAndMaybeExitBasedOnExitType,
+		*(PVOID*)&_fCheckAndMaybeExitBasedOnBattleType
+	);
+}
+
+
+int fVsBattle::CheckAndMaybeExitBasedOnExitType() {
+	if (bGoToMainMenuOnEnd) {
+		bGoToMainMenuOnEnd = false;
+		rEventController* c = *rEventBase::GetSourceController(this);
+		(c->*rEventController::publicMethods.EnterTerminalState)(0, 0);
+		return 1;
+	}
+
+	return (this->*rVsBattle::privateMethods.CheckAndMaybeExitBasedOnExitType)();
+}
+
+
 void fVsCharaSelect::Install() {
-	void* (fVsCharaSelect::* _fDestroy)(DWORD) = &Destroy;
+	void* (fVsCharaSelect:: * _fDestroy)(DWORD) = &Destroy;
 	DetourAttach((PVOID*)&rVsCharaSelect::publicMethods.Destroy, *(PVOID*)&_fDestroy);
 	DetourAttach((PVOID*)&rVsCharaSelect::staticMethods.Factory, &Factory);
 }

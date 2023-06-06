@@ -24,6 +24,7 @@ void EventController::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	*(PVOID*)&publicMethods.CreateEventWithFlow = (PVOID)(peRootOffset + 0x2aab50);
+	*(PVOID*)&publicMethods.EnterTerminalState = (PVOID)(peRootOffset + 0x2aa3f0);
 	*(PVOID*)&publicMethods.QueueEvent = (PVOID)(peRootOffset + 0x2ab3b0);
 	*(PVOID*)&publicMethods.RunUpdate = (PVOID)(peRootOffset + 0x2aac80);
 }

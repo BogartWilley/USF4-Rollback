@@ -104,6 +104,17 @@ namespace Dimps {
 			static __staticMethods staticMethods;
 		};
 
+
+		struct VsBattle : Dimps::Event::EventBase {
+			static void Locate(HMODULE peRoot);
+
+			typedef struct __privateMethods {
+				int (VsBattle::* CheckAndMaybeExitBasedOnExitType)();
+			} __publicMethods;
+
+			static __privateMethods privateMethods;
+		};
+
 		struct VsMode : Dimps::Event::EventBase {
 			struct ConfirmedCharaConditions {
 				BYTE charaID;

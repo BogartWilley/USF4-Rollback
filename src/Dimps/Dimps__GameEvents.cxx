@@ -8,6 +8,7 @@ namespace StageSelect = Dimps::GameEvents::StageSelect;
 
 using Dimps::GameEvents::MainMenu;
 using Dimps::GameEvents::RootEvent;
+using Dimps::GameEvents::VsBattle;
 using Dimps::GameEvents::VsCharaSelect;
 using Dimps::GameEvents::VsMode;
 using Dimps::GameEvents::VsPreBattle;
@@ -17,6 +18,7 @@ using Dimps::Platform::dString;
 MainMenu::__publicMethods MainMenu::publicMethods;
 MainMenu::__staticMethods MainMenu::staticMethods;
 char** RootEvent::eventFlowDefinition;
+VsBattle::__privateMethods VsBattle::privateMethods;
 VsCharaSelect::__publicMethods VsCharaSelect::publicMethods;
 VsCharaSelect::__staticMethods VsCharaSelect::staticMethods;
 VsMode::__publicMethods VsMode::publicMethods;
@@ -30,6 +32,7 @@ void GameEvents::Locate(HMODULE peRoot) {
 	MainMenu::Locate(peRoot);
 	RootEvent::Locate(peRoot);
 	StageSelect::Locate(peRoot);
+	VsBattle::Locate(peRoot);
 	VsCharaSelect::Locate(peRoot);
 	VsMode::Locate(peRoot);
 	VsPreBattle::Locate(peRoot);
@@ -38,6 +41,12 @@ void GameEvents::Locate(HMODULE peRoot) {
 
 void StageSelect::Locate(HMODULE peRoot) {
 	Control::Locate(peRoot);
+}
+
+void VsBattle::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&privateMethods.CheckAndMaybeExitBasedOnExitType = (PVOID)(peRootOffset + 0x23b9f0);
 }
 
 void MainMenu::Locate(HMODULE peRoot) {

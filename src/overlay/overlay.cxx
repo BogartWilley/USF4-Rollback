@@ -78,6 +78,7 @@ using fKey = sf4e::Game::GameMementoKey;
 using fSystem = sf4e::Game::Battle::System;
 using fColorFade = sf4e::Game::Battle::Vfx::ColorFade;
 using fMainMenu = sf4e::GameEvents::MainMenu;
+using fVsBattle = sf4e::GameEvents::VsBattle;
 using fVsCharaSelect = sf4e::GameEvents::VsCharaSelect;
 using fVsMode = sf4e::GameEvents::VsMode;
 using fVsPreBattle = sf4e::GameEvents::VsPreBattle;
@@ -127,6 +128,7 @@ static bool show_pad_window = false;
 static bool show_system_window = false;
 static bool show_task_window = false;
 static bool show_vfx_window = false;
+static bool show_vsbattle_window = false;
 static bool show_vscharaselect_window = false;
 static bool show_vsstageselect_window = false;
 static int nExtraFramesToSimulate = 1;
@@ -1127,6 +1129,18 @@ void DrawVsCharaPlayerPanel(VsCharaSelect::PlayerConditions* c) {
 	Text("Handicap: %d", *VsCharaSelect::PlayerConditions::GetHandicap(c));
 }
 
+void DrawVsBattleWindow(bool* pOpen) {
+	Begin(
+		"VsBattle",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	ImGui::Checkbox("Skip results menu on next result?", &fVsBattle::bGoToMainMenuOnEnd);
+
+	End();
+}
+
 void DrawVsCharaSelectWindow(bool* pOpen) {
 	// This should be deleted when a more fully-featured character select
 	// writing implementation is done, but is useful in the short term to
@@ -1391,6 +1405,9 @@ void DrawOverlay() {
 				if (MenuItem("MainMenu")) {
 					show_main_menu_window = true;
 				}
+				if (MenuItem("VsBattle")) {
+					show_vsbattle_window = true;
+				}
 				if (MenuItem("VsCharaSelect")) {
 					show_vscharaselect_window = true;
 				}
@@ -1499,6 +1516,10 @@ void DrawOverlay() {
 
 	if (show_vfx_window) {
 		DrawVfxWindow(&show_vfx_window);
+	}
+
+	if (show_vsbattle_window) {
+		DrawVsBattleWindow(&show_vsbattle_window);
 	}
 
 	if (show_vscharaselect_window) {

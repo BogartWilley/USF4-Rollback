@@ -34,6 +34,13 @@ namespace sf4e {
 			static void Install();
 		};
 
+		struct VsBattle : Dimps::GameEvents::VsBattle
+		{
+			int CheckAndMaybeExitBasedOnExitType();
+			static bool bGoToMainMenuOnEnd;
+			static void Install();
+		};
+
 		struct VsCharaSelect : Dimps::GameEvents::VsCharaSelect
 		{
 			void* Destroy(DWORD arg1);

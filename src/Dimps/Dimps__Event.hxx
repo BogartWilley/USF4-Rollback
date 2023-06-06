@@ -11,6 +11,7 @@ namespace Dimps {
 
 			typedef struct __publicMethods {
 				void (EventController::* CreateEventWithFlow)(DWORD arg1, DWORD arg2, DWORD arg3, DWORD arg4, DWORD arg5);
+				void (EventController::* EnterTerminalState)(DWORD arg1, DWORD arg2);
 				void (EventController::* QueueEvent)(char* eventName, DWORD arg1, DWORD arg2, DWORD arg3);
 				void (EventController::* RunUpdate)();
 			} __publicMethods;
