@@ -11,6 +11,7 @@ namespace sf4e {
 				static bool bHaltAfterNext;
 				static bool bUpdateAllowed;
 				static int nExtraFramesToSimulate;
+				static int nNextBattleStartFlowTarget;
 				static Dimps::Game::GameMementoKey::MementoID loadRequest;
 				static Dimps::Game::GameMementoKey::MementoID saveRequest;
 
@@ -19,6 +20,7 @@ namespace sf4e {
 				static void RecordAllToInternalMementos(Dimps::Game::Battle::System* system, Dimps::Game::GameMementoKey::MementoID* id);
 
 				void BattleUpdate();
+				static void OnBattleFlow_BattleStart(System* s);
 				void SysMain_HandleTrainingModeFeatures();
 			};
 		}

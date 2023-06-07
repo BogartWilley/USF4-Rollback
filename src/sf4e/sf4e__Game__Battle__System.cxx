@@ -32,6 +32,7 @@ using fSystem = sf4e::Game::Battle::System;
 bool fSystem::bHaltAfterNext = false;
 bool fSystem::bUpdateAllowed = true;
 int fSystem::nExtraFramesToSimulate = 0;
+int fSystem::nNextBattleStartFlowTarget = -1;
 
 GameMementoKey::MementoID fSystem::loadRequest = { 0xffffffff, 0xffffffff };
 GameMementoKey::MementoID fSystem::saveRequest = { 0xffffffff, 0xffffffff };
@@ -41,6 +42,7 @@ void fSystem::Install() {
     void (fSystem:: * _fSysMain_HandleTrainingModeFeatures)() = &SysMain_HandleTrainingModeFeatures;
     DetourAttach((PVOID*)&rSystem::publicMethods.BattleUpdate, *(PVOID*)&_fBattleUpdate);
     DetourAttach((PVOID*)&rSystem::publicMethods.SysMain_HandleTrainingModeFeatures, *(PVOID*)&_fSysMain_HandleTrainingModeFeatures);
+    DetourAttach((PVOID*)&rSystem::staticMethods.OnBattleFlow_BattleStart, OnBattleFlow_BattleStart);
 }
 
 void fSystem::BattleUpdate() {
@@ -63,6 +65,16 @@ void fSystem::BattleUpdate() {
             bUpdateAllowed = false;
         }
     }
+}
+
+void fSystem::OnBattleFlow_BattleStart(System* s) {
+    if (nNextBattleStartFlowTarget > -1) {
+        rSystem::staticMethods.SetBattleFlow(s, nNextBattleStartFlowTarget);
+        nNextBattleStartFlowTarget = -1;
+        return;
+    }
+
+    return rSystem::staticMethods.OnBattleFlow_BattleStart(s);
 }
 
 void fSystem::SysMain_HandleTrainingModeFeatures() {

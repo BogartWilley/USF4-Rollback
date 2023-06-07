@@ -29,7 +29,9 @@ void System::Locate(HMODULE peRoot) {
 
     *(PVOID*)&publicMethods.GetGameMode = (PVOID)(peRootOffset + 0x1d97c0);
 
-    staticMethods.GetSingleton = (System* (*)())(peRootOffset + 0x1dba30);
+    staticMethods.GetSingleton = (System * (*)())(peRootOffset + 0x1dba30);
+    staticMethods.SetBattleFlow = (void(*)(System*, int))(peRootOffset + 0x1dce90);
+    staticMethods.OnBattleFlow_BattleStart = (void(*)(System*))(peRootOffset + 0x1dd350);
 
     staticVars.CurrentBattleFlow = (DWORD*)(peRootOffset + 0x664994);
     staticVars.PreviousBattleFlow = (DWORD*)(peRootOffset + 0x664998);

@@ -125,6 +125,8 @@ namespace Dimps {
 
                 typedef struct __staticMethods {
                     System* (*GetSingleton)();
+                    void (*OnBattleFlow_BattleStart)(System* s);
+                    void (*SetBattleFlow)(System* s, int newFlow);
                 } __staticMethods;
 
                 static void Locate(HMODULE peRoot);
