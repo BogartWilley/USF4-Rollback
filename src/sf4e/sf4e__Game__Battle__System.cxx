@@ -48,22 +48,24 @@ void fSystem::Install() {
 void fSystem::BattleUpdate() {
     rSystem* _this = (rSystem*)this;
 
-    if (bUpdateAllowed) {
-        if (nExtraFramesToSimulate > 0) {
-            for (int i = 0; i < nExtraFramesToSimulate; i++) {
-                fPadSystem::playbackFrame = i;
-                (_this->*rSystem::publicMethods.BattleUpdate)();
-            }
-            fPadSystem::playbackFrame = -1;
-            nExtraFramesToSimulate = 0;
-        }
+    if (!bUpdateAllowed) {
+        return;
+    }
 
-        (_this->*rSystem::publicMethods.BattleUpdate)();
-
-        if (bHaltAfterNext) {
-            bHaltAfterNext = false;
-            bUpdateAllowed = false;
+    if (nExtraFramesToSimulate > 0) {
+        for (int i = 0; i < nExtraFramesToSimulate; i++) {
+            fPadSystem::playbackFrame = i;
+            (_this->*rSystem::publicMethods.BattleUpdate)();
         }
+        fPadSystem::playbackFrame = -1;
+        nExtraFramesToSimulate = 0;
+    }
+
+    (_this->*rSystem::publicMethods.BattleUpdate)();
+
+    if (bHaltAfterNext) {
+        bHaltAfterNext = false;
+        bUpdateAllowed = false;
     }
 }
 
