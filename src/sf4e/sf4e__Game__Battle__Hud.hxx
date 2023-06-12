@@ -13,6 +13,11 @@ namespace sf4e {
 
 				void Install();
 				extern bool bAllowHudUpdate;
+				
+				struct Unit : Dimps::Game::Battle::Hud::Unit {
+					static void Install();
+					static Dimps::Game::Battle::Hud::Unit* Factory(DWORD arg1, DWORD arg2);
+				};
 
 				namespace Announce {
 					struct Unit : Dimps::Game::Battle::Hud::Announce::Unit {

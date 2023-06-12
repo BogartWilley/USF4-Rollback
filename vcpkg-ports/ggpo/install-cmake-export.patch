@@ -1,0 +1,30 @@
+From 8db570ca0cf49e6719a15eb529a437b25a773e47 Mon Sep 17 00:00:00 2001
+From: xxx
+Date: Sat, 19 Nov 2022 00:08:12 -0800
+Subject: [PATCH] export patch
+
+---
+ src/CMakeLists.txt | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/src/CMakeLists.txt b/src/CMakeLists.txt
+index 4f9ce52..1028751 100644
+--- a/src/CMakeLists.txt
++++ b/src/CMakeLists.txt
+@@ -40,6 +40,13 @@ install(
+ 	ARCHIVE DESTINATION lib
+ )
+ 
++install(
++	EXPORT ggpo
++        NAMESPACE ggpo::
++        DESTINATION share/ggpo
++	FILE ggpo-config.cmake
++)
++
+ if(MSVC)
+ 	if(BUILD_SHARED_LIBS)
+ 		install(
+-- 
+2.18.0.windows.1
+

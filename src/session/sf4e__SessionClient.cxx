@@ -10,7 +10,11 @@
 #include "../Dimps/Dimps.hxx"
 #include "../Dimps/Dimps__Event.hxx"
 #include "../Dimps/Dimps__GameEvents.hxx"
+#include "../Dimps/Dimps__Pad.hxx"
+
 #include "../sf4e/sf4e__GameEvents.hxx"
+#include "../sf4e/sf4e__Game__Battle__System.hxx"
+
 #include "sf4e__SessionClient.hxx"
 #include "sf4e__SessionProtocol.hxx"
 
@@ -21,6 +25,7 @@ using Dimps::Event::EventBase;
 using Dimps::Event::EventController;
 using rVsMode = Dimps::GameEvents::VsMode;
 using fMainMenu = sf4e::GameEvents::MainMenu;
+using fSystem = sf4e::Game::Battle::System;
 using fVsMode = sf4e::GameEvents::VsMode;
 using fVsPreBattle = sf4e::GameEvents::VsPreBattle;
 using sf4e::SessionClient;
@@ -85,6 +90,7 @@ void SessionClient::PollIncomingMessages()
 
 		const char* start = (const char*)pIncomingMsg->m_pData;
 		json msg = json::parse(start, start + pIncomingMsg->m_cbSize);
+		SteamNetworkingIPAddr peerAddr = *(pIncomingMsg->m_identityPeer.GetIPAddr());
 		pIncomingMsg->Release();
 
 		std::string type;
@@ -114,6 +120,17 @@ void SessionClient::PollIncomingMessages()
 				continue;
 			}
 
+			// Hack to configure inputs
+			Dimps::Pad::System* padSys = Dimps::Pad::System::staticMethods.GetSingleton();
+			Dimps::Pad::System::__publicMethods& padSysMethods = Dimps::Pad::System::publicMethods;
+			(padSys->*padSysMethods.AssociatePlayerAndGamepad)(0, 0);
+			(padSys->*padSysMethods.SetDeviceTypeForPlayer)(0, 1);
+			(padSys->*padSysMethods.SetSideHasAssignedController)(0, 1);
+			(padSys->*padSysMethods.AssociatePlayerAndGamepad)(1, 1);
+			(padSys->*padSysMethods.SetDeviceTypeForPlayer)(1, 1);
+			(padSys->*padSysMethods.SetSideHasAssignedController)(1, 1);
+			(padSys->*padSysMethods.SetActiveButtonMapping)(Dimps::Pad::System::BUTTON_MAPPING_FIGHT);
+
 			size_t charaConditionSize = sizeof(rVsMode::ConfirmedCharaConditions);
 			memcpy_s(&confirmedConditions[0], charaConditionSize, &response.chara, charaConditionSize);
 			confirmedStageID = response.stageID;
@@ -121,6 +138,9 @@ void SessionClient::PollIncomingMessages()
 			fVsPreBattle::bSkipToVersus = true;
 			fVsPreBattle::OnTasksRegistered = _OnVsPreBattleTasksRegistered;
 			fMainMenu::GoToVersusBattle();
+
+			// Start the GGPO connection
+			fSystem::StartGGPO(0, &peerAddr);
 		}
 		else {
 			spdlog::warn("Server: got unrecognized message type: {}", type);

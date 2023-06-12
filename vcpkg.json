@@ -4,6 +4,7 @@
   "dependencies": [
     "detours",
     "gamenetworkingsockets",
+    "ggpo",
     {
 
       "name": "imgui",

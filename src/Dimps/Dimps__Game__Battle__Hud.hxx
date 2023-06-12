@@ -34,29 +34,6 @@ namespace Dimps {
 				// compiler- but it is at least functional.
 				extern void (IUnit::* SharedHudUpdate)(Task** task);
 
-				struct Unit : IUnit
-				{
-					typedef struct __privateMethods {
-						// TODO
-					} __privateMethods;
-
-					typedef struct __publicMethods {
-						void (Unit::* RecordToInternalMementoKey)(GameMementoKey::MementoID* id);
-						void (Unit::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
-					} __publicMethods;
-
-					typedef struct __staticMethods {
-						// TODO
-					} __staticMethods;
-
-					static void Locate(HMODULE peRoot);
-					static __privateMethods privateMethods;
-					static __publicMethods publicMethods;
-					static __staticMethods staticMethods;
-
-					// Instance values here
-				};
-
 				namespace Announce {
 					struct Unit : IUnit {
 						typedef struct __publicMethods {
@@ -130,6 +107,24 @@ namespace Dimps {
 						static __publicMethods publicMethods;
 					};
 				}
+
+				struct Unit : IUnit
+				{
+					typedef struct __publicMethods {
+						void (Unit::* RecordToInternalMementoKey)(GameMementoKey::MementoID* id);
+						void (Unit::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
+					} __publicMethods;
+
+					typedef struct __staticMethods {
+						Unit* (*Factory)(DWORD arg1, DWORD arg2);
+					} __staticMethods;
+
+					static void Locate(HMODULE peRoot);
+					static void ResetUnits(Unit* u);
+
+					static __publicMethods publicMethods;
+					static __staticMethods staticMethods;
+				};
 			}
 		}
 	}

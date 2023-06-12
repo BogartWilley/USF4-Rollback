@@ -81,6 +81,12 @@ void FindGameNetworkingSockets(LPSTR szDllPathA) {
 	PathCombineA(szDllPathA, szCwdBuffer, "GameNetworkingSockets.dll");
 }
 
+void FindGGPO(LPSTR szDllPathA) {
+	char szCwdBuffer[1024] = { 0 };
+	GetCurrentDirectoryA(1024, szCwdBuffer);
+	PathCombineA(szDllPathA, szCwdBuffer, "GGPO.dll");
+}
+
 void FindProtobuf(LPSTR szDllPathA) {
 	char szCwdBuffer[1024] = { 0 };
 	GetCurrentDirectoryA(1024, szCwdBuffer);
@@ -187,10 +193,11 @@ int WINAPI wWinMain(
 	char szCryptoDllPathA[1024] = { 0 };
 	char szFmtDllPathA[1024] = { 0 };
 	char szGameNetworkingSocketsDllPathA[1024] = { 0 };
+	char szGGPODllPathA[1024] = { 0 };
 	char szProtobufDllPathA[1024] = { 0 };
 	char szSidecarDllPathA[1024] = { 0 };
 	char szSpdlogDllPathA[1024] = { 0 };
-	int nDlls = 6;
+	int nDlls = 7;
 
 	// To prevent the need for manipulating the subprocess's import table,
 	// manipulating the subprocess's DLL search paths, or copying sf4e's
@@ -199,12 +206,13 @@ int WINAPI wWinMain(
 	// if the sidecar DLL depends on spdlog and spdlog is not injected first,
 	// spdlog won't be found via normal search paths and the SF4 will halt
 	// with an error.
-	const char* dlls[6] = {
+	const char* dlls[7] = {
 		szFmtDllPathA,
 		szSpdlogDllPathA,
 		szCryptoDllPathA,
 		szProtobufDllPathA,
 		szGameNetworkingSocketsDllPathA,
+		szGGPODllPathA,
 		szSidecarDllPathA,
 	};
 
@@ -220,6 +228,7 @@ int WINAPI wWinMain(
 	FindCrypto(szCryptoDllPathA);
 	FindFmt(szFmtDllPathA);
 	FindGameNetworkingSockets(szGameNetworkingSocketsDllPathA);
+	FindGGPO(szGGPODllPathA);
 	FindProtobuf(szProtobufDllPathA);
 	FindSidecar(szSidecarDllPathA);
 	FindSpdlog(szSpdlogDllPathA);

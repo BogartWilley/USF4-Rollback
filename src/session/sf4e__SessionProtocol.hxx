@@ -15,6 +15,12 @@ namespace sf4e {
 			std::string type = std::string("response");
 			Dimps::GameEvents::VsMode::ConfirmedCharaConditions chara;
 			int stageID;
+
+			// RNG seed
+			// number of rounds
+			// edition
+			// edition select on
+			// time per round
 		};
 
 

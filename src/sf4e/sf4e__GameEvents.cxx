@@ -33,7 +33,7 @@ rMainMenu* fMainMenu::instance = nullptr;
 rVsMode* fVsMode::instance = nullptr;
 void (*fVsPreBattle::OnTasksRegistered)() = nullptr;
 
-bool fVsBattle::bGoToMainMenuOnEnd = false;
+bool fVsBattle::bTerminateOnNextLeftBattle = false;
 bool fVsPreBattle::bSkipToVersus = false;
 
 char* fRootEvent::eventFlowDescription = R"(	Boot, 0, Title,										
@@ -162,8 +162,8 @@ void fVsBattle::Install() {
 
 
 int fVsBattle::CheckAndMaybeExitBasedOnExitType() {
-	if (bGoToMainMenuOnEnd) {
-		bGoToMainMenuOnEnd = false;
+	if (bTerminateOnNextLeftBattle) {
+		bTerminateOnNextLeftBattle = false;
 		rEventController* c = *rEventBase::GetSourceController(this);
 		(c->*rEventController::publicMethods.EnterTerminalState)(0, 0);
 		return 1;

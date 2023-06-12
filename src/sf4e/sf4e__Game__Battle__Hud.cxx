@@ -20,6 +20,7 @@ using rIUnit = Dimps::Game::Battle::IUnit;
 bool fHud::bAllowHudUpdate = true;
 
 void fHud::Install() {
+    Unit::Install();
     Announce::Unit::Install();
     Cockpit::Unit::Install();
     Cursor::Unit::Install();
@@ -27,12 +28,32 @@ void fHud::Install() {
     Subtitle::Unit::Install();
     Training::Unit::Install();
 
-
     void (fIUnit:: * _fSharedHudUpdate)(Task** task) = &fIUnit::SharedHudUpdate;
+
     DetourAttach(
         (PVOID*)&rIUnit::publicMethods.SharedHudUpdate,
         *(PVOID*)&_fSharedHudUpdate
     );
+}
+
+void fHud::Unit::Install() {
+    DetourAttach((PVOID*)&rHud::Unit::staticMethods.Factory, Factory);
+}
+
+
+rHud::Unit* fHud::Unit::Factory(DWORD arg1, DWORD arg2) {
+    rHud::Unit* u = rHud::Unit::staticMethods.Factory(arg1, arg2);
+    // SF4's factory doesn't initialize the memory allocated to the
+    // HUD unit to zero, resulting in the possibility of pointers
+    // in the unit being non-zero. Null checks against those pointers
+    // evaluate non-null, but don't actually point at real memory.
+    //
+    // This is particularly notable in the case of mementos, where
+    // a null check on the training unit is executed before attempting
+    // to save it. If the memory is not initialized, attempting to
+    // access the training unit's vtable will segfault.
+    rHud::Unit::ResetUnits(u);
+    return u;
 }
 
 void fHud::Announce::Unit::Install() {

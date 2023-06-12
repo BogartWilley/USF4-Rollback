@@ -16,6 +16,7 @@ add_compile_definitions(WIN32_LEAN_AND_MEAN)
 
 find_library(LIB_DETOURS "detours")
 find_package(GameNetworkingSockets CONFIG REQUIRED)
+find_package(ggpo CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(protobuf CONFIG REQUIRED)
@@ -76,8 +77,6 @@ add_library(sf4e STATIC
     "src/sf4e/sf4e__Game.cxx"
     "src/sf4e/sf4e__Game__Battle.hxx"
     "src/sf4e/sf4e__Game__Battle.cxx"
-    "src/sf4e/sf4e__Game__Battle__Action.hxx"
-    "src/sf4e/sf4e__Game__Battle__Action.cxx"
     "src/sf4e/sf4e__Game__Battle__Effect.hxx"
     "src/sf4e/sf4e__Game__Battle__Effect.cxx"
     "src/sf4e/sf4e__Game__Battle__Hud.hxx"
@@ -97,8 +96,8 @@ add_library(sf4e STATIC
 )
 target_link_libraries(
     sf4e
-    PRIVATE ${LIB_DETOURS} Session "Shlwapi"
-    PUBLIC nlohmann_json::nlohmann_json spdlog::spdlog
+    PRIVATE ${LIB_DETOURS} Session "ws2_32" "Mswsock" "AdvApi32" "Shlwapi"
+    PUBLIC nlohmann_json::nlohmann_json spdlog::spdlog GameNetworkingSockets::shared ggpo::GGPO
 )
 
 add_library(Session STATIC
@@ -111,7 +110,7 @@ add_library(Session STATIC
 target_link_libraries(
     Session
     PRIVATE Dimps
-    PUBLIC nlohmann_json::nlohmann_json spdlog::spdlog GameNetworkingSockets::shared
+    PUBLIC nlohmann_json::nlohmann_json spdlog::spdlog GameNetworkingSockets::shared ggpo::GGPO
 )
 
 add_executable(Launcher WIN32 src/launcher/launcher.cxx)

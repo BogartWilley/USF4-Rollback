@@ -2,7 +2,6 @@
 #include "../Dimps/Dimps__Game__Battle.hxx"
 
 #include "sf4e__Game__Battle.hxx"
-#include "sf4e__Game__Battle__Action.hxx"
 #include "sf4e__Game__Battle__Effect.hxx"
 #include "sf4e__Game__Battle__Hud.hxx"
 #include "sf4e__Game__Battle__System.hxx"
@@ -16,7 +15,6 @@ using rIUnit = Dimps::Game::Battle::IUnit;
 bool fIUnit::bAllowHudUpdate = true;
 
 void fBattle::Install() {
-	Action::Install();
 	Effect::Install();
 	Hud::Install();
 	System::Install();

@@ -22,7 +22,6 @@ namespace sf4e {
 		int confirmedStageID;
 
 	private:
-
 		std::vector<nlohmann::json> queuedMessages;
 		HSteamNetConnection m_hConnection;
 		ISteamNetworkingSockets* m_pInterface;

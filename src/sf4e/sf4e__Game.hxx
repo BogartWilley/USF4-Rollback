@@ -14,9 +14,8 @@ namespace sf4e {
 			void ClearKey();
 			static void Install();
 
-			static bool bEnableUnsafeReinitializationSkip;
+			static bool bWarnOnNewKeys;
 			static std::set<Dimps::Game::GameMementoKey*> trackedKeys;
-			static void (*SizeLogger)(Dimps::Game::GameMementoKey* k, int oldSize);
 		};
 	}
 }

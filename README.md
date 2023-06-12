@@ -67,6 +67,7 @@ provide the following dependencies:
   `GamenNetworkingSockets` provides a very helpful high-level API on top
   of message passing, and additionally supports NAT hole punching if
   a signalling server is run.
+* [GGPO](https://github.com/pond3r/ggpo), used to provide rollback.
 
 ## License
 
@@ -100,3 +101,6 @@ Copyright © 2013-2022 Niels Lohmann
 
 GameNetworkingSockets
 Copyright © 2018, Valve Corporation
+
+GGPO (Good Game Peace Out)
+Copyright © GroundStorm Studios, LLC.

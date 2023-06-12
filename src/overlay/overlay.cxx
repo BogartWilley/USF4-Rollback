@@ -631,6 +631,17 @@ void DrawMainMenuWindow(bool* pOpen) {
 		if (mainMenuShouldJump) {
 			fVsPreBattle::bSkipToVersus = true;
 			fVsPreBattle::OnTasksRegistered = _OnPreBattleTasksRegistered;
+
+			// Hack to configure inputs
+			PadSystem* padSys = Dimps::Pad::System::staticMethods.GetSingleton();
+			PadSystem::__publicMethods& padSysMethods = Dimps::Pad::System::publicMethods;
+			(padSys->*padSysMethods.AssociatePlayerAndGamepad)(0, 0);
+			(padSys->*padSysMethods.SetDeviceTypeForPlayer)(0, 1);
+			(padSys->*padSysMethods.SetSideHasAssignedController)(0, 1);
+			(padSys->*padSysMethods.AssociatePlayerAndGamepad)(1, 1);
+			(padSys->*padSysMethods.SetDeviceTypeForPlayer)(1, 1);
+			(padSys->*padSysMethods.SetSideHasAssignedController)(1, 1);
+			(padSys->*padSysMethods.SetActiveButtonMapping)(PadSystem::BUTTON_MAPPING_FIGHT);
 		}
 		fMainMenu::GoToVersusBattle();
 	}
@@ -704,6 +715,7 @@ void DrawNetworkWindow(bool* pOpen) {
 			}
 			EndTabItem();
 		}
+
 		EndTabBar();
 	}
 
@@ -1137,7 +1149,7 @@ void DrawVsBattleWindow(bool* pOpen) {
 		ImGuiWindowFlags_None
 	);
 
-	ImGui::Checkbox("Skip results menu on next result?", &fVsBattle::bGoToMainMenuOnEnd);
+	ImGui::Checkbox("Skip results menu on next result?", &fVsBattle::bTerminateOnNextLeftBattle);
 
 	End();
 }
@@ -1313,7 +1325,6 @@ void DrawMementoWindow(bool* pOpen) {
 
 
 		if (BeginTabItem("Debug")) {
-			ImGui::Checkbox("Enable unsafe reinitialization skipping", &fKey::bEnableUnsafeReinitializationSkip);
 			auto keyEnd = fKey::trackedKeys.end();
 			int keyIdx = 0;
 			for (auto keyIter = fKey::trackedKeys.begin(); keyIter != keyEnd; keyIter++) {
@@ -1351,17 +1362,6 @@ void DrawTaskWindow(bool* pOpen) {
 	End();
 }
 
-void GameMementoKeySizeLogger(GameMementoKey* k, int oldSize) {
-	debugLog.AddLog(
-		"GameMementoKey @ %p w/ mementoable %p (vtbl %x) had differing size: Old %d, new %d\n",
-		k,
-		k->mementoableObject,
-		*(DWORD*)k->mementoableObject,
-		oldSize,
-		k->sizeAllocated
-	);
-}
-
 void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -1371,7 +1371,6 @@ void InitializeOverlay(HWND hWnd, IDirect3DDevice9* lpDevice) {
 	ImGui::GetIO().SetPlatformImeDataFn = nullptr;
 	ImGui_ImplWin32_Init(hWnd);
 	ImGui_ImplDX9_Init(lpDevice);
-	sf4e::Game::GameMementoKey::SizeLogger = GameMementoKeySizeLogger;
 }
 
 void DrawOverlay() {

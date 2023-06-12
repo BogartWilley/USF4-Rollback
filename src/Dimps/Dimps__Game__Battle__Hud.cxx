@@ -10,7 +10,6 @@ using Dimps::Game::Battle::IUnit;
 namespace Hud = Dimps::Game::Battle::Hud;
 using Hud::Unit;
 
-Unit::__privateMethods Unit::privateMethods;
 Unit::__publicMethods Unit::publicMethods;
 Unit::__staticMethods Unit::staticMethods;
 
@@ -42,6 +41,7 @@ void Unit::Locate(HMODULE peRoot) {
 
 	*(PVOID*)&publicMethods.RecordToInternalMementoKey = (PVOID)(peRootOffset + 0x172e60);
 	*(PVOID*)&publicMethods.RestoreFromInternalMementoKey = (PVOID)(peRootOffset + 0x172e90);
+	staticMethods.Factory = (Unit*(*)(DWORD, DWORD))(peRootOffset + 0x1731a0);
 }
 
 void Hud::Announce::Unit::Locate(HMODULE peRoot) {
@@ -78,4 +78,15 @@ void Hud::Training::Unit::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	*(PVOID*)&publicMethods.HudTraining_Update = (PVOID)(peRootOffset + 0x18f290);
+}
+
+void Unit::ResetUnits(Unit* u) {
+	*(Cockpit::Unit**)((unsigned int)u + 0x18) = 0x0;
+	*(Notice::Unit**)((unsigned int)u + 0x1c) = 0x0;
+	*(Announce::Unit**)((unsigned int)u + 0x20) = 0x0;
+	*(Cursor::Unit**)((unsigned int)u + 0x24) = 0x0;
+	*(Result::Unit**)((unsigned int)u + 0x28) = 0x0;
+	*(Continue::Unit**)((unsigned int)u + 0x2c) = 0x0;
+	*(Subtitle::Unit**)((unsigned int)u + 0x30) = 0x0;
+	*(Training::Unit**)((unsigned int)u + 0x34) = 0x0;
 }
