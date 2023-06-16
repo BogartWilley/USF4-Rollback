@@ -332,27 +332,37 @@ bool fSystem::ggpo_advance_frame_callback(int)
 bool fSystem::ggpo_load_game_state_callback(unsigned char* buffer, int len)
 {
     SaveState* state = (SaveState*)buffer;
-    std::pair<rKey*, rKey> tmp[NUM_MEMENTO_KEYS_IN_SAVE_STATE];
+    std::vector<std::pair<rKey*, rKey>> tmpVec;
 
-    // Copy the state of all the keys we'll replace in advance,
-    // for later use.
-    for (int i = 0; i < NUM_SAVE_STATES; i++) {
-        tmp[i] = state->keys[i];
+    // Copy and zero all existing keys. It's possible that the initialization
+    // detour started tracking keys that were only initialized after the
+    // save state was created.
+    for (auto iter = fKey::trackedKeys.begin(); iter != fKey::trackedKeys.end(); iter++) {
+        tmpVec.push_back(std::make_pair(*iter, **iter));
+        memset(*iter, 0, sizeof(rKey));
     }
 
     SaveState::Load(state);
 
+    // Zero the keys that were injected by the load.
+    //
     // If the memento key data from the source state were left in the key,
     // the next save would result in invalidating the memento key data and
-    // the `SaveState()` pointing at invalid memory.
-    //
-    // Replace the mementos installed by the `Load()` call with the state
-    // at the beginning of the callback.
-    for (int i = 0; i < NUM_SAVE_STATES; i++) {
-        if (tmp[i].first) {
-            *tmp[i].first = tmp[i].second;
+    // the `SaveState()` pointing at invalid memory. It's also possible
+    // that the keys in the loaded state are not a proper subset of the
+    // keys that existed in the state when load was called, so this
+    // function can't iterate over the existing tracked keys.
+    for (int i = 0; i < NUM_MEMENTO_KEYS_IN_SAVE_STATE; i++) {
+        if (state->keys[i].first) {
+            memset(state->keys[i].first, 0, sizeof(rKey));
         }
     }
+
+    // Finally, restore the original state of all tracked keys.
+    for (auto iter = tmpVec.begin(); iter != tmpVec.end(); iter++) {
+        *iter->first = iter->second;
+    }
+
     return true;
 }
 
@@ -423,10 +433,9 @@ void fSystem::ggpo_free_buffer(void* buffer)
         }
     }
     
-    // Reload the state at the start of the function, then free the
-    // temporary save state too. We don't need to handle clearing this
-    // save state- the next save will clear it, and the next load will
-    // respect it.
+    // Reload the state at the start of the function. We don't need to
+    // handle clearing the keys injected by this load, because the
+    // SaveState managing the keys is short-lived.
     SaveState::Load(&tmp);
 }
 
@@ -512,7 +521,7 @@ void fSystem::SaveState::Load(SaveState* src) {
     *rSystem::staticVars.BattleFlowSubstateCallable_aa9258 = src->BattleFlowSubstateCallable_aa9258;
     *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254 = src->BattleFlowCallback_CallEveryFrame_aa9254;
 
-    // Place each memento back into its position.
+    // Place each memento key back into its position.
     for (int i = 0; i < NUM_MEMENTO_KEYS_IN_SAVE_STATE; i++) {
         if (src->keys[i].first) {
             *src->keys[i].first = src->keys[i].second;
