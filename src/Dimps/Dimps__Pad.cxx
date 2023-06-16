@@ -17,11 +17,11 @@ void Pad::Locate(HMODULE peRoot) {
 
 void System::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
-	*(PVOID*)(&publicMethods.GetButtons_On) = (PVOID)(peRootOffset + 0x117130);
-	*(PVOID*)(&publicMethods.GetButtons_Rising) = (PVOID)(peRootOffset + 0x117150);
-	*(PVOID*)(&publicMethods.GetButtons_Falling) = (PVOID)(peRootOffset + 0x117170);
-	*(PVOID*)(&publicMethods.GetButtons_RisingWithRepeat) = (PVOID)(peRootOffset + 0x117190);
-	*(PVOID*)(&publicMethods.GetButtons_Mapped) = (PVOID)(peRootOffset + 0x1171b0);
+	*(PVOID*)(&publicMethods.GetButtons_RawOn) = (PVOID)(peRootOffset + 0x117130);
+	*(PVOID*)(&publicMethods.GetButtons_RawRising) = (PVOID)(peRootOffset + 0x117150);
+	*(PVOID*)(&publicMethods.GetButtons_RawFalling) = (PVOID)(peRootOffset + 0x117170);
+	*(PVOID*)(&publicMethods.GetButtons_RawRisingWithRepeat) = (PVOID)(peRootOffset + 0x117190);
+	*(PVOID*)(&publicMethods.GetButtons_MappedOn) = (PVOID)(peRootOffset + 0x1171b0);
 	*(PVOID*)(&publicMethods.GetAllDeviceCount) = (PVOID)(peRootOffset + 0x110710);
 	*(PVOID*)(&publicMethods.GetOKDeviceCount) = (PVOID)(peRootOffset + 0x110740);
 	*(PVOID*)(&publicMethods.GetDeviceName) = (PVOID)(peRootOffset + 0x111cf0);

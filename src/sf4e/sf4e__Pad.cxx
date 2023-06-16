@@ -10,7 +10,7 @@ using rSystem = rPad::System;
 namespace fPad = sf4e::Pad;
 using fSystem = fPad::System;
 
-unsigned int fSystem::playbackData[2][PLAYBACK_MAX];
+fSystem::Inputs fSystem::playbackData[PLAYBACK_MAX][2];
 int fSystem::playbackFrame = -1;
 
 void fPad::Install() {
@@ -18,15 +18,26 @@ void fPad::Install() {
 }
 
 void fSystem::Install() {
-    int (fSystem:: * _fGetButtons_Mapped)(int) = &GetButtons_Mapped;
-    DetourAttach((PVOID*)&rSystem::publicMethods.GetButtons_Mapped, *(PVOID*)&_fGetButtons_Mapped);
+    unsigned int (fSystem:: * _fGetButtons_MappedOn)(int) = &GetButtons_MappedOn;
+    unsigned int (fSystem:: * _fGetButtons_RawOn)(int) = &GetButtons_RawOn;
+    DetourAttach((PVOID*)&rSystem::publicMethods.GetButtons_MappedOn, *(PVOID*)&_fGetButtons_MappedOn);
+    DetourAttach((PVOID*)&rSystem::publicMethods.GetButtons_RawOn, *(PVOID*)&_fGetButtons_RawOn);
 }
 
-int fSystem::GetButtons_Mapped(int pindex) {
+unsigned int fSystem::GetButtons_MappedOn(int pindex) {
     if (playbackFrame > -1) {
-        return playbackData[pindex][playbackFrame];
+        return playbackData[playbackFrame][pindex].mappedOn;
     }
 
     rSystem* _this = (rSystem*)this;
-    return (this->*rSystem::publicMethods.GetButtons_Mapped)(pindex);
+    return (this->*rSystem::publicMethods.GetButtons_MappedOn)(pindex);
+}
+
+unsigned int fSystem::GetButtons_RawOn(int pindex) {
+    if (playbackFrame > -1) {
+        return playbackData[playbackFrame][pindex].rawOn;
+    }
+
+    rSystem* _this = (rSystem*)this;
+    return (this->*rSystem::publicMethods.GetButtons_RawOn)(pindex);
 }

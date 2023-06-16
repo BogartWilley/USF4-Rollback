@@ -19,11 +19,11 @@ namespace Dimps {
 			};
 
 			typedef struct __publicMethods {
-				DWORD(System::* GetButtons_On)(int pindex);
-				DWORD(System::* GetButtons_Mapped)(int pindex);
-				DWORD(System::* GetButtons_Rising)(int pindex);
-				DWORD(System::* GetButtons_Falling)(int pindex);
-				DWORD(System::* GetButtons_RisingWithRepeat)(int pindex);
+				unsigned int(System::* GetButtons_RawOn)(int pindex);
+				unsigned int(System::* GetButtons_MappedOn)(int pindex);
+				unsigned int(System::* GetButtons_RawRising)(int pindex);
+				unsigned int(System::* GetButtons_RawFalling)(int pindex);
+				unsigned int(System::* GetButtons_RawRisingWithRepeat)(int pindex);
 				int(System::* GetAllDeviceCount)();
 				int(System::* GetOKDeviceCount)();
 				char*(System::* GetDeviceName)(int dindex);

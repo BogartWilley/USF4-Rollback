@@ -750,45 +750,45 @@ void DrawPadWindow(bool* pOpen) {
 	if (BeginTabBar("Pad views", ImGuiTabBarFlags_None)) {
 		if (BeginTabItem("Switch data")) {
 			if (BeginTabBar("Pad types", ImGuiTabBarFlags_None)) {
-				if (BeginTabItem("On")) {
+				if (BeginTabItem("Raw On")) {
 					for (int i = 0; i < 2; i++) {
-						padData[i] = (p->*methods.GetButtons_On)(i);
+						padData[i] = (p->*methods.GetButtons_RawOn)(i);
 					}
 
 					DrawPadTable(padData);
 					EndTabItem();
 				}
 
-				if (BeginTabItem("Rising")) {
+				if (BeginTabItem("Raw Rising")) {
 					for (int i = 0; i < 2; i++) {
-						padData[i] = (p->*methods.GetButtons_Rising)(i);
+						padData[i] = (p->*methods.GetButtons_RawRising)(i);
 					}
 
 					DrawPadTable(padData);
 					EndTabItem();
 				}
 
-				if (BeginTabItem("Falling")) {
+				if (BeginTabItem("Raw Falling")) {
 					for (int i = 0; i < 2; i++) {
-						padData[i] = (p->*methods.GetButtons_Falling)(i);
+						padData[i] = (p->*methods.GetButtons_RawFalling)(i);
 					}
 
 					DrawPadTable(padData);
 					EndTabItem();
 				}
 
-				if (BeginTabItem("Repeat")) {
+				if (BeginTabItem("Raw Repeat")) {
 					for (int i = 0; i < 2; i++) {
-						padData[i] = (p->*methods.GetButtons_RisingWithRepeat)(i);
+						padData[i] = (p->*methods.GetButtons_RawRisingWithRepeat)(i);
 					}
 
 					DrawPadTable(padData);
 					EndTabItem();
 				}
 
-				if (BeginTabItem("Mapped")) {
+				if (BeginTabItem("Mapped On")) {
 					for (int i = 0; i < 2; i++) {
-						padData[i] = (p->*methods.GetButtons_Mapped)(i);
+						padData[i] = (p->*methods.GetButtons_MappedOn)(i);
 					}
 
 					DrawPadTable(padData);
@@ -950,7 +950,7 @@ void DrawSystemWindow(bool* pOpen) {
 					ImGui::SameLine();
 
 					ImGui::BeginChild("right pane");
-					unsigned int* padData = &fPadSystem::playbackData[p][selectedForwardSimFrame];
+					unsigned int* padData = &fPadSystem::playbackData[p][selectedForwardSimFrame].rawOn;
 					CheckboxFlags("Up", padData, 0x1); NextColumn();
 					CheckboxFlags("Down", padData, 0x2); NextColumn();
 					CheckboxFlags("Left", padData, 0x4); NextColumn();

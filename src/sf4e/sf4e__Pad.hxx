@@ -8,12 +8,18 @@ namespace sf4e {
 
 		struct System : Dimps::Pad::System
 		{
+			struct Inputs {
+				unsigned int mappedOn;
+				unsigned int rawOn;
+			};
+
 			static const int PLAYBACK_MAX = 60;
-			static unsigned int playbackData[2][PLAYBACK_MAX];
+			static Inputs playbackData[PLAYBACK_MAX][2];
 			static int playbackFrame;
 			static void Install();
 
-			int GetButtons_Mapped(int pindex);
+			unsigned int GetButtons_RawOn(int pindex);
+			unsigned int GetButtons_MappedOn(int pindex);
 		};
 	}
 }

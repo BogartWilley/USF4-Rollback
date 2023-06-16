@@ -81,16 +81,16 @@ void fSystem::BattleUpdate() {
     if (ggpo && *rSystem::staticVars.CurrentBattleFlow != BF__IDLE) {
         for (int i = 0; i < 2; i++) {
             if (players[i].type == GGPO_PLAYERTYPE_LOCAL) {
-                DWORD inputs = (p->*padMethods.GetButtons_Mapped)(i);
-                GGPOErrorCode result = ggpo_add_local_input(ggpo, playerHandles[i], &inputs, sizeof(DWORD));
+                fPadSystem::Inputs inputs = { (p->*padMethods.GetButtons_MappedOn)(i), (p->*padMethods.GetButtons_RawOn)(i) };
+                GGPOErrorCode result = ggpo_add_local_input(ggpo, playerHandles[i], &inputs, sizeof(fPadSystem::Inputs));
                 if (GGPO_SUCCEEDED(result)) {
-                    DWORD ggpoInputs[2] = { 0 };
+                    fPadSystem::Inputs ggpoInputs[2] = { {0, 0}, {0, 0} };
                     int disconnect_flags = 0;
-                    result = ggpo_synchronize_input(ggpo, (void*)ggpoInputs, sizeof(DWORD) * 2, &disconnect_flags);
+                    result = ggpo_synchronize_input(ggpo, (void*)ggpoInputs, sizeof(fPadSystem::Inputs) * 2, &disconnect_flags);
                     if (GGPO_SUCCEEDED(result)) {
                         fPadSystem::playbackFrame = 0;
                         fPadSystem::playbackData[0][0] = ggpoInputs[0];
-                        fPadSystem::playbackData[1][0] = ggpoInputs[1];
+                        fPadSystem::playbackData[0][1] = ggpoInputs[1];
                         (_this->*sysMethods.BattleUpdate)();
                         fPadSystem::playbackFrame = -1;
                         GGPOErrorCode err = ggpo_advance_frame(ggpo);
@@ -264,7 +264,7 @@ void fSystem::StartGGPO(int remotePosition, const SteamNetworkingIPAddr* remoteA
     char ipbuffer[32];
     int localPosition = remotePosition == 1 ? 0 : 1;
     int localPort = 23456 + 1 + localPosition;
-    GGPOErrorCode result = ggpo_start_session(&ggpo, &cb, "sf4e", 2, sizeof(int), localPort);
+    GGPOErrorCode result = ggpo_start_session(&ggpo, &cb, "sf4e", 2, sizeof(fPadSystem::Inputs), localPort);
     ggpo_set_disconnect_timeout(ggpo, 3000);
     ggpo_set_disconnect_notify_start(ggpo, 1000);
 
@@ -299,12 +299,12 @@ bool fSystem::ggpo_begin_game_callback(const char*)
 
 bool fSystem::ggpo_advance_frame_callback(int)
 {
-    DWORD inputs[2] = { 0 };
+    fPadSystem::Inputs inputs[2] = { {0, 0}, {0, 0} };
     int disconnect_flags = 0;
 
     // Make sure we fetch new inputs from GGPO and use those to update
     // the game state instead of reading from the keyboard.
-    ggpo_synchronize_input(ggpo, (void*)inputs, sizeof(int) * 2, &disconnect_flags);
+    ggpo_synchronize_input(ggpo, (void*)inputs, sizeof(fPadSystem::Inputs) * 2, &disconnect_flags);
     fPadSystem::playbackFrame = 0;
     fPadSystem::playbackData[0][0] = inputs[0];
     fPadSystem::playbackData[0][1] = inputs[1];
