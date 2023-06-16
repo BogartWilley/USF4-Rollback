@@ -1,5 +1,6 @@
 #pragma once
 #include <utility>
+#include <vector>
 
 #include <GameNetworkingSockets/steam/steamnetworkingtypes.h>
 #include <ggponet.h>
@@ -8,7 +9,6 @@
 #include "../Dimps/Dimps__Game__Battle__System.hxx"
 #include "../Dimps/Dimps__Math.hxx"
 
-#define NUM_MEMENTO_KEYS_IN_SAVE_STATE 88
 #define NUM_SAVE_STATES (GGPO_MAX_PREDICTION_FRAMES + 2)
 
 namespace sf4e {
@@ -37,8 +37,8 @@ namespace sf4e {
 
 
 				struct SaveState {
-					bool used = 0;
-					std::pair<GameMementoKey*, GameMementoKey> keys[NUM_MEMENTO_KEYS_IN_SAVE_STATE];
+					bool used;
+					std::vector<std::pair<GameMementoKey*, GameMementoKey>> keys;
 
 					DWORD CurrentBattleFlow;
 					DWORD PreviousBattleFlow;
@@ -51,6 +51,7 @@ namespace sf4e {
 					void (*BattleFlowSubstateCallable_aa9258)(Dimps::Game::Battle::System* s);
 					void (*BattleFlowCallback_CallEveryFrame_aa9254)(Dimps::Game::Battle::System* s);
 
+					SaveState();
 					static void Save(SaveState* dst);
 					static void Load(SaveState* src);
 				};

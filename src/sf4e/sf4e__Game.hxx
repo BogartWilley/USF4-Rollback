@@ -14,7 +14,6 @@ namespace sf4e {
 			void ClearKey();
 			static void Install();
 
-			static bool bWarnOnNewKeys;
 			static std::set<Dimps::Game::GameMementoKey*> trackedKeys;
 		};
 	}

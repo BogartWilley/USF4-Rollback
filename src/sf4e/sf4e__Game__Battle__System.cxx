@@ -1,4 +1,5 @@
 #include <utility>
+#include <vector>
 
 #include <windows.h>
 #include <detours/detours.h>
@@ -17,6 +18,7 @@
 #include "../Dimps/Dimps__Game__Battle__System.hxx"
 #include "../Dimps/Dimps__Game__Battle__Training.hxx"
 #include "../Dimps/Dimps__Game__Battle__Vfx.hxx"
+#include "../Dimps/Dimps__Math.hxx"
 #include "../Dimps/Dimps__Pad.hxx"
 
 #include "sf4e__Game.hxx"
@@ -36,6 +38,7 @@ using rSystem = Dimps::Game::Battle::System;
 using TrainingManager = Dimps::Game::Battle::Training::Manager;
 using VfxUnit = Dimps::Game::Battle::Vfx::Unit;
 using rKey = Dimps::Game::GameMementoKey;
+using FixedPoint = Dimps::Math::FixedPoint;
 using fKey = sf4e::Game::GameMementoKey;
 using rPadSystem = Dimps::Pad::System;
 using fPadSystem = sf4e::Pad::System;
@@ -353,9 +356,9 @@ bool fSystem::ggpo_load_game_state_callback(unsigned char* buffer, int len)
     // that the keys in the loaded state are not a proper subset of the
     // keys that existed in the state when load was called, so this
     // function can't iterate over the existing tracked keys.
-    for (int i = 0; i < NUM_MEMENTO_KEYS_IN_SAVE_STATE; i++) {
-        if (state->keys[i].first) {
-            memset(state->keys[i].first, 0, sizeof(rKey));
+    for (auto iter = state->keys.begin(); iter != state->keys.end(); iter++) {
+        if (iter->first) {
+            memset(iter->first, 0, sizeof(rKey));
         }
     }
 
@@ -385,10 +388,6 @@ bool fSystem::ggpo_save_game_state_callback(unsigned char** buffer, int* len, in
         SaveState::Save(&saveStates[i]);
         *buffer = (unsigned char*)&saveStates[i];
         *checksum = 0;
-
-        // Now that we've saved once, existing keys can be
-        // reinitialized, but there shouldn't be any new keys.
-        fKey::bWarnOnNewKeys = true;
 
         return true;
     }
@@ -425,14 +424,26 @@ void fSystem::ggpo_free_buffer(void* buffer)
     // the mementoable object pointers in each key are valid, and the key can
     // be safely cleared.
     SaveState::Load(victim);
-    victim->used = false;
-    for (int i = 0; i < NUM_MEMENTO_KEYS_IN_SAVE_STATE; i++) {
-        if (victim->keys[i].first) {
-            (victim->keys[i].first->*rKey::publicMethods.ClearKey)();
-            memset(victim->keys[i].first, 0, sizeof(rKey));
-            victim->keys[i].first = nullptr;
+    for (auto iter = victim->keys.begin(); iter != victim->keys.end(); iter++) {
+        if (iter->first) {
+            (iter->first->*rKey::publicMethods.ClearKey)();
+            memset(iter->first, 0, sizeof(rKey));
         }
     }
+    victim->keys.clear();
+
+    // Restore all non-memento-key state to a sane default.
+    victim->used = false;
+    victim->CurrentBattleFlow = 0;
+    victim->PreviousBattleFlow = 0;
+    victim->CurrentBattleFlowSubstate = 0;
+    victim->PreviousBattleFlowSubstate = 0;
+    victim->CurrentBattleFlowFrame = { 0, 0 };
+    victim->CurrentBattleFlowSubstateFrame = { 0, 0 };
+    victim->PreviousBattleFlowFrame = { 0, 0 };
+    victim->PreviousBattleFlowSubstateFrame = { 0, 0 };
+    victim->BattleFlowSubstateCallable_aa9258 = nullptr;
+    victim->BattleFlowCallback_CallEveryFrame_aa9254 = nullptr;
     
     // Reload the state at the start of the function. We don't need to
     // handle clearing the keys injected by this load, because the
@@ -472,15 +483,34 @@ bool fSystem::ggpo_on_event_callback(GGPOEvent* info) {
     return true;
 }
 
+fSystem::SaveState::SaveState()
+    : used(false)
+    , CurrentBattleFlow(0)
+    , PreviousBattleFlow(0)
+    , CurrentBattleFlowSubstate(0)
+    , PreviousBattleFlowSubstate(0)
+    , CurrentBattleFlowFrame{ 0, 0 }
+    , CurrentBattleFlowSubstateFrame{ 0, 0 }
+    , PreviousBattleFlowFrame{ 0, 0 }
+    , PreviousBattleFlowSubstateFrame{ 0, 0 }
+    , BattleFlowSubstateCallable_aa9258(nullptr)
+    , BattleFlowCallback_CallEveryFrame_aa9254(nullptr)
+{
+    // There are at least 88 keys in every save state. The upper bound
+    // is unclear, but we can minimize memory allocation delays by
+    // reserving the lower bound.
+    keys.reserve(88);
+}
+
 void fSystem::SaveState::Save(SaveState* dst) {
     rSystem* system = rSystem::staticMethods.GetSingleton();
-    int keyCount = 0;
+    assert(dst->keys.empty());
 
     dst->used = true;
 
     RecordAllToInternalMementos(system, &GGPO_MEMENTO_ID);
     for (auto iter = fKey::trackedKeys.begin(); iter != fKey::trackedKeys.end(); iter++) {
-        dst->keys[keyCount] = std::make_pair(*iter, **iter);
+        dst->keys.emplace_back(*iter, **iter);
 
         // If we leave the data in the source key, reinitialization
         // of the source key will end up freeing _our_ data. Make
@@ -489,11 +519,6 @@ void fSystem::SaveState::Save(SaveState* dst) {
         // before the call to RecordAll... but the mementos won't
         // be tracked until after that call.
         memset(*iter, 0, sizeof(rKey));
-
-        keyCount++;
-    }
-    for (keyCount; keyCount < NUM_MEMENTO_KEYS_IN_SAVE_STATE; keyCount++) {
-        dst->keys[keyCount].first = nullptr;
     }
 
     dst->CurrentBattleFlow = *rSystem::staticVars.CurrentBattleFlow;
@@ -523,10 +548,8 @@ void fSystem::SaveState::Load(SaveState* src) {
     *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254 = src->BattleFlowCallback_CallEveryFrame_aa9254;
 
     // Place each memento key back into its position.
-    for (int i = 0; i < NUM_MEMENTO_KEYS_IN_SAVE_STATE; i++) {
-        if (src->keys[i].first) {
-            *src->keys[i].first = src->keys[i].second;
-        }
+    for (auto iter = src->keys.begin(); iter != src->keys.end(); iter++) {
+        *iter->first = iter->second;
     }
 
     // Force the system to reload from the replaced mementos.
