@@ -1,18 +1,20 @@
 #include <windows.h>
 
+#include "Dimps__Game.hxx"
 #include "Dimps__GameEvents.hxx"
 #include "Dimps__Platform.hxx"
 
 namespace GameEvents = Dimps::GameEvents;
 namespace StageSelect = Dimps::GameEvents::StageSelect;
 
-using Dimps::GameEvents::MainMenu;
-using Dimps::GameEvents::RootEvent;
-using Dimps::GameEvents::VsBattle;
-using Dimps::GameEvents::VsCharaSelect;
-using Dimps::GameEvents::VsMode;
-using Dimps::GameEvents::VsPreBattle;
-using Dimps::GameEvents::VsStageSelect;
+using Dimps::Game::Request;
+using GameEvents::MainMenu;
+using GameEvents::RootEvent;
+using GameEvents::VsBattle;
+using GameEvents::VsCharaSelect;
+using GameEvents::VsMode;
+using GameEvents::VsPreBattle;
+using GameEvents::VsStageSelect;
 using Dimps::Platform::dString;
 
 MainMenu::__publicMethods MainMenu::publicMethods;
@@ -47,6 +49,11 @@ void VsBattle::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	*(PVOID*)&privateMethods.CheckAndMaybeExitBasedOnExitType = (PVOID)(peRootOffset + 0x23b9f0);
+	*(PVOID*)&privateMethods.PrepareBattleRequest = (PVOID)(peRootOffset + 0x23c6a0);
+}
+
+Request* VsBattle::GetRequest(VsBattle* battleEvent) {
+	return (Request*)((unsigned int)battleEvent + 0x50);
 }
 
 void MainMenu::Locate(HMODULE peRoot) {

@@ -144,9 +144,6 @@ void SessionServer::PollIncomingMessages()
 			(padSys->*padSysMethods.AssociatePlayerAndGamepad)(0, 0);
 			(padSys->*padSysMethods.SetDeviceTypeForPlayer)(0, 1);
 			(padSys->*padSysMethods.SetSideHasAssignedController)(0, 1);
-			(padSys->*padSysMethods.AssociatePlayerAndGamepad)(1, 1);
-			(padSys->*padSysMethods.SetDeviceTypeForPlayer)(1, 1);
-			(padSys->*padSysMethods.SetSideHasAssignedController)(1, 1);
 			(padSys->*padSysMethods.SetActiveButtonMapping)(Dimps::Pad::System::BUTTON_MAPPING_FIGHT);
 
 			// Kick the loading screen

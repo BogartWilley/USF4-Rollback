@@ -9,6 +9,8 @@
 #include "sf4e__Event.hxx"
 #include "sf4e__GameEvents.hxx"
 
+using Dimps::Game::Request;
+
 namespace rGameEvents = Dimps::GameEvents;
 using rEventBase = Dimps::Event::EventBase;
 using rEventController = Dimps::Event::EventController;
@@ -33,6 +35,7 @@ rMainMenu* fMainMenu::instance = nullptr;
 rVsMode* fVsMode::instance = nullptr;
 void (*fVsPreBattle::OnTasksRegistered)() = nullptr;
 
+bool fVsBattle::bForceNextMatchOnline = false;
 bool fVsBattle::bTerminateOnNextLeftBattle = false;
 bool fVsPreBattle::bSkipToVersus = false;
 
@@ -172,6 +175,14 @@ int fVsBattle::CheckAndMaybeExitBasedOnExitType() {
 	return (this->*rVsBattle::privateMethods.CheckAndMaybeExitBasedOnExitType)();
 }
 
+void fVsBattle::PrepareBattleRequest() {
+	(this->*rVsBattle::privateMethods.PrepareBattleRequest)();
+	if (bForceNextMatchOnline) {
+		Request* r = rVsBattle::GetRequest(this);
+		(r->*Request::publicMethods.SetIsOnlineBattle)(TRUE);
+	}
+	bForceNextMatchOnline = false;
+}
 
 void fVsCharaSelect::Install() {
 	void* (fVsCharaSelect:: * _fDestroy)(DWORD) = &Destroy;

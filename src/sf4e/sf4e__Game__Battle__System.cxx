@@ -286,6 +286,7 @@ void fSystem::StartGGPO(int remotePosition, const SteamNetworkingIPAddr* remoteA
 
     nNextBattleStartFlowTarget = BF__MATCH_START;
     fVsBattle::bTerminateOnNextLeftBattle = true;
+    fVsBattle::bForceNextMatchOnline = true;
 }
 
 bool fSystem::ggpo_begin_game_callback(const char*)

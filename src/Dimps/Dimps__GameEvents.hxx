@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Dimps__Event.hxx"
+#include "Dimps__Game.hxx"
 #include "Dimps__Platform.hxx"
 
 namespace Dimps {
@@ -110,9 +111,11 @@ namespace Dimps {
 
 			typedef struct __privateMethods {
 				int (VsBattle::* CheckAndMaybeExitBasedOnExitType)();
+				void(VsBattle::* PrepareBattleRequest)();
 			} __publicMethods;
 
 			static __privateMethods privateMethods;
+			static Game::Request* GetRequest(VsBattle* battleEvent);
 		};
 
 		struct VsMode : Dimps::Event::EventBase {

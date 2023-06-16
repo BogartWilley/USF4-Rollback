@@ -34,5 +34,14 @@ namespace Dimps {
 			int sizeAllocated;
 			int nextMementoIndex;
 		};
+
+		struct Request {
+			typedef struct __publicMethods {
+				void (Request::* SetIsOnlineBattle)(BOOL isOnlineBattle);
+			} __publicMethods;
+
+			static void Locate(HMODULE peRoot);
+			static __publicMethods publicMethods;
+		};
 	}
 }

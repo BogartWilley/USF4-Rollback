@@ -123,10 +123,7 @@ void SessionClient::PollIncomingMessages()
 			// Hack to configure inputs
 			Dimps::Pad::System* padSys = Dimps::Pad::System::staticMethods.GetSingleton();
 			Dimps::Pad::System::__publicMethods& padSysMethods = Dimps::Pad::System::publicMethods;
-			(padSys->*padSysMethods.AssociatePlayerAndGamepad)(0, 0);
-			(padSys->*padSysMethods.SetDeviceTypeForPlayer)(0, 1);
-			(padSys->*padSysMethods.SetSideHasAssignedController)(0, 1);
-			(padSys->*padSysMethods.AssociatePlayerAndGamepad)(1, 1);
+			(padSys->*padSysMethods.AssociatePlayerAndGamepad)(1, 0);
 			(padSys->*padSysMethods.SetDeviceTypeForPlayer)(1, 1);
 			(padSys->*padSysMethods.SetSideHasAssignedController)(1, 1);
 			(padSys->*padSysMethods.SetActiveButtonMapping)(Dimps::Pad::System::BUTTON_MAPPING_FIGHT);
