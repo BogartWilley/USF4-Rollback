@@ -115,7 +115,7 @@ namespace Dimps {
 			} __publicMethods;
 
 			static __privateMethods privateMethods;
-			static Game::Request* GetRequest(VsBattle* battleEvent);
+			static Game::Request** GetRequest(VsBattle* battleEvent);
 		};
 
 		struct VsMode : Dimps::Event::EventBase {

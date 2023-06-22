@@ -52,8 +52,8 @@ void VsBattle::Locate(HMODULE peRoot) {
 	*(PVOID*)&privateMethods.PrepareBattleRequest = (PVOID)(peRootOffset + 0x23c6a0);
 }
 
-Request* VsBattle::GetRequest(VsBattle* battleEvent) {
-	return (Request*)((unsigned int)battleEvent + 0x50);
+Request** VsBattle::GetRequest(VsBattle* battleEvent) {
+	return (Request**)((unsigned int)battleEvent + 0x50);
 }
 
 void MainMenu::Locate(HMODULE peRoot) {

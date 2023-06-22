@@ -59,6 +59,7 @@ using Dimps::Eva::TaskCore;
 using Dimps::Eva::TaskCoreRegistry;
 using Dimps::Event::EventBase;
 using Dimps::Event::EventController;
+using Dimps::Game::Request;
 using Dimps::Game::Battle::Command::CommandImpl;
 using Dimps::Game::Battle::GameManager;
 using Dimps::Game::Battle::System;
@@ -1149,6 +1150,7 @@ void DrawVsBattleWindow(bool* pOpen) {
 		ImGuiWindowFlags_None
 	);
 
+	ImGui::Checkbox("Force next battle online?", &fVsBattle::bForceNextMatchOnline);
 	ImGui::Checkbox("Skip results menu on next result?", &fVsBattle::bTerminateOnNextLeftBattle);
 
 	End();

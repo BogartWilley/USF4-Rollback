@@ -157,9 +157,14 @@ void fRootEvent::Install() {
 
 void fVsBattle::Install() {
 	int (fVsBattle:: * _fCheckAndMaybeExitBasedOnBattleType)() = &CheckAndMaybeExitBasedOnExitType;
+	void (fVsBattle:: * _fPrepareBattleRequest)() = &PrepareBattleRequest;
 	DetourAttach(
 		(PVOID*)&fVsBattle::privateMethods.CheckAndMaybeExitBasedOnExitType,
 		*(PVOID*)&_fCheckAndMaybeExitBasedOnBattleType
+	);
+	DetourAttach(
+		(PVOID*)&fVsBattle::privateMethods.PrepareBattleRequest,
+		*(PVOID*)&_fPrepareBattleRequest
 	);
 }
 
@@ -178,7 +183,7 @@ int fVsBattle::CheckAndMaybeExitBasedOnExitType() {
 void fVsBattle::PrepareBattleRequest() {
 	(this->*rVsBattle::privateMethods.PrepareBattleRequest)();
 	if (bForceNextMatchOnline) {
-		Request* r = rVsBattle::GetRequest(this);
+		Request* r = *rVsBattle::GetRequest(this);
 		(r->*Request::publicMethods.SetIsOnlineBattle)(TRUE);
 	}
 	bForceNextMatchOnline = false;
