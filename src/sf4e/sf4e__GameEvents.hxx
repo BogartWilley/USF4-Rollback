@@ -40,6 +40,7 @@ namespace sf4e {
 			void PrepareBattleRequest();
 			static bool bForceNextMatchOnline;
 			static bool bTerminateOnNextLeftBattle;
+			static DWORD nextMatchRandomSeed;
 			static void Install();
 		};
 

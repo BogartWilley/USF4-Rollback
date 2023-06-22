@@ -37,7 +37,9 @@ namespace Dimps {
 
 		struct Request {
 			typedef struct __publicMethods {
+				DWORD (Request::* GetRandomSeed)();
 				void (Request::* SetIsOnlineBattle)(BOOL isOnlineBattle);
+				void (Request::* SetRandomSeed)(DWORD seed);
 			} __publicMethods;
 
 			static void Locate(HMODULE peRoot);

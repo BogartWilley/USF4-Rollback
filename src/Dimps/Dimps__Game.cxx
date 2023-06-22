@@ -28,5 +28,7 @@ void GameMementoKey::Locate(HMODULE peRoot) {
 void Request::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
+	*(PVOID*)&publicMethods.GetRandomSeed = (PVOID)(peRootOffset + 0x285d70);
 	*(PVOID*)&publicMethods.SetIsOnlineBattle = (PVOID)(peRootOffset + 0x284620);
+	*(PVOID*)&publicMethods.SetRandomSeed = (PVOID)(peRootOffset + 0x285300);
 }

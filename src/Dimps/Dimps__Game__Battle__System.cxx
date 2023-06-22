@@ -1,8 +1,12 @@
 #include <windows.h>
 
+#include "Dimps__Eva.hxx"
+#include "Dimps__Game.hxx"
 #include "Dimps__Game__Battle__System.hxx"
 #include "Dimps__Math.hxx"
 
+using Dimps::Eva::EmRandom;
+using Dimps::Game::Request;
 using Dimps::Game::Battle::System;
 using Dimps::Math::FixedPoint;
 
@@ -47,4 +51,12 @@ void System::Locate(HMODULE peRoot) {
 
 int* System::GetBattleExitType(System* s) {
     return (int*)((unsigned int)s + 0xe40);
+}
+
+EmRandom* System::GetRandom(System* s) {
+    return (EmRandom*)((unsigned int)s + 0x50);
+}
+
+Request** System::GetRequest(System* s) {
+    return (Request**)((unsigned int)s + 0x98);
 }

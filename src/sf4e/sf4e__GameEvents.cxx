@@ -37,6 +37,7 @@ void (*fVsPreBattle::OnTasksRegistered)() = nullptr;
 
 bool fVsBattle::bForceNextMatchOnline = false;
 bool fVsBattle::bTerminateOnNextLeftBattle = false;
+DWORD fVsBattle::nextMatchRandomSeed = 0xffffffff;
 bool fVsPreBattle::bSkipToVersus = false;
 
 char* fRootEvent::eventFlowDescription = R"(	Boot, 0, Title,										
@@ -182,11 +183,17 @@ int fVsBattle::CheckAndMaybeExitBasedOnExitType() {
 
 void fVsBattle::PrepareBattleRequest() {
 	(this->*rVsBattle::privateMethods.PrepareBattleRequest)();
-	if (bForceNextMatchOnline) {
-		Request* r = *rVsBattle::GetRequest(this);
-		(r->*Request::publicMethods.SetIsOnlineBattle)(TRUE);
+	Request* r = *rVsBattle::GetRequest(this);
+	if (r) {
+		if (bForceNextMatchOnline) {
+			(r->*Request::publicMethods.SetIsOnlineBattle)(TRUE);
+		}
+		if (nextMatchRandomSeed != 0xffffffff) {
+			(r->*Request::publicMethods.SetRandomSeed)(nextMatchRandomSeed);
+		}
 	}
 	bForceNextMatchOnline = false;
+	nextMatchRandomSeed = 0xffffffff;
 }
 
 void fVsCharaSelect::Install() {

@@ -6,6 +6,11 @@ namespace Dimps {
 	namespace Eva {
 		void Locate(HMODULE peRoot);
 
+		struct EmRandom {
+			void* vtbl;
+			DWORD seed;
+		};
+
 		struct Task {
 			char pad[96];
 

@@ -131,6 +131,8 @@ namespace Dimps {
 
                 static void Locate(HMODULE peRoot);
                 static int* GetBattleExitType(System* s);
+                static Eva::EmRandom* GetRandom(System* s);
+                static Request** GetRequest(System* s);
                 static __publicMethods publicMethods;
                 static __staticMethods staticMethods;
                 static __staticVars staticVars;

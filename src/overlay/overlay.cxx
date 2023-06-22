@@ -878,6 +878,15 @@ void DrawSystemWindow(bool* pOpen) {
 	if (BeginTabBar("System tabs", ImGuiTabBarFlags_None)) {
 		if (BeginTabItem("Global state")) {
 			Text("Game mode: %d", (system->*methods.GetGameMode)());
+			Text("Random seed in system: %d", System::GetRandom(system)->seed);
+			Request* r = *System::GetRequest(system);
+			if (r) {
+				Text("Random seed in request: %d", (r->*Request::publicMethods.GetRandomSeed)());
+			}
+			else {
+				Text("Random seed in request: No request!");
+			}
+
 			ImGui::InputInt("Destination flow after next battle start", &fSystem::nNextBattleStartFlowTarget);
 			ImGui::InputInt("Battle exit type", System::GetBattleExitType(system));
 			Text(
@@ -1152,6 +1161,7 @@ void DrawVsBattleWindow(bool* pOpen) {
 
 	ImGui::Checkbox("Force next battle online?", &fVsBattle::bForceNextMatchOnline);
 	ImGui::Checkbox("Skip results menu on next result?", &fVsBattle::bTerminateOnNextLeftBattle);
+	ImGui::InputInt("Next match random seed", (int*)&fVsBattle::nextMatchRandomSeed);
 
 	End();
 }
