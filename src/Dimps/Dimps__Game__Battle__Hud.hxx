@@ -46,6 +46,16 @@ namespace Dimps {
 				}
 
 				namespace Cockpit {
+					struct View {
+						typedef struct __publicMethods {
+							void (View::* Update)();
+							void (View::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
+						} __publicMethods;
+
+						static void Locate(HMODULE peRoot);
+						static __publicMethods publicMethods;
+					};
+
 					struct Unit : IUnit {
 						typedef struct __publicMethods {
 							void (Unit::* HudCockpit_Update)(Task** task);

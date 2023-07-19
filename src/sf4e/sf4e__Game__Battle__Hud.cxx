@@ -4,8 +4,10 @@
 #include "spdlog/spdlog.h"
 
 #include "../Dimps/Dimps__Eva.hxx"
+#include "../Dimps/Dimps__Game.hxx"
 #include "../Dimps/Dimps__Game__Battle.hxx"
 #include "../Dimps/Dimps__Game__Battle__Hud.hxx"
+#include "../Dimps/Dimps__Platform.hxx"
 #include "sf4e__Game__Battle.hxx"
 #include "sf4e__Game__Battle__Hud.hxx"
 
@@ -13,6 +15,8 @@ namespace fHud = sf4e::Game::Battle::Hud;
 namespace rHud = Dimps::Game::Battle::Hud;
 
 using Dimps::Eva::Task;
+using Dimps::Game::GameMementoKey;
+using Dimps::Platform::UNK_ScaleformRelated;
 
 using fIUnit = sf4e::Game::Battle::IUnit;
 using rIUnit = Dimps::Game::Battle::IUnit;
@@ -23,6 +27,7 @@ void fHud::Install() {
     Unit::Install();
     Announce::Unit::Install();
     Cockpit::Unit::Install();
+    Cockpit::View::Install();
     Cursor::Unit::Install();
     Result::Unit::Install();
     Subtitle::Unit::Install();
@@ -82,6 +87,56 @@ void fHud::Cockpit::Unit::HudCockpit_Update(Task** task) {
     if (bAllowHudUpdate) {
         (this->*rHud::Cockpit::Unit::publicMethods.HudCockpit_Update)(task);
     }
+}
+
+void fHud::Cockpit::View::Install() {
+    void (View::* _fRestoreFromInternalMementoKey)(GameMementoKey::MementoID* id) = &RestoreFromInternalMementoKey;
+    DetourAttach(
+        (PVOID*)&rHud::Cockpit::View::publicMethods.RestoreFromInternalMementoKey,
+        *(PVOID*)&_fRestoreFromInternalMementoKey
+    );
+}
+
+void fHud::Cockpit::View::RestoreFromInternalMementoKey(GameMementoKey::MementoID* id) {
+    (this->*rHud::Cockpit::View::publicMethods.RestoreFromInternalMementoKey)(id);
+
+    // SF4's implementation of the cockpit view's load operation is incomplete.
+    //
+    // When the cockpit view updates, it first delegates updates to its children,
+    // then forcibly adjusts some of the children to take into account animations
+    // like frame-out as well as to respect the user's HUD position settings.
+    // The super-combo meter (Dimps::Game::Battle::Hud::Cockpit::Sc) stages
+    // its child sprite nodes on update as necessary.
+    // 
+    // However, loading is a different story. When loading, the super-combo
+    // meter will re-stage its child sprite nodes, but the View does _not_
+    // adjust the position of the new sprite nodes. This isn't generally
+    // user visible because when the save states are used in training mode,
+    // the save and load operations occur very early in control flow, and
+    // then the HUD update later in the control flow repositions the nodes
+    // before rendering. Unfortunately, since our savestate-freeing method
+    // requires loading the state, `ggpo_advance_frame()` will load state
+    // _after_ the HUD update and _before_ rendering, which results in
+    // sprites visibly out-of-place.
+    // 
+    // Work around this by updating the position of the child controls,
+    // while taking care to not animate the sprites. It may be necessary
+    // to skip updating the child controls as well, but specific controls
+    // will need to be disabled or reenabled to prevent all the child
+    // controls from being turned on at once (which could lead to scenarios
+    // like win marks appearing in training mode).
+    // 
+    // One other possible workaround: never call `ggpo_advance_frame()` until
+    // after rendering.
+    //
+    // If savestates ever move away from using SF4's internal memento keys,
+    // this will need to be implemented a different way, although it may go
+    // away entirely depending on the implementation of the load operation.
+    UNK_ScaleformRelated* scaleform = UNK_ScaleformRelated::staticMethods.GetSingleton();
+    float originalFrameCount = (scaleform->*UNK_ScaleformRelated::publicMethods.GetNumFramesToSim)();
+    (scaleform->*UNK_ScaleformRelated::publicMethods.SetNumFramesToSim)(0.0);
+    (this->*rHud::Cockpit::View::publicMethods.Update)();
+    (scaleform->*UNK_ScaleformRelated::publicMethods.SetNumFramesToSim)(originalFrameCount);
 }
 
 void fHud::Cursor::Unit::Install() {

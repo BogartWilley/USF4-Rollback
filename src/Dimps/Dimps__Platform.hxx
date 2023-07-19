@@ -95,5 +95,21 @@ namespace Dimps {
 				char field_0x8[44];
 			} Win32_WindowData;
 		};
+
+		struct UNK_ScaleformRelated
+		{
+			typedef struct __publicMethods {
+				int (UNK_ScaleformRelated::* SetNumFramesToSim)(float frames);
+				float (UNK_ScaleformRelated::* GetNumFramesToSim)();
+			} __publicMethods;
+
+			typedef struct __staticMethods {
+				UNK_ScaleformRelated* (*GetSingleton)();
+			} __staticMethods;
+
+			static void Locate(HMODULE peRoot);
+			static __publicMethods publicMethods;
+			static __staticMethods staticMethods;
+		};
 	}
 }

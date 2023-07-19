@@ -15,6 +15,7 @@ Unit::__staticMethods Unit::staticMethods;
 
 Hud::Announce::Unit::__publicMethods Hud::Announce::Unit::publicMethods;
 Hud::Cockpit::Unit::__publicMethods Hud::Cockpit::Unit::publicMethods;
+Hud::Cockpit::View::__publicMethods Hud::Cockpit::View::publicMethods;
 Hud::Cursor::Unit::__publicMethods Hud::Cursor::Unit::publicMethods;
 Hud::Result::Unit::__publicMethods Hud::Result::Unit::publicMethods;
 Hud::Subtitle::Unit::__publicMethods Hud::Subtitle::Unit::publicMethods;
@@ -26,6 +27,7 @@ void Hud::Locate(HMODULE peRoot) {
 	Unit::Locate(peRoot);
 	Announce::Unit::Locate(peRoot);
 	Cockpit::Unit::Locate(peRoot);
+	Cockpit::View::Locate(peRoot);
 	Cursor::Unit::Locate(peRoot);
 	Result::Unit::Locate(peRoot);
 	Subtitle::Unit::Locate(peRoot);
@@ -55,6 +57,14 @@ void Hud::Cockpit::Unit::Locate(HMODULE peRoot) {
 
 	*(PVOID*)&publicMethods.HudCockpit_Update = (PVOID)(peRootOffset + 0x173f00);
 }
+
+void Hud::Cockpit::View::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&publicMethods.RestoreFromInternalMementoKey = (PVOID)(peRootOffset + 0x174c70);
+	*(PVOID*)&publicMethods.Update = (PVOID)(peRootOffset + 0x1764b0);
+}
+
 
 void Hud::Cursor::Unit::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;

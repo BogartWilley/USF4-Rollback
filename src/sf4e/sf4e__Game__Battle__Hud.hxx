@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include "../Dimps/Dimps__Eva.hxx"
+#include "../Dimps/Dimps__Game.hxx"
 #include "../Dimps/Dimps__Game__Battle__Hud.hxx"
 
 namespace sf4e {
@@ -10,6 +11,7 @@ namespace sf4e {
 		namespace Battle {
 			namespace Hud {
 				using Dimps::Eva::Task;
+				using Dimps::Game::GameMementoKey;
 
 				void Install();
 				extern bool bAllowHudUpdate;
@@ -29,6 +31,11 @@ namespace sf4e {
 				namespace Cockpit {
 					struct Unit : Dimps::Game::Battle::Hud::Cockpit::Unit {
 						void HudCockpit_Update(Task** task);
+						static void Install();
+					};
+
+					struct View : Dimps::Game::Battle::Hud::Cockpit::View {
+						void RestoreFromInternalMementoKey(GameMementoKey::MementoID* id);
 						static void Install();
 					};
 				}
