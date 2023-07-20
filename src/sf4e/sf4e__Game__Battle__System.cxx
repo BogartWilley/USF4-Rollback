@@ -33,6 +33,7 @@ using CharaActor = Dimps::Game::Battle::Chara::Actor;
 using CharaUnit = Dimps::Game::Battle::Chara::Unit;
 using CommandUnit = Dimps::Game::Battle::Command::Unit;
 using EffectUnit = Dimps::Game::Battle::Effect::Unit;
+using GameManager = Dimps::Game::Battle::GameManager;
 using HudUnit = Dimps::Game::Battle::Hud::Unit;
 using rSystem = Dimps::Game::Battle::System;
 using TrainingManager = Dimps::Game::Battle::Training::Manager;
@@ -519,6 +520,8 @@ void fSystem::SaveState::Save(SaveState* dst) {
     dst->d.PreviousBattleFlowSubstateFrame = *rSystem::staticVars.PreviousBattleFlowSubstateFrame;
     dst->d.BattleFlowSubstateCallable_aa9258 = *rSystem::staticVars.BattleFlowSubstateCallable_aa9258;
     dst->d.BattleFlowCallback_CallEveryFrame_aa9254 = *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254;
+
+    memcpy_s(&dst->d.gameManager, sizeof(GameManager), (system->*rSystem::publicMethods.GetGameManager)(), sizeof(GameManager));
 }
 
 void fSystem::SaveState::Load(SaveState* src) {
@@ -534,6 +537,7 @@ void fSystem::SaveState::Load(SaveState* src) {
     *rSystem::staticVars.PreviousBattleFlowSubstateFrame = src->d.PreviousBattleFlowSubstateFrame;
     *rSystem::staticVars.BattleFlowSubstateCallable_aa9258 = src->d.BattleFlowSubstateCallable_aa9258;
     *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254 = src->d.BattleFlowCallback_CallEveryFrame_aa9254;
+    memcpy_s((system->*rSystem::publicMethods.GetGameManager)(), sizeof(GameManager), &src->d.gameManager, sizeof(GameManager));
 
     // Place each memento key back into its position.
     for (auto iter = src->keys.begin(); iter != src->keys.end(); iter++) {

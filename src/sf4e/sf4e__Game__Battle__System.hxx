@@ -6,6 +6,7 @@
 #include <ggponet.h>
 
 #include "../Dimps/Dimps__Game.hxx"
+#include "../Dimps/Dimps__Game__Battle.hxx"
 #include "../Dimps/Dimps__Game__Battle__System.hxx"
 #include "../Dimps/Dimps__Math.hxx"
 
@@ -51,6 +52,8 @@ namespace sf4e {
 						FixedPoint PreviousBattleFlowSubstateFrame = { 0, 0 };
 						void (*BattleFlowSubstateCallable_aa9258)(Dimps::Game::Battle::System * s) = nullptr;
 						void (*BattleFlowCallback_CallEveryFrame_aa9254)(Dimps::Game::Battle::System * s) = nullptr;
+
+						Dimps::Game::Battle::GameManager gameManager = { 0 };
 					};
 					GlobalData d;
 

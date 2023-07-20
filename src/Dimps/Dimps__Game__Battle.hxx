@@ -32,6 +32,8 @@ namespace Dimps {
 			};
 
 			struct GameManager {
+				char pad[0x49c];
+
 				typedef struct __publicMethods {
 					void (GameManager::* GetRoundTime)(FixedPoint* out);
 				} __publicMethods;
