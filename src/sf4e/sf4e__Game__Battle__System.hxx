@@ -37,19 +37,22 @@ namespace sf4e {
 
 
 				struct SaveState {
-					bool used;
+					bool used = false;
 					std::vector<std::pair<GameMementoKey*, GameMementoKey>> keys;
 
-					DWORD CurrentBattleFlow;
-					DWORD PreviousBattleFlow;
-					DWORD CurrentBattleFlowSubstate;
-					DWORD PreviousBattleFlowSubstate;
-					FixedPoint CurrentBattleFlowFrame;
-					FixedPoint CurrentBattleFlowSubstateFrame;
-					FixedPoint PreviousBattleFlowFrame;
-					FixedPoint PreviousBattleFlowSubstateFrame;
-					void (*BattleFlowSubstateCallable_aa9258)(Dimps::Game::Battle::System* s);
-					void (*BattleFlowCallback_CallEveryFrame_aa9254)(Dimps::Game::Battle::System* s);
+					struct GlobalData {
+						DWORD CurrentBattleFlow = 0;
+						DWORD PreviousBattleFlow = 0;
+						DWORD CurrentBattleFlowSubstate = 0;
+						DWORD PreviousBattleFlowSubstate = 0;
+						FixedPoint CurrentBattleFlowFrame = { 0, 0 };
+						FixedPoint CurrentBattleFlowSubstateFrame = { 0, 0 };
+						FixedPoint PreviousBattleFlowFrame = { 0, 0 };
+						FixedPoint PreviousBattleFlowSubstateFrame = { 0, 0 };
+						void (*BattleFlowSubstateCallable_aa9258)(Dimps::Game::Battle::System * s) = nullptr;
+						void (*BattleFlowCallback_CallEveryFrame_aa9254)(Dimps::Game::Battle::System * s) = nullptr;
+					};
+					GlobalData d;
 
 					SaveState();
 					static void Save(SaveState* dst);

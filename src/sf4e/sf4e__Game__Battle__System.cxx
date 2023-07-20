@@ -434,16 +434,16 @@ void fSystem::ggpo_free_buffer(void* buffer)
 
     // Restore all non-memento-key state to a sane default.
     victim->used = false;
-    victim->CurrentBattleFlow = 0;
-    victim->PreviousBattleFlow = 0;
-    victim->CurrentBattleFlowSubstate = 0;
-    victim->PreviousBattleFlowSubstate = 0;
-    victim->CurrentBattleFlowFrame = { 0, 0 };
-    victim->CurrentBattleFlowSubstateFrame = { 0, 0 };
-    victim->PreviousBattleFlowFrame = { 0, 0 };
-    victim->PreviousBattleFlowSubstateFrame = { 0, 0 };
-    victim->BattleFlowSubstateCallable_aa9258 = nullptr;
-    victim->BattleFlowCallback_CallEveryFrame_aa9254 = nullptr;
+    victim->d.CurrentBattleFlow = 0;
+    victim->d.PreviousBattleFlow = 0;
+    victim->d.CurrentBattleFlowSubstate = 0;
+    victim->d.PreviousBattleFlowSubstate = 0;
+    victim->d.CurrentBattleFlowFrame = { 0, 0 };
+    victim->d.CurrentBattleFlowSubstateFrame = { 0, 0 };
+    victim->d.PreviousBattleFlowFrame = { 0, 0 };
+    victim->d.PreviousBattleFlowSubstateFrame = { 0, 0 };
+    victim->d.BattleFlowSubstateCallable_aa9258 = nullptr;
+    victim->d.BattleFlowCallback_CallEveryFrame_aa9254 = nullptr;
     
     // Reload the state at the start of the function. We don't need to
     // handle clearing the keys injected by this load, because the
@@ -483,19 +483,7 @@ bool fSystem::ggpo_on_event_callback(GGPOEvent* info) {
     return true;
 }
 
-fSystem::SaveState::SaveState()
-    : used(false)
-    , CurrentBattleFlow(0)
-    , PreviousBattleFlow(0)
-    , CurrentBattleFlowSubstate(0)
-    , PreviousBattleFlowSubstate(0)
-    , CurrentBattleFlowFrame{ 0, 0 }
-    , CurrentBattleFlowSubstateFrame{ 0, 0 }
-    , PreviousBattleFlowFrame{ 0, 0 }
-    , PreviousBattleFlowSubstateFrame{ 0, 0 }
-    , BattleFlowSubstateCallable_aa9258(nullptr)
-    , BattleFlowCallback_CallEveryFrame_aa9254(nullptr)
-{
+fSystem::SaveState::SaveState() {
     // There are at least 88 keys in every save state. The upper bound
     // is unclear, but we can minimize memory allocation delays by
     // reserving the lower bound.
@@ -521,31 +509,31 @@ void fSystem::SaveState::Save(SaveState* dst) {
         memset(*iter, 0, sizeof(rKey));
     }
 
-    dst->CurrentBattleFlow = *rSystem::staticVars.CurrentBattleFlow;
-    dst->PreviousBattleFlow = *rSystem::staticVars.PreviousBattleFlow;
-    dst->CurrentBattleFlowSubstate = *rSystem::staticVars.CurrentBattleFlowSubstate;
-    dst->PreviousBattleFlowSubstate = *rSystem::staticVars.PreviousBattleFlowSubstate;
-    dst->CurrentBattleFlowFrame = *rSystem::staticVars.CurrentBattleFlowFrame;
-    dst->CurrentBattleFlowSubstateFrame = *rSystem::staticVars.CurrentBattleFlowSubstateFrame;
-    dst->PreviousBattleFlowFrame = *rSystem::staticVars.PreviousBattleFlowFrame;
-    dst->PreviousBattleFlowSubstateFrame = *rSystem::staticVars.PreviousBattleFlowSubstateFrame;
-    dst->BattleFlowSubstateCallable_aa9258 = *rSystem::staticVars.BattleFlowSubstateCallable_aa9258;
-    dst->BattleFlowCallback_CallEveryFrame_aa9254 = *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254;
+    dst->d.CurrentBattleFlow = *rSystem::staticVars.CurrentBattleFlow;
+    dst->d.PreviousBattleFlow = *rSystem::staticVars.PreviousBattleFlow;
+    dst->d.CurrentBattleFlowSubstate = *rSystem::staticVars.CurrentBattleFlowSubstate;
+    dst->d.PreviousBattleFlowSubstate = *rSystem::staticVars.PreviousBattleFlowSubstate;
+    dst->d.CurrentBattleFlowFrame = *rSystem::staticVars.CurrentBattleFlowFrame;
+    dst->d.CurrentBattleFlowSubstateFrame = *rSystem::staticVars.CurrentBattleFlowSubstateFrame;
+    dst->d.PreviousBattleFlowFrame = *rSystem::staticVars.PreviousBattleFlowFrame;
+    dst->d.PreviousBattleFlowSubstateFrame = *rSystem::staticVars.PreviousBattleFlowSubstateFrame;
+    dst->d.BattleFlowSubstateCallable_aa9258 = *rSystem::staticVars.BattleFlowSubstateCallable_aa9258;
+    dst->d.BattleFlowCallback_CallEveryFrame_aa9254 = *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254;
 }
 
 void fSystem::SaveState::Load(SaveState* src) {
     rSystem* system = rSystem::staticMethods.GetSingleton();
 
-    *rSystem::staticVars.CurrentBattleFlow = src->CurrentBattleFlow;
-    *rSystem::staticVars.PreviousBattleFlow = src->PreviousBattleFlow;
-    *rSystem::staticVars.CurrentBattleFlowSubstate = src->CurrentBattleFlowSubstate;
-    *rSystem::staticVars.PreviousBattleFlowSubstate = src->PreviousBattleFlowSubstate;
-    *rSystem::staticVars.CurrentBattleFlowFrame = src->CurrentBattleFlowFrame;
-    *rSystem::staticVars.CurrentBattleFlowSubstateFrame = src->CurrentBattleFlowSubstateFrame;
-    *rSystem::staticVars.PreviousBattleFlowFrame = src->PreviousBattleFlowFrame;
-    *rSystem::staticVars.PreviousBattleFlowSubstateFrame = src->PreviousBattleFlowSubstateFrame;
-    *rSystem::staticVars.BattleFlowSubstateCallable_aa9258 = src->BattleFlowSubstateCallable_aa9258;
-    *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254 = src->BattleFlowCallback_CallEveryFrame_aa9254;
+    *rSystem::staticVars.CurrentBattleFlow = src->d.CurrentBattleFlow;
+    *rSystem::staticVars.PreviousBattleFlow = src->d.PreviousBattleFlow;
+    *rSystem::staticVars.CurrentBattleFlowSubstate = src->d.CurrentBattleFlowSubstate;
+    *rSystem::staticVars.PreviousBattleFlowSubstate = src->d.PreviousBattleFlowSubstate;
+    *rSystem::staticVars.CurrentBattleFlowFrame = src->d.CurrentBattleFlowFrame;
+    *rSystem::staticVars.CurrentBattleFlowSubstateFrame = src->d.CurrentBattleFlowSubstateFrame;
+    *rSystem::staticVars.PreviousBattleFlowFrame = src->d.PreviousBattleFlowFrame;
+    *rSystem::staticVars.PreviousBattleFlowSubstateFrame = src->d.PreviousBattleFlowSubstateFrame;
+    *rSystem::staticVars.BattleFlowSubstateCallable_aa9258 = src->d.BattleFlowSubstateCallable_aa9258;
+    *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254 = src->d.BattleFlowCallback_CallEveryFrame_aa9254;
 
     // Place each memento key back into its position.
     for (auto iter = src->keys.begin(); iter != src->keys.end(); iter++) {
