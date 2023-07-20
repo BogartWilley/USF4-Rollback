@@ -18,7 +18,25 @@ using Battle::IUnit;
 GameManager::__publicMethods GameManager::publicMethods;
 IUnit::__publicMethods IUnit::publicMethods;
 
+int Battle::orderedEditions[NUM_VALID_EDITIONS] = {
+	Battle::ED_SF4,
+	Battle::ED_SSF4,
+	Battle::ED_AE2011,
+	// The index-3 edition is disabled on every character.
+	// It looks like it corresponds to regulation 3 which
+	// might be AE2012 1.0, alluding to edition select
+	// possibly originally supporting subversions.
+	0,
+	Battle::ED_AE2012,
+	Battle::ED_USF4,
+	Battle::ED_OMEGA,
+};
+
+Battle::ValidEditions* Battle::validEditionsPerChara;
 void Battle::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+	validEditionsPerChara = (ValidEditions*)(peRootOffset + 0x539ba8);
+
 	Action::Locate(peRoot);
 	Camera::Locate(peRoot);
 	Chara::Locate(peRoot);

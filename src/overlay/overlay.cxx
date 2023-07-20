@@ -40,6 +40,7 @@
 
 #define DEFAULT_ALPHA 0.87f
 
+namespace rBattle = Dimps::Game::Battle;
 namespace rVfx = Dimps::Game::Battle::Vfx;
 namespace rStageSelect = Dimps::GameEvents::StageSelect;
 namespace fHud = sf4e::Game::Battle::Hud;
@@ -263,6 +264,49 @@ struct ExampleAppLog
 };
 
 static ExampleAppLog debugLog;
+
+char* GetEditionLabel(BYTE edition) {
+	switch (edition) {
+	case rBattle::ED_SF4:
+		return "SF4";
+	case rBattle::ED_SSF4:
+		return "SSF4";
+	case rBattle::ED_AE2011:
+		return "AE2011";
+	case rBattle::ED_AE2012:
+		return "AE2012";
+	case rBattle::ED_USF4:
+		return "USF4";
+	case rBattle::ED_OMEGA:
+		return "OMEGA";
+	default:
+		return "UNKNOWN EDITION";
+	}
+}
+
+void DrawCharaEditionDropdown(const char* label, int charaID, BYTE* selectedEdition) {
+	int numItems = 0;
+	// Note that selectedItem is initialized to zero even if the selectedEdition
+	// is not valid for this character- in that condition, it effectively sets
+	// the output edition to the oldest possible version for this character.
+	int selectedItem = 0;
+	int editions[7] = { -1 };
+	char* items[7] = { 0 };
+	for (int i = 0; i < NUM_VALID_EDITIONS; i++) {
+		int edition = rBattle::orderedEditions[i];
+		if (rBattle::validEditionsPerChara[charaID].valid[i]) {
+			editions[numItems] = edition;
+			items[numItems] = GetEditionLabel(edition);
+			if (edition == *selectedEdition) {
+				selectedItem = numItems;
+			}
+			numItems++;
+		}
+	}
+
+	ImGui::Combo(label, &selectedItem, items, numItems);
+	*selectedEdition = editions[selectedItem];
+}
 
 void DrawCharaWindow(bool* pOpen) {
 	Begin(
@@ -617,9 +661,8 @@ void DrawMainMenuWindow(bool* pOpen) {
 			ImGui::InputScalar("##P2 Ultra Combo", ImGuiDataType_U8, &mainMenuJumpCharaConditions[1].ultraCombo, &skipStep); TableNextColumn();
 
 			Text("Edition"); TableNextColumn();
-			// 16: Omega, 13: Vanilla, 1: SSF4, 2: AE, 4: AE2012, 14: Ultra
-			ImGui::InputScalar("##P1 Edition", ImGuiDataType_U8, &mainMenuJumpCharaConditions[0].unc_edition, &skipStep); TableNextColumn();
-			ImGui::InputScalar("##P2 Edition", ImGuiDataType_U8, &mainMenuJumpCharaConditions[1].unc_edition, &skipStep); TableNextColumn();
+			DrawCharaEditionDropdown("##P1 Edition", mainMenuJumpCharaConditions[0].charaID, &mainMenuJumpCharaConditions[0].unc_edition); TableNextColumn();
+			DrawCharaEditionDropdown("##P2 Edition", mainMenuJumpCharaConditions[1].charaID, &mainMenuJumpCharaConditions[1].unc_edition); TableNextColumn();
 
 			Text("Win quote"); TableNextColumn();
 			ImGui::InputScalar("##P1 Win quote", ImGuiDataType_U8, &mainMenuJumpCharaConditions[0].winQuote, &skipStep); TableNextColumn();
@@ -650,7 +693,8 @@ void DrawMainMenuWindow(bool* pOpen) {
 	End();
 }
 
-void DrawNetworkCharaConfig(int& menuCharaID, rVsMode::ConfirmedCharaConditions& charaConditions) {
+void DrawNetworkCharaConfig(rVsMode::ConfirmedCharaConditions& charaConditions) {
+	static int menuCharaID = 0;
 	static const int stepSize = 1;
 	ImGui::Combo("Chara", &menuCharaID, Dimps::characterNames, 0x2c);
 	charaConditions.charaID = menuCharaID;
@@ -659,7 +703,7 @@ void DrawNetworkCharaConfig(int& menuCharaID, rVsMode::ConfirmedCharaConditions&
 	ImGui::InputScalar("Handicap", ImGuiDataType_U8, &charaConditions.handicap, &stepSize);
 	ImGui::InputScalar("Personal action", ImGuiDataType_U8, &charaConditions.personalAction, &stepSize);
 	ImGui::InputScalar("Ultra Combo", ImGuiDataType_U8, &charaConditions.ultraCombo, &stepSize);
-	ImGui::InputScalar("Edition", ImGuiDataType_U8, &charaConditions.unc_edition, &stepSize);
+	DrawCharaEditionDropdown("Edition", charaConditions.charaID, &charaConditions.unc_edition);
 	ImGui::InputScalar("Win quote", ImGuiDataType_U8, &charaConditions.winQuote, &stepSize);
 }
 
@@ -681,7 +725,7 @@ void DrawNetworkWindow(bool* pOpen) {
 			if (!fUserApp::server) {
 				ImGui::InputScalar("Host port", ImGuiDataType_U16, &hostPort);
 				ImGui::Combo("Stage", &stageID, Dimps::stageNames, 30);
-				DrawNetworkCharaConfig(menuCharaID, myConditions);
+				DrawNetworkCharaConfig(myConditions);
 
 				if (fMainMenu::instance) {
 					if (Button("Listen")) {
@@ -701,7 +745,7 @@ void DrawNetworkWindow(bool* pOpen) {
 		if (BeginTabItem("Client")) {
 			if (!fUserApp::client) {
 				ImGui::InputText("Join addr", joinAddr, 64);
-				DrawNetworkCharaConfig(menuCharaID, myConditions);
+				DrawNetworkCharaConfig(myConditions);
 				if (fMainMenu::instance) {
 					if (Button("Join")) {
 						fUserApp::StartClient(joinAddr, myConditions);

@@ -1,9 +1,12 @@
 #pragma once
 
+#include <stdint.h>
 #include <windows.h>
 
 #include "Dimps__Eva.hxx"
 #include "Dimps__Math.hxx"
+
+#define NUM_VALID_EDITIONS 7
 
 namespace Dimps {
 	namespace Game {
@@ -12,6 +15,17 @@ namespace Dimps {
 			using Dimps::Math::FixedPoint;
 
 			void Locate(HMODULE peRoot);
+
+			enum Edition {
+				ED_SSF4 = 1,
+				ED_AE2011 = 2,
+				ED_AE2012 = 4,
+				ED_USF4 = 14,
+				ED_SF4 = 13,
+				ED_OMEGA = 16
+			};
+
+			extern int orderedEditions[NUM_VALID_EDITIONS];
 
 			enum GameMode {
 				GAMEMODE_ARCADE = 0x0,
@@ -30,6 +44,11 @@ namespace Dimps {
 
 				GAMEMODE_UNDEFINED = 0xffffffff
 			};
+
+			struct ValidEditions {
+				uint8_t valid[NUM_VALID_EDITIONS];
+			};
+			extern ValidEditions* validEditionsPerChara;
 
 			struct GameManager {
 				char pad[0x49c];
