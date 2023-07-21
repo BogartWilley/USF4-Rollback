@@ -719,7 +719,7 @@ void DrawNetworkWindow(bool* pOpen) {
 		pOpen,
 		ImGuiWindowFlags_None
 	);
-
+	ImGui::Checkbox("Randomize inputs?", &fSystem::bRandomizeLocalInputsInGGPO);
 	if (BeginTabBar("Network window", ImGuiTabBarFlags_None)) {
 		if (BeginTabItem("Server")) {
 			if (!fUserApp::server) {

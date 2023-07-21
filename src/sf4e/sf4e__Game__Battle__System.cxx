@@ -21,6 +21,7 @@
 #include "../Dimps/Dimps__Math.hxx"
 #include "../Dimps/Dimps__Pad.hxx"
 
+#include "sf4e.hxx"
 #include "sf4e__Game.hxx"
 #include "sf4e__GameEvents.hxx"
 #include "sf4e__Game__Battle.hxx"
@@ -53,6 +54,7 @@ int fSystem::nExtraFramesToSimulate = 0;
 int fSystem::nNextBattleStartFlowTarget = -1;
 
 GGPOSession* fSystem::ggpo;
+bool fSystem::bRandomizeLocalInputsInGGPO = false;
 GGPOPlayer fSystem::players[2];
 GGPOPlayerHandle playerHandles[2];
 fSystem::SaveState fSystem::saveStates[10];
@@ -82,7 +84,13 @@ void fSystem::BattleUpdate() {
     if (ggpo && *rSystem::staticVars.CurrentBattleFlow != BF__IDLE) {
         for (int i = 0; i < 2; i++) {
             if (players[i].type == GGPO_PLAYERTYPE_LOCAL) {
-                fPadSystem::Inputs inputs = { (p->*padMethods.GetButtons_MappedOn)(i), (p->*padMethods.GetButtons_RawOn)(i) };
+                fPadSystem::Inputs inputs;
+                if (bRandomizeLocalInputsInGGPO) {
+                    inputs = { localRand(), localRand() };
+                } else {
+                    inputs = { (p->*padMethods.GetButtons_MappedOn)(i), (p->*padMethods.GetButtons_RawOn)(i) };
+                }
+                
                 GGPOErrorCode result = ggpo_add_local_input(ggpo, playerHandles[i], &inputs, sizeof(fPadSystem::Inputs));
                 if (GGPO_SUCCEEDED(result)) {
                     fPadSystem::Inputs ggpoInputs[2] = { {0, 0}, {0, 0} };

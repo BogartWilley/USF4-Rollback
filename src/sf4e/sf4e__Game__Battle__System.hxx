@@ -21,6 +21,7 @@ namespace sf4e {
 			struct System : Dimps::Game::Battle::System
 			{
 				static bool bHaltAfterNext;
+				static bool bRandomizeLocalInputsInGGPO;
 				static bool bUpdateAllowed;
 				static int nExtraFramesToSimulate;
 				static int nNextBattleStartFlowTarget;

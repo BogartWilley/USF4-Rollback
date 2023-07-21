@@ -1,8 +1,8 @@
 vcpkg_from_github(
     OUT_SOURCE_PATH SOURCE_PATH
-    REPO pond3r/ggpo
-    REF 7ddadef85
-    SHA512 7c5134917d22fa4a9343ffa821b258e8a2b297d301e411618c855b8122d58890a77e3c5a248bc882bbdde36da5f230a41af2c0e172acdc47efbc22390f1d492b
+    REPO adanducci/ggpo
+    REF c88b667
+    SHA512 340b908deef907549e9ab2a08f97310ebd27717f80f9c63eb9d202adfc9307e2f59a080553bc91aea77c3e44022433ad6c3c26e2191b7a2e1d8c64b30fc6ad5c
     PATCHES
         "install-cmake-export.patch"
 )
