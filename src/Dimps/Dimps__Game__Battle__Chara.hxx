@@ -166,10 +166,14 @@ namespace Dimps {
 						void (Actor::* GetUCTimeAmt_FixedPoint)(Dimps::Math::FixedPoint* out);
 						void (Actor::* GetUCTimeMax_FixedPoint)(Dimps::Math::FixedPoint* out);
 						void (Actor::* GetUCTimePct_FixedPoint)(Dimps::Math::FixedPoint* out);
+
+						float* (Actor::* GetCurrentRootPosition)();
+						float* (Actor::* GetCurrentBonePositionByID)(int boneID);
 					} __publicMethods;
 
 					typedef struct __staticMethods {
 						void (*ResetAfterMemento)(Actor* a);
+						char* (*GetBoneLabelByID)(int idx);
 					} __staticMethods;
 
 					static void Locate(HMODULE peRoot);
