@@ -86,6 +86,10 @@ namespace Dimps {
                     BET_UNDEFINED = 0xffffffff
                 };
 
+                typedef struct Memento {
+                    char pad[0x700];
+                } Memento;
+
                 typedef struct __staticVars {
                     DWORD* CurrentBattleFlow;
                     DWORD* PreviousBattleFlow;
@@ -123,16 +127,32 @@ namespace Dimps {
                     int (System::* GetGameMode)();
                 } __publicMethods;
 
+                typedef struct __mementoableMethods {
+                    int (System::* GetMementoSize)();
+                    int (System::* RecordToMemento)(Memento* memento, GameMementoKey::MementoID* id);
+                    int (System::* RestoreFromMemento)(Memento* memento, GameMementoKey::MementoID* id);
+                } __mementoableMethods;
+
                 typedef struct __staticMethods {
                     System* (*GetSingleton)();
                     void (*OnBattleFlow_BattleStart)(System* s);
                     void (*SetBattleFlow)(System* s, int newFlow);
                 } __staticMethods;
 
+                // When IMementoable methods are called, the base of the `this`
+                // pointer needs to point at the IMementoable vtable contained
+                // in the System object, which is _not_ the base of the object-
+                // it's at offset 0x4. These helpers can make things a little
+                // more clear when invoking IMementoable methods.
+                static System* ToMementoable(System* s);
+                static System* FromMementoable(System* s);
+
                 static void Locate(HMODULE peRoot);
                 static int* GetBattleExitType(System* s);
+                static int* GetFirstCharaToSimulate(System* s);
                 static Eva::EmRandom* GetRandom(System* s);
                 static Request** GetRequest(System* s);
+                static __mementoableMethods mementoableMethods;
                 static __publicMethods publicMethods;
                 static __staticMethods staticMethods;
                 static __staticVars staticVars;

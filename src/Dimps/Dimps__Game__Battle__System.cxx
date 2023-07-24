@@ -10,13 +10,18 @@ using Dimps::Game::Request;
 using Dimps::Game::Battle::System;
 using Dimps::Math::FixedPoint;
 
+System::__mementoableMethods System::mementoableMethods;
 System::__publicMethods System::publicMethods;
 System::__staticMethods System::staticMethods;
 System::__staticVars System::staticVars;
 
 void System::Locate(HMODULE peRoot) {
     unsigned int peRootOffset = (unsigned int)peRoot;
-    *(PVOID*)&publicMethods.BattleUpdate = (void (*)(DWORD))(peRootOffset + 0x1d6b10);
+    *(PVOID*)&mementoableMethods.GetMementoSize = (PVOID)(peRootOffset + 0x1d7b70);
+    *(PVOID*)&mementoableMethods.RecordToMemento = (PVOID)(peRootOffset + 0x1d7b80);
+    *(PVOID*)&mementoableMethods.RestoreFromMemento = (PVOID)(peRootOffset + 0x1d7d80);
+
+    *(PVOID*)&publicMethods.BattleUpdate = (PVOID)(peRootOffset + 0x1d6b10);
     *(PVOID*)&publicMethods.GetCharaUnit = (PVOID)(peRootOffset + 0x163510);
     *(PVOID*)&publicMethods.GetGameManager = (PVOID)(peRootOffset + 0x1d9950);
     *(PVOID*)&publicMethods.GetUnitByIndex = (PVOID)(peRootOffset + 0x1d9720);
@@ -53,10 +58,22 @@ int* System::GetBattleExitType(System* s) {
     return (int*)((unsigned int)s + 0xe40);
 }
 
+int* System::GetFirstCharaToSimulate(System* s) {
+    return (int*)((unsigned int)s + 0xd74);
+}
+
 EmRandom* System::GetRandom(System* s) {
     return (EmRandom*)((unsigned int)s + 0x50);
 }
 
 Request** System::GetRequest(System* s) {
     return (Request**)((unsigned int)s + 0x98);
+}
+
+System* System::ToMementoable(System* s) {
+    return (System*)((unsigned int)s + 0x4);
+}
+
+System* System::FromMementoable(System* s) {
+    return (System*)((unsigned int)s - 0x4);
 }

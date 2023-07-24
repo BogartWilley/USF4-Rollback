@@ -66,9 +66,37 @@ GameMementoKey::MementoID fSystem::saveRequest = { 0xffffffff, 0xffffffff };
 void fSystem::Install() {
     void (fSystem:: * _fBattleUpdate)() = &BattleUpdate;
     void (fSystem:: * _fSysMain_HandleTrainingModeFeatures)() = &SysMain_HandleTrainingModeFeatures;
+    int (fSystem:: * _fGetMementoSize)() = &GetMementoSize;
+    int (fSystem:: * _fRecordToMemento)(Memento * m, GameMementoKey::MementoID * id) = &RecordToMemento;
+    int (fSystem:: * _fRestoreFromMemento)(Memento * m, GameMementoKey::MementoID * id) = &RestoreFromMemento;
+
+    DetourAttach((PVOID*)&rSystem::mementoableMethods.GetMementoSize, *(PVOID*)&_fGetMementoSize);
+    DetourAttach((PVOID*)&rSystem::mementoableMethods.RecordToMemento, *(PVOID*)&_fRecordToMemento);
+    DetourAttach((PVOID*)&rSystem::mementoableMethods.RestoreFromMemento, *(PVOID*)&_fRestoreFromMemento);
+
     DetourAttach((PVOID*)&rSystem::publicMethods.BattleUpdate, *(PVOID*)&_fBattleUpdate);
     DetourAttach((PVOID*)&rSystem::publicMethods.SysMain_HandleTrainingModeFeatures, *(PVOID*)&_fSysMain_HandleTrainingModeFeatures);
     DetourAttach((PVOID*)&rSystem::staticMethods.OnBattleFlow_BattleStart, OnBattleFlow_BattleStart);
+}
+
+int fSystem::GetMementoSize() {
+    return (this->*rSystem::mementoableMethods.GetMementoSize)() + sizeof(AdditionalMemento);
+}
+
+int fSystem::RecordToMemento(Memento* m, GameMementoKey::MementoID* id) {
+    AdditionalMemento* additional = (AdditionalMemento*)((unsigned int)m + sizeof(Memento));
+    rSystem* _this = rSystem::FromMementoable(this);
+    additional->nFirstCharaToSimulate = *rSystem::GetFirstCharaToSimulate(_this);
+
+    return (this->*rSystem::mementoableMethods.RecordToMemento)(m, id);
+}
+
+int fSystem::RestoreFromMemento(Memento* m, GameMementoKey::MementoID* id) {
+    AdditionalMemento* additional = (AdditionalMemento*)((unsigned int)m + sizeof(Memento));
+    rSystem* _this = rSystem::FromMementoable(this);
+    *rSystem::GetFirstCharaToSimulate(_this) = additional->nFirstCharaToSimulate;
+
+    return (this->*rSystem::mementoableMethods.RestoreFromMemento)(m, id);
 }
 
 void fSystem::BattleUpdate() {

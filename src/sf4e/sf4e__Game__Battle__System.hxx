@@ -20,6 +20,10 @@ namespace sf4e {
 
 			struct System : Dimps::Game::Battle::System
 			{
+				typedef struct AdditionalMemento {
+					int nFirstCharaToSimulate;
+				} AdditionalMemento;
+
 				static bool bHaltAfterNext;
 				static bool bRandomizeLocalInputsInGGPO;
 				static bool bUpdateAllowed;
@@ -30,13 +34,16 @@ namespace sf4e {
 				static Dimps::Game::GameMementoKey::MementoID saveRequest;
 
 				static void Install();
-				static void RestoreAllFromInternalMementos(Dimps::Game::Battle::System* system, Dimps::Game::GameMementoKey::MementoID* id);
-				static void RecordAllToInternalMementos(Dimps::Game::Battle::System* system, Dimps::Game::GameMementoKey::MementoID* id);
+				static void RestoreAllFromInternalMementos(Dimps::Game::Battle::System* system, GameMementoKey::MementoID* id);
+				static void RecordAllToInternalMementos(Dimps::Game::Battle::System* system, GameMementoKey::MementoID* id);
+
+				int GetMementoSize();
+				int RecordToMemento(Memento* memento, GameMementoKey::MementoID* id);
+				int RestoreFromMemento(Memento* memento, GameMementoKey::MementoID* id);
 
 				void BattleUpdate();
 				static void OnBattleFlow_BattleStart(System* s);
 				void SysMain_HandleTrainingModeFeatures();
-
 
 				struct SaveState {
 					bool used = false;
