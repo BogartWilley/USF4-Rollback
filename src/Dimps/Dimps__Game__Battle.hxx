@@ -69,6 +69,12 @@ namespace Dimps {
 				static void Locate(HMODULE peRoot);
 				static __publicMethods publicMethods;
 			};
+
+			namespace Network {
+				struct Unit {
+					char pad[0x64f4];
+				};
+			}
 		}
 	}
 }

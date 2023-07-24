@@ -22,6 +22,7 @@ namespace sf4e {
 			{
 				typedef struct AdditionalMemento {
 					int nFirstCharaToSimulate;
+					Dimps::Game::Battle::Network::Unit network;
 				} AdditionalMemento;
 
 				static bool bHaltAfterNext;

@@ -36,6 +36,7 @@ using CommandUnit = Dimps::Game::Battle::Command::Unit;
 using EffectUnit = Dimps::Game::Battle::Effect::Unit;
 using GameManager = Dimps::Game::Battle::GameManager;
 using HudUnit = Dimps::Game::Battle::Hud::Unit;
+using NetworkUnit = Dimps::Game::Battle::Network::Unit;
 using rSystem = Dimps::Game::Battle::System;
 using TrainingManager = Dimps::Game::Battle::Training::Manager;
 using VfxUnit = Dimps::Game::Battle::Vfx::Unit;
@@ -87,6 +88,7 @@ int fSystem::RecordToMemento(Memento* m, GameMementoKey::MementoID* id) {
     AdditionalMemento* additional = (AdditionalMemento*)((unsigned int)m + sizeof(Memento));
     rSystem* _this = rSystem::FromMementoable(this);
     additional->nFirstCharaToSimulate = *rSystem::GetFirstCharaToSimulate(_this);
+    additional->network = *(NetworkUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(System::U_NETWORK);
 
     return (this->*rSystem::mementoableMethods.RecordToMemento)(m, id);
 }
@@ -95,6 +97,7 @@ int fSystem::RestoreFromMemento(Memento* m, GameMementoKey::MementoID* id) {
     AdditionalMemento* additional = (AdditionalMemento*)((unsigned int)m + sizeof(Memento));
     rSystem* _this = rSystem::FromMementoable(this);
     *rSystem::GetFirstCharaToSimulate(_this) = additional->nFirstCharaToSimulate;
+    *(NetworkUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(System::U_NETWORK) = additional->network;
 
     return (this->*rSystem::mementoableMethods.RestoreFromMemento)(m, id);
 }
