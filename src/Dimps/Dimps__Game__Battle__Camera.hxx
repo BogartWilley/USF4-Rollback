@@ -2,9 +2,8 @@
 
 #include <windows.h>
 
+#include "Dimps__Eva.hxx"
 #include "Dimps__Game.hxx"
-
-using Dimps::Game::GameMementoKey;
 
 namespace Dimps {
 	namespace Game {
@@ -19,13 +18,15 @@ namespace Dimps {
 					} __privateMethods;
 
 					typedef struct __publicMethods {
-						void (Unit::* RecordToInternalMementoKey)(GameMementoKey::MementoID* id);
-						void (Unit::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
+						void (Unit::* RecordToInternalMementoKey)(Dimps::Game::GameMementoKey::MementoID* id);
+						void (Unit::* RestoreFromInternalMementoKey)(Dimps::Game::GameMementoKey::MementoID* id);
 					} __publicMethods;
 
 					typedef struct __staticMethods {
 						// TODO
 					} __staticMethods;
+
+					static Eva::Task** GetCamShakeTask(Unit* u);
 
 					static void Locate(HMODULE peRoot);
 					static __privateMethods privateMethods;

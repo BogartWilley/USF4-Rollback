@@ -1,27 +1,50 @@
 #include <windows.h>
+#include "Dimps__Eva.hxx"
 #include "Dimps__Platform.hxx"
 
+using Dimps::Eva::IEmSpriteAction;
+using Dimps::Eva::IEmSpriteNode;
+
 namespace Platform = Dimps::Platform;
+using Platform::Allocator;
+using Platform::dDeque_0x10;
 using Platform::dString;
 using Platform::D3D;
 using Platform::Main;
-using Platform::UNK_ScaleformRelated;
+using Platform::GFxApp;
 
+Allocator::__publicMethods Allocator::publicMethods;
+Allocator::__staticMethods Allocator::staticMethods;
 dString::__publicMethods dString::publicMethods;
+dDeque_0x10::__publicMethods dDeque_0x10::publicMethods;
 D3D::__privateMethods D3D::privateMethods;
 D3D::__publicMethods D3D::publicMethods;
 D3D::__staticMethods D3D::staticMethods;
 Main::__privateMethods Main::privateMethods;
 Main::__publicMethods Main::publicMethods;
 Main::__staticMethods Main::staticMethods;
-UNK_ScaleformRelated::__publicMethods UNK_ScaleformRelated::publicMethods;
-UNK_ScaleformRelated::__staticMethods UNK_ScaleformRelated::staticMethods;
+GFxApp::__publicMethods GFxApp::publicMethods;
+GFxApp::__staticMethods GFxApp::staticMethods;
 
 void Platform::Locate(HMODULE peRoot) {
+    Allocator::Locate(peRoot);
+    dDeque_0x10::Locate(peRoot);
     dString::Locate(peRoot);
     D3D::Locate(peRoot);
     Main::Locate(peRoot);
-    UNK_ScaleformRelated::Locate(peRoot);
+    GFxApp::Locate(peRoot);
+}
+
+void Allocator::Locate(HMODULE peRoot) {
+    unsigned int peRootOffset = (unsigned int)peRoot;
+    *(PVOID*)&publicMethods.Allocate = (PVOID)(peRootOffset + 0x2b3240);
+    *(PVOID*)&staticMethods.GetSingleton = (PVOID)(peRootOffset + 0x2b2fd0);
+}
+
+void dDeque_0x10::Locate(HMODULE peRoot) {
+    unsigned int peRootOffset = (unsigned int)peRoot;
+    *(PVOID*)&publicMethods.clear = (PVOID)(peRootOffset + 0x29bd20);
+    *(PVOID*)&publicMethods.push_back = (PVOID)(peRootOffset + 0x18a540);
 }
 
 void dString::Locate(HMODULE peRoot) {
@@ -43,9 +66,17 @@ void Main::Locate(HMODULE peRoot) {
     staticMethods.RunWindowFunc = (void(WINAPI*)(Main*, HWND, UINT, WPARAM, LPARAM))(peRootOffset + 0x37eb20);
 }
 
-void UNK_ScaleformRelated::Locate(HMODULE peRoot) {
+void GFxApp::Locate(HMODULE peRoot) {
     unsigned int peRootOffset = (unsigned int)peRoot;
-    *(PVOID*)&publicMethods.GetNumFramesToSim = (PVOID)(peRootOffset + 0x2b65a0);
-    *(PVOID*)&publicMethods.SetNumFramesToSim = (PVOID)(peRootOffset + 0x2b66e0);
-    staticMethods.GetSingleton = (UNK_ScaleformRelated*(*)())(peRootOffset + 0x2b7660);
+    *(PVOID*)&publicMethods.GetFrameDelta_Float = (PVOID)(peRootOffset + 0x2b65a0);
+    *(PVOID*)&publicMethods.SetFrameDelta_Float = (PVOID)(peRootOffset + 0x2b66e0);
+    staticMethods.GetSingleton = (GFxApp*(*)())(peRootOffset + 0x2b7660);
+}
+
+GFxApp::ObjectPool<IEmSpriteAction>* GFxApp::GetActionPool(GFxApp* a) {
+    return (GFxApp::ObjectPool<IEmSpriteAction>*)((unsigned int)a + 0x4);
+}
+
+GFxApp::ObjectPool<IEmSpriteNode>* GFxApp::GetNodePool(GFxApp* a) {
+    return (GFxApp::ObjectPool<IEmSpriteNode>*)((unsigned int)a + 0x24);
 }

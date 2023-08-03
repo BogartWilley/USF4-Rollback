@@ -86,6 +86,19 @@ namespace Dimps {
                     BET_UNDEFINED = 0xffffffff
                 };
 
+                enum SystemSimulationFlags {
+                    // Stub: check CheckAnyMatchingSimulationFlag @ 0x005d9b80
+                    // for more- calls to that are likely helpful for getting
+                    // the semantics here.
+                    SSF_UNK_0x1 = 0x1,
+                };
+
+                enum SystemTransitionType {
+                    STT_NONE = 0,
+                    STT_FADEINFROMBLACK = 1,
+                    STT_FADEOUTTOBLACK = 2
+                };
+
                 typedef struct Memento {
                     char pad[0x700];
                 } Memento;
@@ -150,8 +163,14 @@ namespace Dimps {
                 static void Locate(HMODULE peRoot);
                 static int* GetBattleExitType(System* s);
                 static int* GetFirstCharaToSimulate(System* s);
+
                 static Eva::EmRandom* GetRandom(System* s);
                 static Request** GetRequest(System* s);
+                static DWORD* GetSkipRelatedFlags_0xd8c(System* s);
+                static DWORD* GetSimulationFlags(System* s);
+                static FixedPoint* GetTransitionProgress(System* s);
+                static FixedPoint* GetTransitionSpeed(System* s);
+                static int* GetTransitionType(System* s);
                 static __mementoableMethods mementoableMethods;
                 static __publicMethods publicMethods;
                 static __staticMethods staticMethods;

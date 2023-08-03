@@ -9,6 +9,8 @@
 #include "../Dimps/Dimps__Game__Battle.hxx"
 #include "../Dimps/Dimps__Game__Battle__System.hxx"
 #include "../Dimps/Dimps__Math.hxx"
+#include "sf4e__Platform.hxx"
+#include "sf4e__Game__Battle__Hud.hxx"
 
 #define NUM_SAVE_STATES (GGPO_MAX_PREDICTION_FRAMES + 2)
 
@@ -22,7 +24,16 @@ namespace sf4e {
 			{
 				typedef struct AdditionalMemento {
 					int nFirstCharaToSimulate;
+					DWORD skipRelatedFlags_0xd8c;
+					DWORD simulationFlags;
+					FixedPoint transitionProgress;
+					FixedPoint transitionSpeed;
+					int transitionType;
+
 					Dimps::Game::Battle::Network::Unit network;
+					Hud::Announce::Unit::AdditionalMemento announce;
+					Platform::GFxApp::AdditionalMemento gfxApp;
+					Eva::TaskCore::AdditionalMemento updateCore;
 				} AdditionalMemento;
 
 				static bool bHaltAfterNext;

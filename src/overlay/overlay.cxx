@@ -73,6 +73,7 @@ using Dimps::GameEvents::VsStageSelect;
 using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
 using Dimps::Platform::dString;
+using Dimps::Platform::GFxApp;
 
 using fEventController = sf4e::Event::EventController;
 using fIUnit = sf4e::Game::Battle::IUnit;
@@ -120,6 +121,7 @@ static bool show_chara_window = false;
 static bool show_command_window = false;
 static bool show_demo_window = false;
 static bool show_event_window = false;
+static bool show_gfxapp_window = false;
 static bool show_help_window = false;
 static bool show_hud_window = false;
 static bool show_log_window = false;
@@ -631,6 +633,55 @@ void _OnPreBattleTasksRegistered() {
 	(padSys->*padSysMethods.SetActiveButtonMapping)(PadSystem::BUTTON_MAPPING_FIGHT);
 }
 
+void DrawGFxAppWindow(bool* pOpen) {
+	static int selectedAction = 0;
+	static int selectedNode = 0;
+
+	Begin(
+		"GFxApp",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+
+	GFxApp* app = GFxApp::staticMethods.GetSingleton();
+
+	if (BeginTabBar("GFxApp"))
+	{
+		if (BeginTabItem("Actions")) {
+			ImGui::BeginChild("left pane", ImVec2(150, 0), true);
+			char label[24];
+			GFxApp::ObjectPool<Dimps::Eva::IEmSpriteAction>* pool = GFxApp::GetActionPool(app);
+
+			for (int i = 0; i < NUM_GFX_ACTIONS; i++)
+			{
+				sprintf(label, "Action %d (%d)", i, pool->useIndex[i]);
+				if (ImGui::Selectable(label, selectedAction == i)) {
+					selectedAction = i;
+				}
+			}
+			ImGui::EndChild();
+			ImGui::SameLine();
+
+			ImGui::BeginChild("right pane");
+			Dimps::Eva::IEmSpriteAction* a = &GFxApp::GetActionPool(app)->raw[selectedAction];
+			Text("Action %d", selectedAction);
+			Text("Enabled: %d", pool->useIndex[selectedAction]);
+			if (pool->useIndex[selectedAction]) {
+				for (int j = 0; j < NUM_ACTION_STATES; j++) {
+					Dimps::Eva::IEmSpriteAction::ActionState* state = (a->*Dimps::Eva::IEmSpriteAction::publicMethods.GetActionState)(j);
+					Text("State %d: current frame %d / %d , active %d", j, state->currentFrame.integral, state->currentFrame.fractional, state->active_0x1c);
+				}
+			}
+			ImGui::EndChild();
+
+			EndTabItem();
+		}
+		EndTabBar();
+	}
+
+	End();
+}
+
 void DrawMainMenuWindow(bool* pOpen) {
 	static BYTE skipStep = 1;
 
@@ -908,26 +959,34 @@ void DrawPadWindow(bool* pOpen) {
 }
 
 bool compareTasks(Task* a, Task* b) {
-	return Task::GetPriority(a) < Task::GetPriority(b);
+	return *Task::GetPriority(a) < *Task::GetPriority(b);
 }
 
-void DrawSystemTaskPanel(TaskCore* core) {
+void DrawSystemTaskPanel(System* s, TaskCore* core) {
 	if (core == NULL) {
 		Text("Core not yet allocated");
 		return;
 	}
 
-	Task** taskCursor = TaskCore::GetTaskBuffer(core);
-	int taskCount = (core->*TaskCore::publicMethods.GetNumUsed)();
-	std::vector<Task*> taskVec(taskCursor, taskCursor + taskCount);
-	std::sort(taskVec.begin(), taskVec.end(), compareTasks);
+	Text("Current system frame: %d", ((FixedPoint*)((unsigned int)s + 0xdd4))->integral);
+	Columns(6);
 
-	Columns(2);
-	Text("Priority"); NextColumn(); Text("Name"); NextColumn();
-	for (auto taskIter = taskVec.begin(); taskIter != taskVec.end(); taskIter++) {
-		Task* t = *taskIter;
-		Text("%x", Task::GetPriority(t)); NextColumn();
+	Text("Prio"); NextColumn(); Text("Name"); NextColumn();
+	Text("Flags"); NextColumn(); Text("0x8 value"); NextColumn();
+	Text("Phase"); NextColumn(); Text("State"); NextColumn();
+
+	Task* t;
+	for (
+		t = TaskCore::GetTaskHead(core);
+		t != nullptr;
+		t = *Task::GetNext(t)
+	) {
+		Text("%x", *Task::GetPriority(t)); NextColumn();
 		Text("%s", (core->*TaskCore::publicMethods.GetTaskName)(&t)); NextColumn();
+		Text("%x", *Task::GetFlags(t)); NextColumn();
+		Text("%x", *Task::Get0x8(t)); NextColumn();
+		Text("%x", *Task::GetPhase(t)); NextColumn();
+		Text("%x", *Task::GetState(t)); NextColumn();
 	}
 	Columns(1);
 }
@@ -1049,13 +1108,13 @@ void DrawSystemWindow(bool* pOpen) {
 
 		if (BeginTabItem("Update tasks")) {
 			TaskCore* updateCore = (system->*methods.GetTaskCore)(System::TCI_UPDATE);
-			DrawSystemTaskPanel(updateCore);
+			DrawSystemTaskPanel(system, updateCore);
 			EndTabItem();
 		}
 
 		if (BeginTabItem("Render tasks")) {
 			TaskCore* renderCore = (system->*methods.GetTaskCore)(System::TCI_RENDER);
-			DrawSystemTaskPanel(renderCore);
+			DrawSystemTaskPanel(system, renderCore);
 			EndTabItem();
 		}
 		EndTabBar();
@@ -1530,6 +1589,14 @@ void DrawOverlay() {
 
 				ImGui::EndMenu();
 			}
+			
+			if (BeginMenu("Platform")) {
+				if (MenuItem("GFxApp")) {
+					show_gfxapp_window = true;
+				}
+
+				ImGui::EndMenu();
+			}
 
 			if (BeginMenu("Network")) {
 				if (MenuItem("Network test")) {
@@ -1570,6 +1637,10 @@ void DrawOverlay() {
 
 	if (show_event_window) {
 		DrawEventWindow(&show_event_window);
+	}
+
+	if (show_gfxapp_window) {
+		DrawGFxAppWindow(&show_gfxapp_window);
 	}
 
 	if (show_hud_window) {

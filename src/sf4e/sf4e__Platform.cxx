@@ -13,17 +13,21 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 
+#include "../Dimps/Dimps__Eva.hxx"
 #include "../Dimps/Dimps__Platform.hxx"
+#include "sf4e.hxx"
 #include "sf4e__Platform.hxx"
 #include "sf4e__UserApp.hxx"
 #include "../overlay/overlay.h"
 
 namespace rPlatform = Dimps::Platform;
 using rD3D = rPlatform::D3D;
+using rGFxApp = rPlatform::GFxApp;
 using rMain = rPlatform::Main;
 
 namespace fPlatform = sf4e::Platform;
 using fD3D = fPlatform::D3D;
+using fGFxApp = fPlatform::GFxApp;
 using fMain = fPlatform::Main;
 using fUserApp = sf4e::UserApp;
 
@@ -46,6 +50,30 @@ void WINAPI fD3D::RunD3DOperations(void* data) {
 void fD3D::Destroy() {
     FreeOverlay();
     (this->*rD3D::privateMethods.Destroy)();
+}
+
+void fGFxApp::RecordToAdditionalMemento(rGFxApp* a, AdditionalMemento& m) {
+    int i;
+
+    rGFxApp::ObjectPool<Dimps::Eva::IEmSpriteAction>* actionPool = rGFxApp::GetActionPool(a);
+    for (i = 0; i < NUM_GFX_ACTIONS; i++) {
+        m.actions[i].first = actionPool->useIndex[i];
+        if (actionPool->useIndex[i]) {
+            sf4e::Eva::IEmSpriteAction::RecordToAdditionalMemento(&actionPool->raw[i], m.actions[i].second);
+        }
+    }
+}
+
+void fGFxApp::RestoreFromAdditionalMemento(rGFxApp* a, const AdditionalMemento& m) {
+    int i;
+
+    rGFxApp::ObjectPool<Dimps::Eva::IEmSpriteAction>* actionPool = rGFxApp::GetActionPool(a);
+    for (i = 0; i < NUM_GFX_ACTIONS; i++) {
+        actionPool->useIndex[i] = m.actions[i].first;
+        if (actionPool->useIndex[i]) {
+            sf4e::Eva::IEmSpriteAction::RestoreFromAdditionalMemento(&actionPool->raw[i], m.actions[i].second);
+        }
+    }
 }
 
 void fMain::Install() {

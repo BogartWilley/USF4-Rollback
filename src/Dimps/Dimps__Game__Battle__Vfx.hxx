@@ -3,6 +3,7 @@
 #include <windows.h>
 #include <string>
 
+#include "Dimps__Eva.hxx"
 #include "Dimps__Game.hxx"
 #include "Dimps__Math.hxx"
 #include "Dimps__Platform.hxx"
@@ -60,6 +61,8 @@ namespace Dimps {
 					typedef struct __staticMethods {
 						ColorFadeUnit* (*GetSingleton)();
 					} __staticMethods;
+
+					static Eva::Task** GetColorFadeMainUpdateTask(ColorFadeUnit* u);
 
 					static __publicMethods publicMethods;
 					static __staticMethods staticMethods;
@@ -154,6 +157,8 @@ namespace Dimps {
 						// TODO
 					} __staticMethods;
 
+
+					static Eva::Task** GetVfxMainUpdateTask(Unit* s);
 					static void Locate(HMODULE peRoot);
 					static __privateMethods privateMethods;
 					static __publicMethods publicMethods;

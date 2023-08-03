@@ -1,3 +1,4 @@
+#include <memory.h>
 #include <windows.h>
 #include <detours/detours.h>
 
@@ -16,7 +17,9 @@ namespace rHud = Dimps::Game::Battle::Hud;
 
 using Dimps::Eva::Task;
 using Dimps::Game::GameMementoKey;
-using Dimps::Platform::UNK_ScaleformRelated;
+using Dimps::Game::Sprite::Control;
+using Dimps::Platform::dDeque_0x10;
+using Dimps::Platform::GFxApp;
 
 using fIUnit = sf4e::Game::Battle::IUnit;
 using rIUnit = Dimps::Game::Battle::IUnit;
@@ -61,12 +64,98 @@ rHud::Unit* fHud::Unit::Factory(DWORD arg1, DWORD arg2) {
     return u;
 }
 
+void fHud::Announce::Round::RecordToAdditionalMemento(rHud::Announce::Round* r, AdditionalMemento& m) {
+    m.enabled = *(Control::GetEnabled(r));
+    m.currentRound = *(Round::GetCurrentRound(r));
+
+    // DO NOT save or restore either child sprite node- this will be
+    // handled by the GFxApp's save state.
+}
+
+void fHud::Announce::Round::RestoreFromAdditionalMemento(rHud::Announce::Round* r, const AdditionalMemento& m) {
+    bool currentlyEnabled = *(Control::GetEnabled(r));
+    if (currentlyEnabled && !m.enabled) {
+        (r->*Control::publicMethods.Disable_0x57bd80)();
+    }
+    else if (!currentlyEnabled && m.enabled) {
+        (r->*Control::publicMethods.Enable_0x588450)();
+    }
+    *(Round::GetCurrentRound(r)) = m.currentRound;
+
+    // DO NOT save or restore either child sprite node- this will be
+    // handled by the GFxApp's save state.
+}
+
 void fHud::Announce::Unit::Install() {
     void (Unit:: * _fHudAnnounce_Update)(Task** task) = &HudAnnounce_Update;
     DetourAttach(
         (PVOID*)&rHud::Announce::Unit::publicMethods.HudAnnounce_Update,
         *(PVOID*)&_fHudAnnounce_Update
     );
+}
+
+void fHud::Announce::Unit::RecordToAdditionalMemento(rHud::Announce::Unit* u, AdditionalMemento& m) {
+    rHud::Announce::View* v = *rHud::Announce::Unit::GetView(u);
+    m.activeControl = *rHud::Announce::View::GetActiveControl(v);
+
+    dDeque_0x10* queuedAnnouncements = rHud::Announce::View::GetQueuedAnnouncements(v);
+    int i;
+    dDeque_0x10::iterator iter;
+    assert(queuedAnnouncements->size() <= 4);
+    assert(sizeof(rHud::Announce::Announcement) == sizeof(dDeque_0x10::value_type));
+    for (iter = queuedAnnouncements->begin(), i = 0; iter != queuedAnnouncements->end(); iter++, i++) {
+        memcpy_s(&m.queuedAnnouncements[i], sizeof(rHud::Announce::Announcement), &*iter, sizeof(dDeque_0x10::value_type));
+    }
+    m.numQueuedAnnouncements = i;
+
+    Round::RecordToAdditionalMemento(*rHud::Announce::View::GetRoundControl(v), m.round);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetFinalRoundControl(v), m.finalRound);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetExtraRoundControl(v), m.extraRound);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetFightControl(v), m.fight);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetKoControl(v), m.ko);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetDoubleKoControl(v), m.doubleKo);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetTimeControl(v), m.time);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetDrawControl(v), m.draw);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetPerfectControl(v), m.perfect);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetWinControl(v), m.win);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetLoseControl(v), m.lose);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetWins1Control(v), m.wins1);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetWins2Control(v), m.wins2);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetSuccessControl(v), m.success);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetClearControl(v), m.clear);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetReadyGoControl(v), m.readyGo);
+    sf4e::Game::Sprite::SingleNodeControl::RecordToAdditionalMemento(*rHud::Announce::View::GetEditionControl(v), m.edition);
+}
+
+void fHud::Announce::Unit::RestoreFromAdditionalMemento(rHud::Announce::Unit* u, const AdditionalMemento& m) {
+    rHud::Announce::View* v = *rHud::Announce::Unit::GetView(u);
+    *rHud::Announce::View::GetActiveControl(v) = m.activeControl;
+
+    dDeque_0x10* queuedAnnouncements = rHud::Announce::View::GetQueuedAnnouncements(v);
+    (queuedAnnouncements->*dDeque_0x10::publicMethods.clear)();
+    assert(sizeof(rHud::Announce::Announcement) == sizeof(dDeque_0x10::value_type));
+    int i;
+    for (i = 0; i < m.numQueuedAnnouncements; i++) {
+        (queuedAnnouncements->*dDeque_0x10::publicMethods.push_back)((dDeque_0x10::value_type*)&m.queuedAnnouncements[i]);
+    }
+
+    Round::RestoreFromAdditionalMemento(*rHud::Announce::View::GetRoundControl(v), m.round);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetFinalRoundControl(v), m.finalRound);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetExtraRoundControl(v), m.extraRound);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetFightControl(v), m.fight);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetKoControl(v), m.ko);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetDoubleKoControl(v), m.doubleKo);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetTimeControl(v), m.time);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetDrawControl(v), m.draw);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetPerfectControl(v), m.perfect);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetWinControl(v), m.win);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetLoseControl(v), m.lose);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetWins1Control(v), m.wins1);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetWins2Control(v), m.wins2);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetSuccessControl(v), m.success);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetClearControl(v), m.clear);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetReadyGoControl(v), m.readyGo);
+    sf4e::Game::Sprite::SingleNodeControl::RestoreFromAdditionalMemento(*rHud::Announce::View::GetEditionControl(v), m.edition);
 }
 
 void fHud::Announce::Unit::HudAnnounce_Update(Task** task) {
@@ -132,11 +221,11 @@ void fHud::Cockpit::View::RestoreFromInternalMementoKey(GameMementoKey::MementoI
     // If savestates ever move away from using SF4's internal memento keys,
     // this will need to be implemented a different way, although it may go
     // away entirely depending on the implementation of the load operation.
-    UNK_ScaleformRelated* scaleform = UNK_ScaleformRelated::staticMethods.GetSingleton();
-    float originalFrameCount = (scaleform->*UNK_ScaleformRelated::publicMethods.GetNumFramesToSim)();
-    (scaleform->*UNK_ScaleformRelated::publicMethods.SetNumFramesToSim)(0.0);
+    GFxApp* scaleform = GFxApp::staticMethods.GetSingleton();
+    float originalFrameCount = (scaleform->*GFxApp::publicMethods.GetFrameDelta_Float)();
+    (scaleform->*GFxApp::publicMethods.SetFrameDelta_Float)(0.0);
     (this->*rHud::Cockpit::View::publicMethods.Update)();
-    (scaleform->*UNK_ScaleformRelated::publicMethods.SetNumFramesToSim)(originalFrameCount);
+    (scaleform->*GFxApp::publicMethods.SetFrameDelta_Float)(originalFrameCount);
 }
 
 void fHud::Cursor::Unit::Install() {

@@ -1,5 +1,6 @@
 #include <windows.h>
 
+#include "Dimps__Eva.hxx"
 #include "Dimps__Game__Battle.hxx"
 #include "Dimps__Game__Battle__Action.hxx"
 #include "Dimps__Game__Battle__Camera.hxx"
@@ -12,6 +13,8 @@
 #include "Dimps__Game__Battle__Vfx.hxx"
 
 namespace Battle = Dimps::Game::Battle;
+
+using Dimps::Eva::Task;
 using Battle::GameManager;
 using Battle::IUnit;
 
@@ -59,4 +62,8 @@ void IUnit::Locate(HMODULE peRoot) {
 void GameManager::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 	*(PVOID*)&publicMethods.GetRoundTime = (PVOID)(peRootOffset + 0x1d14d0);
+}
+
+Task** Battle::Pause::Unit::GetPauseTask(Unit* u) {
+	return (Task**)((unsigned int)u + 0x14);
 }

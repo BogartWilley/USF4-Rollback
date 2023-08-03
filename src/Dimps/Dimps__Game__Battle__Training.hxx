@@ -2,9 +2,8 @@
 
 #include <windows.h>
 
+#include "Dimps__Eva.hxx"
 #include "Dimps__Game.hxx"
-
-using Dimps::Game::GameMementoKey;
 
 namespace Dimps {
 	namespace Game {
@@ -19,8 +18,8 @@ namespace Dimps {
 					} __privateMethods;
 
 					typedef struct __publicMethods {
-						void (Manager::* RecordToInternalMementoKey)(GameMementoKey::MementoID* id);
-						void (Manager::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
+						void (Manager::* RecordToInternalMementoKey)(Dimps::Game::GameMementoKey::MementoID* id);
+						void (Manager::* RestoreFromInternalMementoKey)(Dimps::Game::GameMementoKey::MementoID* id);
 					} __publicMethods;
 
 					typedef struct __staticMethods {

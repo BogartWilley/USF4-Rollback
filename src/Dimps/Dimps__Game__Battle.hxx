@@ -75,6 +75,14 @@ namespace Dimps {
 					char pad[0x64f4];
 				};
 			}
+
+			namespace Pause {
+				struct Unit {
+					char pad[0x18];
+
+					static Eva::Task** GetPauseTask(Unit* u);
+				};
+			}
 		}
 	}
 }

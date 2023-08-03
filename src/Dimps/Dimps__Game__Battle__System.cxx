@@ -70,6 +70,26 @@ Request** System::GetRequest(System* s) {
     return (Request**)((unsigned int)s + 0x98);
 }
 
+DWORD* System::GetSkipRelatedFlags_0xd8c(System* s) {
+    return (DWORD*)((unsigned int)s + 0xd8c);
+}
+
+DWORD* System::GetSimulationFlags(System* s) {
+    return (DWORD*)((unsigned int)s + 0x1454);
+}
+
+FixedPoint* System::GetTransitionProgress(System* s) {
+    return (FixedPoint*)((unsigned int)s + 0xe24);
+}
+
+FixedPoint* System::GetTransitionSpeed(System* s) {
+    return (FixedPoint*)((unsigned int)s + 0xe28);
+}
+
+int* System::GetTransitionType(System* s) {
+    return (int*)((unsigned int)s + 0xe20);
+}
+
 System* System::ToMementoable(System* s) {
     return (System*)((unsigned int)s + 0x4);
 }

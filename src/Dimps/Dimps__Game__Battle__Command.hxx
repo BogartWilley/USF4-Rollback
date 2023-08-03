@@ -90,7 +90,6 @@ namespace Dimps {
 						void (Unit::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
 					} __publicMethods;
 
-
 					static void Locate(HMODULE peRoot);
 					static __publicMethods publicMethods;
 				};

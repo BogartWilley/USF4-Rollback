@@ -2,6 +2,7 @@
 
 #include <windows.h>
 #include "../Dimps/Dimps__Platform.hxx"
+#include "sf4e.hxx"
 
 namespace sf4e {
 	namespace Platform {
@@ -13,6 +14,16 @@ namespace sf4e {
 
 			void Destroy();
 			static void WINAPI RunD3DOperations(void* arg1);
+		};
+
+		struct GFxApp : Dimps::Platform::GFxApp
+		{
+			struct AdditionalMemento {
+				std::pair<bool, sf4e::Eva::IEmSpriteAction::AdditionalMemento> actions[NUM_GFX_ACTIONS];
+			};
+
+			static void RecordToAdditionalMemento(Dimps::Platform::GFxApp* a, AdditionalMemento& m);
+			static void RestoreFromAdditionalMemento(Dimps::Platform::GFxApp* a, const AdditionalMemento& m);
 		};
 
 		struct Main : Dimps::Platform::Main

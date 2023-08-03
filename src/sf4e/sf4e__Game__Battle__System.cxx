@@ -1,3 +1,4 @@
+#include <string.h>
 #include <utility>
 #include <vector>
 
@@ -20,6 +21,7 @@
 #include "../Dimps/Dimps__Game__Battle__Vfx.hxx"
 #include "../Dimps/Dimps__Math.hxx"
 #include "../Dimps/Dimps__Pad.hxx"
+#include "../Dimps/Dimps__Platform.hxx"
 
 #include "sf4e.hxx"
 #include "sf4e__Game.hxx"
@@ -28,7 +30,9 @@
 #include "sf4e__Game__Battle__Hud.hxx"
 #include "sf4e__Game__Battle__System.hxx"
 #include "sf4e__Pad.hxx"
+#include "sf4e__Platform.hxx"
 
+namespace rHud = Dimps::Game::Battle::Hud;
 using CameraUnit = Dimps::Game::Battle::Camera::Unit;
 using CharaActor = Dimps::Game::Battle::Chara::Actor;
 using CharaUnit = Dimps::Game::Battle::Chara::Unit;
@@ -38,6 +42,7 @@ using GameManager = Dimps::Game::Battle::GameManager;
 using HudUnit = Dimps::Game::Battle::Hud::Unit;
 using NetworkUnit = Dimps::Game::Battle::Network::Unit;
 using rSystem = Dimps::Game::Battle::System;
+using PauseUnit = Dimps::Game::Battle::Pause::Unit;
 using TrainingManager = Dimps::Game::Battle::Training::Manager;
 using VfxUnit = Dimps::Game::Battle::Vfx::Unit;
 using rKey = Dimps::Game::GameMementoKey;
@@ -46,6 +51,7 @@ using fKey = sf4e::Game::GameMementoKey;
 using rPadSystem = Dimps::Pad::System;
 using fPadSystem = sf4e::Pad::System;
 
+namespace fHud = sf4e::Game::Battle::Hud;
 using fSystem = sf4e::Game::Battle::System;
 using fVsBattle = sf4e::GameEvents::VsBattle;
 
@@ -88,7 +94,24 @@ int fSystem::RecordToMemento(Memento* m, GameMementoKey::MementoID* id) {
     AdditionalMemento* additional = (AdditionalMemento*)((unsigned int)m + sizeof(Memento));
     rSystem* _this = rSystem::FromMementoable(this);
     additional->nFirstCharaToSimulate = *rSystem::GetFirstCharaToSimulate(_this);
+    additional->skipRelatedFlags_0xd8c = *rSystem::GetSkipRelatedFlags_0xd8c(_this);
+    additional->simulationFlags = *rSystem::GetSimulationFlags(_this);
+    additional->transitionProgress  = *rSystem::GetTransitionProgress(_this);
+    additional->transitionSpeed = *rSystem::GetTransitionSpeed(_this);
+    additional->transitionType = *rSystem::GetTransitionType(_this);
     additional->network = *(NetworkUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(System::U_NETWORK);
+
+    HudUnit* hud = (HudUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(System::U_HUD);
+    fHud::Announce::Unit::RecordToAdditionalMemento(*HudUnit::GetAnnounce(hud), additional->announce);
+    Platform::GFxApp::RecordToAdditionalMemento(
+        Dimps::Platform::GFxApp::staticMethods.GetSingleton(),
+        additional->gfxApp
+    );
+
+    Eva::TaskCore::RecordToAdditionalMemento(
+        (_this->*rSystem::publicMethods.GetTaskCore)(System::TCI_UPDATE),
+        additional->updateCore
+    );
 
     return (this->*rSystem::mementoableMethods.RecordToMemento)(m, id);
 }
@@ -97,7 +120,79 @@ int fSystem::RestoreFromMemento(Memento* m, GameMementoKey::MementoID* id) {
     AdditionalMemento* additional = (AdditionalMemento*)((unsigned int)m + sizeof(Memento));
     rSystem* _this = rSystem::FromMementoable(this);
     *rSystem::GetFirstCharaToSimulate(_this) = additional->nFirstCharaToSimulate;
+    *rSystem::GetSkipRelatedFlags_0xd8c(_this) = additional->skipRelatedFlags_0xd8c;
+    *rSystem::GetSimulationFlags(_this) = additional->simulationFlags;
+    *rSystem::GetTransitionProgress(_this) = additional->transitionProgress;
+    *rSystem::GetTransitionSpeed(_this) = additional->transitionSpeed;
+    *rSystem::GetTransitionType(_this) = additional->transitionType;
     *(NetworkUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(System::U_NETWORK) = additional->network;
+
+    HudUnit* hud = (HudUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(System::U_HUD);
+    rHud::Announce::Unit* announce = *HudUnit::GetAnnounce(hud);
+    fHud::Announce::Unit::RestoreFromAdditionalMemento(announce, additional->announce);
+    Platform::GFxApp::RestoreFromAdditionalMemento(
+        Dimps::Platform::GFxApp::staticMethods.GetSingleton(),
+        additional->gfxApp
+    );
+
+    Dimps::Eva::TaskCore* updateCore = (_this->*rSystem::publicMethods.GetTaskCore)(System::TCI_UPDATE);
+    Eva::TaskCore::RestoreFromAdditionalMemento(updateCore, additional->updateCore);
+
+    // Now that the task core is restored, update all the handles.
+    CameraUnit* cam = (CameraUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(U_CAMERA);
+    PauseUnit* pause = (PauseUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(U_PAUSE);
+    *PauseUnit::GetPauseTask(pause) = nullptr;
+    *CameraUnit::GetCamShakeTask(cam) = nullptr;
+    *rHud::Announce::Unit::GetHudAnnounceUpdateTask(announce) = nullptr;
+    *rHud::Cockpit::Unit::GetHudCockpitUpdateTask(*HudUnit::GetCockpit(hud)) = nullptr;
+    *rHud::Continue::Unit::GetHudContinueUpdateTask(*HudUnit::GetContinue(hud)) = nullptr;
+    *rHud::Cursor::Unit::GetHudCursorUpdateTask(*HudUnit::GetCursor(hud)) = nullptr;
+    *rHud::Notice::Unit::GetHudNoticeUpdateTask(*HudUnit::GetNotice(hud)) = nullptr;
+    *rHud::Result::Unit::GetHudResultUpdateTask(*HudUnit::GetResult(hud)) = nullptr;
+    *rHud::Subtitle::Unit::GetHudSubtitleUpdateTask(*HudUnit::GetSubtitle(hud)) = nullptr;
+    if (*HudUnit::GetTraining(hud)) {
+        *rHud::Training::Unit::GetHudTrainingUpdateTask(*HudUnit::GetTraining(hud)) = nullptr;
+    }
+
+    Dimps::Eva::Task* cursor;
+    for (
+        cursor = Dimps::Eva::TaskCore::GetTaskHead(updateCore);
+        cursor != nullptr;
+        cursor = *Dimps::Eva::Task::GetNext(cursor)
+    ) {
+        char* name = (updateCore->*Dimps::Eva::TaskCore::publicMethods.GetTaskName)(&cursor);
+        if (strcmp(name, "PAUSE") == 0) {
+            *PauseUnit::GetPauseTask(pause) = cursor;
+        } else if (strcmp(name, "CAM SHAKE") == 0) {
+            *CameraUnit::GetCamShakeTask(cam) = cursor;
+        }
+        else if (strcmp(name, "HUD ANNOUNCE") == 0) {
+            *rHud::Announce::Unit::GetHudAnnounceUpdateTask(announce) = cursor;
+        }
+        else if (strcmp(name, "HUD COCKPIT") == 0) {
+            *rHud::Cockpit::Unit::GetHudCockpitUpdateTask(*HudUnit::GetCockpit(hud)) = cursor;
+        }
+        else if (strcmp(name, "HUD CONTINUE") == 0) {
+            *rHud::Continue::Unit::GetHudContinueUpdateTask(*HudUnit::GetContinue(hud)) = cursor;
+        }
+        else if (strcmp(name, "HUD CURSOR") == 0) {
+            *rHud::Cursor::Unit::GetHudCursorUpdateTask(*HudUnit::GetCursor(hud)) = cursor;
+        }
+        else if (strcmp(name, "HUD NOTICE") == 0) {
+            *rHud::Notice::Unit::GetHudNoticeUpdateTask(*HudUnit::GetNotice(hud)) = cursor;
+        }
+        else if (strcmp(name, "HUD RESULT") == 0) {
+            *rHud::Result::Unit::GetHudResultUpdateTask(*HudUnit::GetResult(hud)) = cursor;
+        }
+        else if (strcmp(name, "HUD SUBTITLE") == 0) {
+            *rHud::Subtitle::Unit::GetHudSubtitleUpdateTask(*HudUnit::GetSubtitle(hud)) = cursor;
+        }
+        else if (strcmp(name, "HUD TRAINING") == 0) {
+            if (*HudUnit::GetTraining(hud)) {
+                *rHud::Training::Unit::GetHudTrainingUpdateTask(*HudUnit::GetTraining(hud)) = nullptr;
+            }
+        }
+    }
 
     return (this->*rSystem::mementoableMethods.RestoreFromMemento)(m, id);
 }
@@ -183,11 +278,7 @@ void fSystem::SysMain_HandleTrainingModeFeatures() {
     }
 
     if (saveRequest.lo != -1 && saveRequest.hi != -1) {
-        BOOL canSave = (charaUnit->*CharaUnit::publicMethods.CanStoreMemento_MaybeActorExists)();
-
-        if (canSave) {
-            fSystem::RecordAllToInternalMementos(_this, &saveRequest);
-        }
+        fSystem::RecordAllToInternalMementos(_this, &saveRequest);
 
         saveRequest.lo = -1;
         saveRequest.hi = -1;
@@ -349,16 +440,11 @@ bool fSystem::ggpo_advance_frame_callback(int)
     fPadSystem::playbackData[0][0] = inputs[0];
     fPadSystem::playbackData[0][1] = inputs[1];
 
-    // Disable HUD updates- since we don't have save states for them,
-    // simulating them in rollbacks would result in animations jumping around.
-    // If the HUD relies on iterative updates, this may break things.
-    Hud::bAllowHudUpdate = false;
-    IUnit::bAllowHudUpdate = false;
-
-    rSystem* system = rSystem::staticMethods.GetSingleton();
+    // Actually update.
     // It's important that this calls the _original_, undetoured method-
     // if it called fSystem::BattleUpdate, it'd be restricted to the same
     // update-halting that the detoured method is.
+    rSystem* system = rSystem::staticMethods.GetSingleton();
     (system->*rSystem::publicMethods.BattleUpdate)();
 
     GGPOErrorCode err = ggpo_advance_frame(ggpo);
@@ -366,9 +452,6 @@ bool fSystem::ggpo_advance_frame_callback(int)
         MessageBoxA(NULL, "sf4e system could not advance frame after callback! Will likely crash!", NULL, MB_OK);
     }
 
-    // Reenable the HUD updates.
-    Hud::bAllowHudUpdate = true;
-    IUnit::bAllowHudUpdate = true;
     fPadSystem::playbackFrame = -1;
     return true;
 }

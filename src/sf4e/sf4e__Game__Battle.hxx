@@ -4,6 +4,10 @@
 
 #include "../Dimps/Dimps__Eva.hxx"
 #include "../Dimps/Dimps__Game__Battle.hxx"
+#include "../Dimps/Dimps__Game__Battle__Camera.hxx"
+#include "../Dimps/Dimps__Game__Battle__Chara.hxx"
+#include "../Dimps/Dimps__Game__Battle__Command.hxx"
+#include "../Dimps/Dimps__Game__Battle__Training.hxx"
 
 namespace sf4e {
 	namespace Game {

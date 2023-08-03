@@ -1,8 +1,22 @@
 #pragma once
 
+#include <deque>
+#include <stdint.h>
 #include <string>
 #include <windows.h>
 #include <d3d9.h>
+
+#include "Dimps__Eva.hxx"
+
+// These are derived from address 0x9670f0- GFxApp::Initialize is not called
+// with a pointer to the various sizes that define the app, so the app uses
+// its defaults at that address.
+#define NUM_GFX_ACTIONS 0x44c
+#define NUM_GFX_NODES 0x44c
+#define NUM_GFX_BATCHNODES 0x100 
+#define NUM_GFX_RENDERRELATED 0x100
+#define NUM_GFX_MATRICES 0x20
+#define NUM_GFX_CALLBACKS 0x100
 
 namespace Dimps {
 	namespace Platform {
@@ -31,6 +45,24 @@ namespace Dimps {
 		struct dString : std::string {
 			typedef struct __publicMethods {
 				dString* (dString::* assign)(const char* s, int count);
+			} __publicMethods;
+
+			static __publicMethods publicMethods;
+			static void Locate(HMODULE peRoot);
+		};
+
+		// The problems of the string also apply here to the deque,
+		// but with the additional twist that there are far more
+		// template specializations of the std::deque due to
+		// allocating differently sized memory.
+		struct Stub0x10 {
+			int pad[4];
+		};
+
+		struct dDeque_0x10 : std::deque<Stub0x10> {
+			typedef struct __publicMethods {
+				void (dDeque_0x10::* push_back)(Stub0x10* value);
+				void (dDeque_0x10::* clear)();
 			} __publicMethods;
 
 			static __publicMethods publicMethods;
@@ -96,15 +128,46 @@ namespace Dimps {
 			} Win32_WindowData;
 		};
 
-		struct UNK_ScaleformRelated
+		struct GFxApp
 		{
+			template <class T>
+			struct ObjectPool {
+				void* myData;
+				T* raw;
+				T** free;
+				uint8_t* useIndex;
+				uint32_t max;
+				uint32_t used;
+				uint32_t count_0x18;
+				uint32_t pad_0x1c;
+			};
+
 			typedef struct __publicMethods {
-				int (UNK_ScaleformRelated::* SetNumFramesToSim)(float frames);
-				float (UNK_ScaleformRelated::* GetNumFramesToSim)();
+				void (GFxApp::* SetFrameDelta_Float)(float frames);
+				float (GFxApp::* GetFrameDelta_Float)();
 			} __publicMethods;
 
 			typedef struct __staticMethods {
-				UNK_ScaleformRelated* (*GetSingleton)();
+				GFxApp* (*GetSingleton)();
+			} __staticMethods;
+
+			static ObjectPool<Dimps::Eva::IEmSpriteAction>* GetActionPool(GFxApp* a);
+			// static ObjectPool<void*> GetBatchPool(GFxApp* a);
+			static ObjectPool<Dimps::Eva::IEmSpriteNode>* GetNodePool(GFxApp* a);
+			static void Locate(HMODULE peRoot);
+			static __publicMethods publicMethods;
+			static __staticMethods staticMethods;
+		};
+
+		struct Allocator
+		{
+			typedef struct __publicMethods {
+				// arg2 and arg3 are almost always 0 and -1, respectively
+				void* (Allocator::* Allocate)(size_t size, DWORD arg2, DWORD arg3);
+			} __publicMethods;
+
+			typedef struct __staticMethods {
+				Allocator* (*GetSingleton)();
 			} __staticMethods;
 
 			static void Locate(HMODULE peRoot);
