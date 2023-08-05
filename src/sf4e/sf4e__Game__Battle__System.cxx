@@ -65,14 +65,9 @@ bool fSystem::bUpdateAllowed = true;
 int fSystem::nExtraFramesToSimulate = 0;
 int fSystem::nNextBattleStartFlowTarget = -1;
 
-struct PlayerConnectionInfo {
-    GGPOPlayerType       type;
-    GGPOPlayerHandle     handle;
-};
-
-GGPOPlayerHandle localPlayerHandle = GGPO_INVALID_HANDLE;
+GGPOPlayerHandle fSystem::localPlayerHandle = GGPO_INVALID_HANDLE;
 GGPOSession* fSystem::ggpo = nullptr;
-PlayerConnectionInfo players[MAX_SF4E_PROTOCOL_USERS];
+fSystem::PlayerConnectionInfo fSystem::players[MAX_SF4E_PROTOCOL_USERS];
 fSystem::SaveState fSystem::saveStates[10];
 
 rKey::MementoID GGPO_MEMENTO_ID = { 1, 1 };

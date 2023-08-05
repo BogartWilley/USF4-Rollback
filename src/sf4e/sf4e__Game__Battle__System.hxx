@@ -39,6 +39,11 @@ namespace sf4e {
 					Eva::TaskCore::AdditionalMemento updateCore;
 				} AdditionalMemento;
 
+				struct PlayerConnectionInfo {
+					GGPOPlayerType       type;
+					GGPOPlayerHandle     handle;
+				};
+
 				static bool bHaltAfterNext;
 				static bool bRandomizeLocalInputsInGGPO;
 				static bool bUpdateAllowed;
@@ -95,6 +100,8 @@ namespace sf4e {
 
 				static void CaptureSnapshot(Dimps::Game::Battle::System* src);
 				static std::map<int, std::pair<SessionProtocol::StateSnapshot, StateSnapshotMeta>> snapshotMap;
+				static GGPOPlayerHandle localPlayerHandle;
+				static PlayerConnectionInfo players[MAX_SF4E_PROTOCOL_USERS];
 				static GGPOSession* ggpo;
 				static SaveState saveStates[NUM_SAVE_STATES];
 

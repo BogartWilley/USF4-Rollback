@@ -119,7 +119,7 @@ target_include_directories(Launcher PRIVATE ${VALVEFILEVDF_INCLUDE_DIRS})
 target_link_libraries(Launcher PRIVATE ${LIB_DETOURS} "shlwapi")
 
 add_library(Overlay STATIC src/overlay/overlay.cxx src/overlay/overlay.h)
-target_link_libraries(Overlay PRIVATE "Xinput9_1_0" imgui::imgui Dimps sf4e Session)
+target_link_libraries(Overlay PRIVATE "Xinput9_1_0" imgui::imgui ggpo::GGPO spdlog::spdlog Dimps sf4e Session)
 
 add_library(Sidecar SHARED src/sidecar/sidecar.cxx)
 target_include_directories(Sidecar PRIVATE ${VALVEFILEVDF_INCLUDE_DIRS})

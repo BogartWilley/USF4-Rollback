@@ -10,6 +10,10 @@
 #include <imgui_impl_dx9.h>
 #include <imgui_impl_win32.h>
 
+#include <ggponet.h>
+
+#include <spdlog/spdlog.h>
+
 #include "../Dimps/Dimps.hxx"
 #include "../Dimps/Dimps__Eva.hxx"
 #include "../Dimps/Dimps__Event.hxx"
@@ -681,6 +685,65 @@ void DrawGFxAppWindow(bool* pOpen) {
 		}
 		EndTabBar();
 	}
+
+	End();
+}
+
+void DrawGGPOStatsOverlay(GGPOSession* ggpo, fSystem::PlayerConnectionInfo* players) {
+	GGPONetworkStats stats;
+	int i;
+	for (i = 0; i < MAX_SF4E_PROTOCOL_USERS; i++) {
+		if (players[i].type == GGPO_PLAYERTYPE_REMOTE) {
+			break;
+		}
+	}
+	if (i == MAX_SF4E_PROTOCOL_USERS) {
+		// No remote player
+		return;
+	}
+
+	GGPOErrorCode err = ggpo_get_network_stats(ggpo, players[i].handle, &stats);
+	if (!GGPO_SUCCEEDED(err)) {
+		spdlog::warn("Couldn't get GGPO stats for overlay: {}", err);
+		return;
+	}
+
+	ImGuiIO& io = ImGui::GetIO();
+	ImVec2 size(300, 50);
+	ImVec2 window_pos(
+		(io.DisplaySize.x - size.x) / 2,
+		io.DisplaySize.y - size.y - 20
+	);
+	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
+	ImGui::SetNextWindowSize(size, ImGuiCond_Always);
+	ImGui::SetNextWindowBgAlpha(0.35f);
+	Begin(
+		"GGPO",
+		nullptr,
+		ImGuiWindowFlags_NoDecoration |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoScrollWithMouse |
+		ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoFocusOnAppearing |
+		ImGuiWindowFlags_NoBringToFrontOnFocus |
+		ImGuiWindowFlags_NoInputs
+	);
+
+	Columns(6);
+	Text("RTT ms"); NextColumn();
+	Text("kbps"); NextColumn();
+	Text("recv"); NextColumn();
+	Text("send"); NextColumn();
+	Text("LFB"); NextColumn();
+	Text("RFB"); NextColumn();
+
+	Text("%d", stats.network.ping); NextColumn();
+	Text("%d", stats.network.kbps_sent);  NextColumn();
+	Text("%d", stats.network.recv_queue_len);  NextColumn();
+	Text("%d", stats.network.send_queue_len);  NextColumn();
+	Text("%d", stats.timesync.local_frames_behind);  NextColumn();
+	Text("%d", stats.timesync.remote_frames_behind);  NextColumn();
+	Columns(1);
 
 	End();
 }
@@ -1842,6 +1905,10 @@ void DrawOverlay() {
 
 	if (show_task_window) {
 		DrawTaskWindow(&show_task_window);
+	}
+
+	if (fSystem::ggpo) {
+		DrawGGPOStatsOverlay(fSystem::ggpo, fSystem::players);
 	}
 
 	EndFrame();
