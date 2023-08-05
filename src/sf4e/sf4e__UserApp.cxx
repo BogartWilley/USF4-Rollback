@@ -30,35 +30,39 @@ void fUserApp::Install() {
     DetourAttach((PVOID*)&rUserApp::staticMethods.Steam_PostUpdate, Steam_PostUpdate);
 }
 
-void fUserApp::StartClient(char* joinAddr, Dimps::GameEvents::VsMode::ConfirmedCharaConditions& conditions) {
-    size_t charaConditionSize = sizeof(rVsMode::ConfirmedCharaConditions);
-
+void fUserApp::StartClient(char* joinAddr, uint16_t port, std::string& name, uint8_t deviceType, uint8_t deviceIdx, uint8_t delay) {
     SteamNetworkingIPAddr addr;
     addr.Clear();
     addr.ParseString(joinAddr);
-    client.reset(new SessionClient(addr));
-    memcpy_s(&client->myConditions, charaConditionSize, &conditions, charaConditionSize);
+    client.reset(new SessionClient(addr, port, name, deviceType, deviceIdx, delay));
 }
 
-void fUserApp::StartServer(uint16 hostPort, Dimps::GameEvents::VsMode::ConfirmedCharaConditions& conditions, int stageID) {
-    size_t charaConditionSize = sizeof(rVsMode::ConfirmedCharaConditions);
-
+void fUserApp::StartServer(uint16 hostPort) {
     SteamNetworkingIPAddr addr;
     addr.Clear();
     addr.SetIPv6LocalHost(hostPort);
     server.reset(new SessionServer(hostPort));
-    memcpy_s(&server->myConditions, charaConditionSize, &conditions, charaConditionSize);
-    server->myStageID = stageID;
 }
-
 
 void fUserApp::Steam_PostUpdate() {
     if (client) {
-        client->Step();
+        client->PrepareForCallbacks();
+    }
+    if (server) {
+        server->PrepareForCallbacks();
+    }
+    SteamNetworkingSockets()->RunCallbacks();
+
+    if (client) {
+        if (client->Step()) {
+            delete client.release();
+        }
     }
 
     if (server) {
-        server->Step();
+        if (server->Step()) {
+            delete server.release();
+        }
     }
 
     if (fSystem::ggpo) {

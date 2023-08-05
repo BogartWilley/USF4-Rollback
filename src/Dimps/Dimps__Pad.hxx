@@ -34,6 +34,7 @@ namespace Dimps {
 				void (System::* SetSideHasAssignedController)(int side, int clearIfFalse);
 				void (System::* SetDeviceTypeForPlayer)(int side, int deviceType);
 				void (System::* SetActiveButtonMapping)(int buttonMapping);
+				int (System::* CaptureNextMatchingPadToSide)(int side, DWORD inputMask, int unk3);
 			} __publicMethods;
 
 			typedef struct __staticMethods {

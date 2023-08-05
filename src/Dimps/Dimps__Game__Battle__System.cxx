@@ -27,6 +27,7 @@ void System::Locate(HMODULE peRoot) {
     *(PVOID*)&publicMethods.GetUnitByIndex = (PVOID)(peRootOffset + 0x1d9720);
     *(PVOID*)&publicMethods.SysMain_HandleTrainingModeFeatures = (PVOID)(peRootOffset + 0x1dab30);
     *(PVOID*)&publicMethods.SysMain_UpdatePauseState = (PVOID)(peRootOffset + 0x1dbaa0);
+    *(PVOID*)&publicMethods.CloseBattle = (PVOID)(peRootOffset + 0x1db3f0);
     *(PVOID*)&publicMethods.IsFight = (PVOID)(peRootOffset + 0x1d9f60);
     *(PVOID*)&publicMethods.IsLeavingBattle = (PVOID)(peRootOffset + 0x1d6a70);
     *(PVOID*)&publicMethods.RecordAllToInternalMementoKeys = (PVOID)(peRootOffset + 0x1d7f80);
@@ -61,6 +62,14 @@ int* System::GetBattleExitType(System* s) {
 
 int* System::GetFirstCharaToSimulate(System* s) {
     return (int*)((unsigned int)s + 0xd74);
+}
+
+FixedPoint* System::GetNumFramesSimulated_FixedPoint(System* s) {
+    return (FixedPoint*)((unsigned int)s + 0xdd4);
+}
+
+int* System::GetReadyState(System* s) {
+    return (int*)((unsigned int)s + 0xdf8);
 }
 
 EmRandom* System::GetRandom(System* s) {

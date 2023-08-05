@@ -7,29 +7,51 @@
 #include <GameNetworkingSockets/steam/steamnetworkingsockets.h>
 #include <GameNetworkingSockets/steam/isteamnetworkingutils.h>
 
-#include "../Dimps/Dimps__GameEvents.hxx"
+#include "sf4e__SessionProtocol.hxx"
 
 namespace sf4e {
-	const int SESSION_CLIENT_MAX_MESSAGES_PER_POLL = 20;
+	extern const int SESSION_CLIENT_MAX_MESSAGES_PER_POLL;
 
 	class SessionClient
 	{
 	public:
-		SessionClient(const SteamNetworkingIPAddr& serverAddr);
-		void Step();
-		Dimps::GameEvents::VsMode::ConfirmedCharaConditions myConditions;
-		Dimps::GameEvents::VsMode::ConfirmedCharaConditions confirmedConditions[2];
-		int confirmedStageID;
+		SessionClient(
+			const SteamNetworkingIPAddr& serverAddr,
+			uint16_t port,
+			std::string& name,
+			uint8_t deviceType,
+			uint8_t deviceIdx,
+			uint8_t delay
+		);
+		~SessionClient();
+		int Step();
+		void PrepareForCallbacks();
 
+		// Lobby data
+		std::string _name;
+		SessionProtocol::LobbyData _lobbyData;
+		SessionProtocol::MatchData _matchData;
+		int64_t _outstandingReadyRequestNumber = -1;
+
+		EResult SetMatchConditions(SessionProtocol::SetConditionsRequest& r);
+		EResult ReportResults(SessionProtocol::ReportResultsRequest& r);
+		
 	private:
-		std::vector<nlohmann::json> queuedMessages;
-		HSteamNetConnection m_hConnection;
-		ISteamNetworkingSockets* m_pInterface;
+		// Connection related data
+		bool _connected = false;
+		HSteamNetConnection _conn;
+		ISteamNetworkingSockets* _interface;
 
-		void PollIncomingMessages();
-		void PollConnectionStateChanges();
-		void SendQueuedMessages();
+		// Lobby data
+		uint16_t _port;
+		uint8_t _delay;
+		uint8_t _deviceType;
+		uint8_t _deviceIdx;
 
+
+		std::map<int, SessionProtocol::StateSnapshot> pendingRemoteSnapshots;
+
+		EResult Send(nlohmann::json& msg, int64_t* outMessageNum);
 		void OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusChangedCallback_t* pInfo);
 
 		static SessionClient* s_pCallbackInstance;

@@ -39,6 +39,7 @@ namespace sf4e {
 			int CheckAndMaybeExitBasedOnExitType();
 			void PrepareBattleRequest();
 			static bool bForceNextMatchOnline;
+			static bool bOverrideNextRandomSeed;
 			static bool bTerminateOnNextLeftBattle;
 			static DWORD nextMatchRandomSeed;
 			static void Install();

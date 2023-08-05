@@ -103,6 +103,17 @@ namespace Dimps {
                     char pad[0x700];
                 } Memento;
 
+                enum ReadyState {
+                    RS_START = 0x0,
+                    RS_LOADING = 0x1,
+                    RS_INITIALIZING = 0x2,
+                    RS_INITIALIZED = 0x3,
+                    RS_UNK4 = 0x4,
+                    RS_FIGHT = 0x5,
+                    RS_ISLEAVING = 0x6,
+                    RS_HALTED = 0x7,
+                };
+
                 typedef struct __staticVars {
                     DWORD* CurrentBattleFlow;
                     DWORD* PreviousBattleFlow;
@@ -130,6 +141,7 @@ namespace Dimps {
                     void (System::* SysMain_HandleTrainingModeFeatures)();
                     void (System::* SysMain_UpdatePauseState)();
                     Eva::TaskCore* (System::* GetTaskCore)(unsigned int index);
+                    void (System::* CloseBattle)();
                     bool (System::* IsFight)();
                     bool (System::* IsLeavingBattle)();
                     void (System::* RecordAllToInternalMementoKeys)();
@@ -162,9 +174,11 @@ namespace Dimps {
                 static System* FromMementoable(System* s);
 
                 static void Locate(HMODULE peRoot);
+                static FixedPoint* GetNumFramesSimulated_FixedPoint(System* s);
                 static int* GetBattleExitType(System* s);
                 static int* GetFirstCharaToSimulate(System* s);
 
+                static int* GetReadyState(System* s);
                 static Eva::EmRandom* GetRandom(System* s);
                 static Request** GetRequest(System* s);
                 static DWORD* GetSkipRelatedFlags_0xd8c(System* s);

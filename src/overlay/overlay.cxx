@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <random>
 #include <vector>
 #include <windows.h>
 
@@ -26,6 +27,8 @@
 #include "../Dimps/Dimps__Math.hxx"
 #include "../Dimps/Dimps__Pad.hxx"
 #include "../Dimps/Dimps__Platform.hxx"
+
+#include "../session/sf4e__SessionProtocol.hxx"
 
 #include "../sf4e/sf4e__Event.hxx"
 #include "../sf4e/sf4e__Game.hxx"
@@ -784,12 +787,163 @@ void DrawNetworkCharaConfig(rVsMode::ConfirmedCharaConditions& charaConditions) 
 	ImGui::InputScalar("Win quote", ImGuiDataType_U8, &charaConditions.winQuote, &stepSize);
 }
 
-void DrawNetworkWindow(bool* pOpen) {
+void DrawNetworkJoinPanel() {
+	static uint8_t deviceIdx = 0xff;
+	static uint8_t deviceType = 0xff;
+	static uint8_t delay = 1;
+	static uint16 port = 23456;
+	static char name[32] = { 0 };
+	static char joinAddr[64] = { 0 };
+
+	if (!fMainMenu::instance) {
+		Text("Must be on the main menu to connect");
+		return;
+	}
+	if (deviceIdx == 0xff && deviceType == 0xff) {
+		PadSystem* p = PadSystem::staticMethods.GetSingleton();
+		PadSystem::__publicMethods& methods = PadSystem::publicMethods;
+		if ((p->*methods.CaptureNextMatchingPadToSide)(0, 0x1040, 0xffffffff)) {
+			deviceIdx = (p->*methods.GetDeviceIndexForPlayer)(0);
+			deviceType = (p->*methods.GetDeviceTypeForPlayer)(0);
+			(p->*methods.SetSideHasAssignedController)(0, 0);
+		}
+		else {
+			Text("Press start or LK...");
+			return;
+		}
+	}
+	ImGui::InputText("Session server", joinAddr, 64);
+	ImGui::InputText("Name", name, 32);
+	ImGui::InputScalar("Local GGPO port", ImGuiDataType_U16, &port);
+	ImGui::InputScalar("Delay", ImGuiDataType_U8, &delay);
+
+	if (Button("Join")) {
+		fUserApp::StartClient(joinAddr, port, std::string(name), deviceType, deviceIdx, delay);
+	}
+}
+
+void DrawNetworkHostPanel() {
+	static uint8_t deviceIdx = 0xff;
+	static uint8_t deviceType = 0xff;
+	static uint8_t delay = 1;
+	static char name[32] = { 0 };
 	static uint16 hostPort = 23456;
-	static char joinAddr[64];
-	static int menuCharaID = 0;
+	static uint16 ggpoPort = 23457;
+
+	if (!fMainMenu::instance) {
+		Text("Must be on the main menu to listen");
+		return;
+	}
+
+	if (deviceIdx == 0xff && deviceType == 0xff) {
+		PadSystem* p = PadSystem::staticMethods.GetSingleton();
+		PadSystem::__publicMethods& methods = PadSystem::publicMethods;
+		if ((p->*methods.CaptureNextMatchingPadToSide)(0, 0x1040, 0xffffffff)) {
+			deviceIdx = (p->*methods.GetDeviceIndexForPlayer)(0);
+			deviceType = (p->*methods.GetDeviceTypeForPlayer)(0);
+			(p->*methods.SetSideHasAssignedController)(0, 0);
+		}
+		else {
+			Text("Press start or LK...");
+			return;
+		}
+	}
+	ImGui::InputScalar("Delay", ImGuiDataType_U8, &delay);
+	ImGui::InputScalar("Session host port", ImGuiDataType_U16, &hostPort);
+	ImGui::InputScalar("GGPO port", ImGuiDataType_U16, &ggpoPort);
+	ImGui::InputText("Name", name, 32);
+
+	bool valid = true;
+	if (hostPort == ggpoPort) {
+		Text("Session host port and GGPO port cannot be the same");
+		valid = false;
+	}
+
+	ImGui::BeginDisabled(!valid);
+	if (Button("Host")) {
+		char hostAddr[64];
+		snprintf(hostAddr, 64, "127.0.0.1:%d", hostPort);
+		fUserApp::StartServer(hostPort);
+		fUserApp::StartClient(hostAddr, ggpoPort, std::string(name), deviceType, deviceIdx, delay);
+	}
+	ImGui::EndDisabled();
+}
+
+void DrawNetworkLobbyPanel() {
 	static int stageID = 0;
-	static rVsMode::ConfirmedCharaConditions myConditions = { 0 };
+	static rVsMode::ConfirmedCharaConditions myConditions = { 0, 0, 0, 0, 0, 0, 0, 0, rBattle::ED_USF4};
+
+	if (!fUserApp::client) {
+		Text("No client");
+		return;
+	}
+
+	int isSelfActiveSide = -1;
+	// List the members
+	sf4e::SessionProtocol::LobbyData& lobbyData = fUserApp::client->_lobbyData;
+	for (int i = 0; i < 2 && i < lobbyData.size(); i++) {
+		const char* label = i == 0 ? "P1" : "P2";
+		Text(
+			"%s: %s",
+			label,
+			lobbyData[i].name.c_str()
+		);
+		if (lobbyData[i].name == fUserApp::client->_name) {
+			isSelfActiveSide = i;
+		}
+	}
+	Separator();
+	Text("Queue:");
+	if (lobbyData.size() > 2) {
+		for (int i = 2; i < lobbyData.size(); i++) {
+			Text(lobbyData[i].name.c_str());
+		}
+	}
+	else {
+		Text("(No one in queue)");
+	}
+	
+	Separator();
+	// Draw the config if the player's active
+	if (isSelfActiveSide > -1) {
+		if (fUserApp::client->_outstandingReadyRequestNumber > -1) {
+			Text("Waiting for response...");
+		}
+		else if (fUserApp::client->_matchData.readyMessageNum[isSelfActiveSide] > -1) {
+			Text("Ready!");
+		}
+		else {
+			DrawNetworkCharaConfig(myConditions);
+			if (isSelfActiveSide == 0) {
+				ImGui::Combo("Stage", &stageID, Dimps::stageNames, 30);
+			}
+			if (Button("Send chara")) {
+				sf4e::SessionProtocol::SetConditionsRequest r;
+				r.chara = myConditions;
+				r.rngSeed = sf4e::localRand();
+				r.stageID = stageID;
+				if (fUserApp::client->SetMatchConditions(r) != k_EResultOK) {
+					MessageBoxA(NULL, "Could not send match conditions!", NULL, MB_OK);
+				}
+			}
+		}
+
+		if (Button("Report win")) {
+			int loser = (isSelfActiveSide == 0) ? 1 : 0;
+			sf4e::SessionProtocol::ReportResultsRequest r;
+			r.loserSide = loser;
+			if (fUserApp::client->ReportResults(r) != k_EResultOK) {
+				MessageBoxA(NULL, "Could not report results!", NULL, MB_OK);
+			}
+		}
+	}
+	else {
+		Text("Waiting for turn...");
+	}
+}
+
+void DrawNetworkWindow(bool* pOpen) {
+	static bool bDebug = false;
 
 	Begin(
 		"Network",
@@ -797,43 +951,35 @@ void DrawNetworkWindow(bool* pOpen) {
 		ImGuiWindowFlags_None
 	);
 	ImGui::Checkbox("Randomize inputs?", &fSystem::bRandomizeLocalInputsInGGPO);
-	if (BeginTabBar("Network window", ImGuiTabBarFlags_None)) {
-		if (BeginTabItem("Server")) {
-			if (!fUserApp::server) {
-				ImGui::InputScalar("Host port", ImGuiDataType_U16, &hostPort);
-				ImGui::Combo("Stage", &stageID, Dimps::stageNames, 30);
-				DrawNetworkCharaConfig(myConditions);
 
-				if (fMainMenu::instance) {
-					if (Button("Listen")) {
-						fUserApp::StartServer(hostPort, myConditions, stageID);
-					}
-				}
-				else {
-					Text("Must be on the main menu to listen");
+	ImGui::Checkbox("Show debug data?", &bDebug);
+	if (BeginTabBar("Network window")) {
+		if (BeginTabItem("Host")) {
+			if (!fUserApp::server) {
+				DrawNetworkHostPanel();
+			}
+			if (fUserApp::server && bDebug) {
+				Text("Server initialized, client map:");
+				for (auto iter = fUserApp::server->clients.begin(); iter != fUserApp::server->clients.end(); iter++) {
+					Text("%x %s", iter->conn, iter->data.name.c_str());
 				}
 			}
-			else {
-				Text("Server initialized");
+			if (fUserApp::server && fUserApp::client) {
+				Separator();
+			}
+			if (fUserApp::client) {
+				Text("Client");
+				DrawNetworkLobbyPanel();
 			}
 			EndTabItem();
 		}
 
-		if (BeginTabItem("Client")) {
+		if (BeginTabItem("Join")) {
 			if (!fUserApp::client) {
-				ImGui::InputText("Join addr", joinAddr, 64);
-				DrawNetworkCharaConfig(myConditions);
-				if (fMainMenu::instance) {
-					if (Button("Join")) {
-						fUserApp::StartClient(joinAddr, myConditions);
-					}
-				}
-				else {
-					Text("Must be on the main menu to join");
-				}
+				DrawNetworkJoinPanel();
 			}
-			else {
-				Text("Connecting or connected...");
+			if (fUserApp::client) {
+				DrawNetworkLobbyPanel();
 			}
 			EndTabItem();
 		}
@@ -1290,7 +1436,10 @@ void DrawVsBattleWindow(bool* pOpen) {
 
 	ImGui::Checkbox("Force next battle online?", &fVsBattle::bForceNextMatchOnline);
 	ImGui::Checkbox("Skip results menu on next result?", &fVsBattle::bTerminateOnNextLeftBattle);
-	ImGui::InputInt("Next match random seed", (int*)&fVsBattle::nextMatchRandomSeed);
+	ImGui::Checkbox("Override next random seed?", &fVsBattle::bOverrideNextRandomSeed);
+	if (fVsBattle::bOverrideNextRandomSeed) {
+		ImGui::InputInt("Next match random seed", (int*)&fVsBattle::nextMatchRandomSeed);
+	}
 
 	End();
 }
@@ -1645,10 +1794,6 @@ void DrawOverlay() {
 
 	if (show_hud_window) {
 		DrawHudWindow(&show_hud_window);
-	}
-
-	if (show_log_window) {
-		debugLog.Draw("Debug Log", &show_log_window);
 	}
 
 	if (show_main_menu_window) {

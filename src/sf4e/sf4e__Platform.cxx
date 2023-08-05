@@ -127,10 +127,10 @@ int fMain::Initialize(void* a, void* b, void* c) {
 
 void fMain::Destroy() {
     if (fUserApp::client) {
-        fUserApp::client.release();
+        delete fUserApp::client.release();
     }
     if (fUserApp::server) {
-        fUserApp::server.release();
+        delete fUserApp::server.release();
     }
     GameNetworkingSockets_Kill();
     spdlog::shutdown();

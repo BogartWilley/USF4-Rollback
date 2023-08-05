@@ -1,6 +1,7 @@
 #pragma once
 
 #include <windows.h>
+#include <nlohmann/json.hpp>
 
 namespace Dimps {
 	namespace Math {
@@ -14,5 +15,7 @@ namespace Dimps {
 		};
 
 		float FixedToFloat(FixedPoint* fp);
+
+		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(FixedPoint, fractional, integral);
 	}
 }

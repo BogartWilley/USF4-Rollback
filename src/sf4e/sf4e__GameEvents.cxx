@@ -36,6 +36,7 @@ rVsMode* fVsMode::instance = nullptr;
 void (*fVsPreBattle::OnTasksRegistered)() = nullptr;
 
 bool fVsBattle::bForceNextMatchOnline = false;
+bool fVsBattle::bOverrideNextRandomSeed = false;
 bool fVsBattle::bTerminateOnNextLeftBattle = false;
 DWORD fVsBattle::nextMatchRandomSeed = 0xffffffff;
 bool fVsPreBattle::bSkipToVersus = false;
@@ -188,11 +189,12 @@ void fVsBattle::PrepareBattleRequest() {
 		if (bForceNextMatchOnline) {
 			(r->*Request::publicMethods.SetIsOnlineBattle)(TRUE);
 		}
-		if (nextMatchRandomSeed != 0xffffffff) {
+		if (bOverrideNextRandomSeed) {
 			(r->*Request::publicMethods.SetRandomSeed)(nextMatchRandomSeed);
 		}
 	}
 	bForceNextMatchOnline = false;
+	bOverrideNextRandomSeed = false;
 	nextMatchRandomSeed = 0xffffffff;
 }
 

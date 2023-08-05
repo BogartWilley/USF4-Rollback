@@ -32,6 +32,7 @@ void System::Locate(HMODULE peRoot) {
 	*(PVOID*)(&publicMethods.SetSideHasAssignedController) = (PVOID)(peRootOffset + 0x117360);
 	*(PVOID*)(&publicMethods.SetDeviceTypeForPlayer) = (PVOID)(peRootOffset + 0x117270);
 	*(PVOID*)(&publicMethods.SetActiveButtonMapping) = (PVOID)(peRootOffset + 0x110170);
+	*(PVOID*)(&publicMethods.CaptureNextMatchingPadToSide) = (PVOID)(peRootOffset + 0x111110);
 
 	staticMethods.GetSingleton = (System * (*)())(peRootOffset + 0x119480);
 }

@@ -15,6 +15,7 @@ namespace sf4e {
 			void Initialize(void* mementoable, int numMementos);
 			void ClearKey();
 			static void Install();
+			static void GenerateChecksums();
 
 			static std::set<Dimps::Game::GameMementoKey*> trackedKeys;
 		};

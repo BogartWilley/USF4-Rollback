@@ -9,6 +9,9 @@
 #include "../Dimps/Dimps__Game__Battle.hxx"
 #include "../Dimps/Dimps__Game__Battle__System.hxx"
 #include "../Dimps/Dimps__Math.hxx"
+
+#include "../session/sf4e__SessionProtocol.hxx"
+
 #include "sf4e__Platform.hxx"
 #include "sf4e__Game__Battle__Hud.hxx"
 
@@ -54,6 +57,7 @@ namespace sf4e {
 				int RestoreFromMemento(Memento* memento, GameMementoKey::MementoID* id);
 
 				void BattleUpdate();
+				void CloseBattle();
 				static void OnBattleFlow_BattleStart(System* s);
 				void SysMain_HandleTrainingModeFeatures();
 				void SysMain_UpdatePauseState();
@@ -79,15 +83,23 @@ namespace sf4e {
 					GlobalData d;
 
 					SaveState();
+
 					static void Save(SaveState* dst);
 					static void Load(SaveState* src);
 				};
 
-				static GGPOPlayer players[2];
+				struct StateSnapshotMeta {
+					bool sent;
+					bool confirmed;
+				};
+
+				static void CaptureSnapshot(Dimps::Game::Battle::System* src);
+				static std::map<int, std::pair<SessionProtocol::StateSnapshot, StateSnapshotMeta>> snapshotMap;
 				static GGPOSession* ggpo;
 				static SaveState saveStates[NUM_SAVE_STATES];
 
-				static void StartGGPO(int remotePosition, const SteamNetworkingIPAddr* remoteAddr);
+				static void StartGGPO(GGPOPlayer* players, int numPlayers, int port, int frameDelay, DWORD rngSeed);
+				static void StartSpectating(unsigned short localport, int num_players, char* host_ip, unsigned short host_port, DWORD rngSeed);
 				static bool ggpo_on_event_callback(GGPOEvent* info);
 				static bool ggpo_begin_game_callback(const char*);
 				static bool ggpo_advance_frame_callback(int);

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <string.h>
 #include <utility>
 #include <vector>
@@ -22,6 +23,8 @@
 #include "../Dimps/Dimps__Math.hxx"
 #include "../Dimps/Dimps__Pad.hxx"
 #include "../Dimps/Dimps__Platform.hxx"
+
+#include "../session/sf4e__SessionProtocol.hxx"
 
 #include "sf4e.hxx"
 #include "sf4e__Game.hxx"
@@ -50,21 +53,28 @@ using FixedPoint = Dimps::Math::FixedPoint;
 using fKey = sf4e::Game::GameMementoKey;
 using rPadSystem = Dimps::Pad::System;
 using fPadSystem = sf4e::Pad::System;
+using StateSnapshot = sf4e::SessionProtocol::StateSnapshot;
 
 namespace fHud = sf4e::Game::Battle::Hud;
 using fSystem = sf4e::Game::Battle::System;
 using fVsBattle = sf4e::GameEvents::VsBattle;
 
 bool fSystem::bHaltAfterNext = false;
+bool fSystem::bRandomizeLocalInputsInGGPO = false;
 bool fSystem::bUpdateAllowed = true;
 int fSystem::nExtraFramesToSimulate = 0;
 int fSystem::nNextBattleStartFlowTarget = -1;
 
-GGPOSession* fSystem::ggpo;
-bool fSystem::bRandomizeLocalInputsInGGPO = false;
-GGPOPlayer fSystem::players[2];
-GGPOPlayerHandle playerHandles[2];
+struct PlayerConnectionInfo {
+    GGPOPlayerType       type;
+    GGPOPlayerHandle     handle;
+};
+
+GGPOPlayerHandle localPlayerHandle = GGPO_INVALID_HANDLE;
+GGPOSession* fSystem::ggpo = nullptr;
+PlayerConnectionInfo players[MAX_SF4E_PROTOCOL_USERS];
 fSystem::SaveState fSystem::saveStates[10];
+
 rKey::MementoID GGPO_MEMENTO_ID = { 1, 1 };
 
 GameMementoKey::MementoID fSystem::loadRequest = { 0xffffffff, 0xffffffff };
@@ -72,6 +82,7 @@ GameMementoKey::MementoID fSystem::saveRequest = { 0xffffffff, 0xffffffff };
 
 void fSystem::Install() {
     void (fSystem:: * _fBattleUpdate)() = &BattleUpdate;
+    void (fSystem:: * _fCloseBattle)() = &CloseBattle;
     void (fSystem:: * _fSysMain_HandleTrainingModeFeatures)() = &SysMain_HandleTrainingModeFeatures;
     void (fSystem:: * _fSysMain_UpdatePauseState)() = &SysMain_UpdatePauseState;
     int (fSystem:: * _fGetMementoSize)() = &GetMementoSize;
@@ -83,6 +94,7 @@ void fSystem::Install() {
     DetourAttach((PVOID*)&rSystem::mementoableMethods.RestoreFromMemento, *(PVOID*)&_fRestoreFromMemento);
 
     DetourAttach((PVOID*)&rSystem::publicMethods.BattleUpdate, *(PVOID*)&_fBattleUpdate);
+    DetourAttach((PVOID*)&rSystem::publicMethods.CloseBattle, *(PVOID*)&_fCloseBattle);
     DetourAttach((PVOID*)&rSystem::publicMethods.SysMain_HandleTrainingModeFeatures, *(PVOID*)&_fSysMain_HandleTrainingModeFeatures);
     DetourAttach((PVOID*)&rSystem::publicMethods.SysMain_UpdatePauseState, *(PVOID*)&_fSysMain_UpdatePauseState);
     DetourAttach((PVOID*)&rSystem::staticMethods.OnBattleFlow_BattleStart, OnBattleFlow_BattleStart);
@@ -210,31 +222,39 @@ void fSystem::BattleUpdate() {
     }
 
     if (ggpo && *rSystem::staticVars.CurrentBattleFlow != BF__IDLE) {
-        for (int i = 0; i < 2; i++) {
-            if (players[i].type == GGPO_PLAYERTYPE_LOCAL) {
-                fPadSystem::Inputs inputs;
-                if (bRandomizeLocalInputsInGGPO) {
-                    inputs = { localRand(), localRand() };
-                } else {
-                    inputs = { (p->*padMethods.GetButtons_MappedOn)(i), (p->*padMethods.GetButtons_RawOn)(i) };
-                }
-                
-                GGPOErrorCode result = ggpo_add_local_input(ggpo, playerHandles[i], &inputs, sizeof(fPadSystem::Inputs));
-                if (GGPO_SUCCEEDED(result)) {
-                    fPadSystem::Inputs ggpoInputs[2] = { {0, 0}, {0, 0} };
-                    int disconnect_flags = 0;
-                    result = ggpo_synchronize_input(ggpo, (void*)ggpoInputs, sizeof(fPadSystem::Inputs) * 2, &disconnect_flags);
-                    if (GGPO_SUCCEEDED(result)) {
-                        fPadSystem::playbackFrame = 0;
-                        fPadSystem::playbackData[0][0] = ggpoInputs[0];
-                        fPadSystem::playbackData[0][1] = ggpoInputs[1];
-                        (_this->*sysMethods.BattleUpdate)();
-                        fPadSystem::playbackFrame = -1;
-                        GGPOErrorCode err = ggpo_advance_frame(ggpo);
-                        if (!GGPO_SUCCEEDED(err)) {
-                            MessageBoxA(NULL, "sf4e system could not advance frame after normal sim! Will likely crash!", NULL, MB_OK);
-                        }
+        GGPOErrorCode result = GGPO_OK;
+        if (localPlayerHandle != GGPO_INVALID_HANDLE) {
+            for (int i = 0; i < 2; i++) {
+                if (players[i].type == GGPO_PLAYERTYPE_LOCAL) {
+                    fPadSystem::Inputs inputs;
+                    if (bRandomizeLocalInputsInGGPO) {
+                        inputs = { localRand(), localRand() };
                     }
+                    else {
+                        inputs = { (p->*padMethods.GetButtons_MappedOn)(i), (p->*padMethods.GetButtons_RawOn)(i) };
+                    }
+                    result = ggpo_add_local_input(ggpo, players[i].handle, &inputs, sizeof(fPadSystem::Inputs));
+                    break;
+                }
+            }
+        }
+
+        if (GGPO_SUCCEEDED(result)) {
+            fPadSystem::Inputs ggpoInputs[2] = { {0, 0}, {0, 0} };
+            int disconnect_flags = 0;
+            result = ggpo_synchronize_input(ggpo, (void*)ggpoInputs, sizeof(fPadSystem::Inputs) * 2, &disconnect_flags);
+            if (GGPO_SUCCEEDED(result)) {
+                fPadSystem::playbackFrame = 0;
+                fPadSystem::playbackData[0][0] = ggpoInputs[0];
+                fPadSystem::playbackData[0][1] = ggpoInputs[1];
+                (_this->*sysMethods.BattleUpdate)();
+                fPadSystem::playbackFrame = -1;
+                GGPOErrorCode err = ggpo_advance_frame(ggpo);
+                if (!GGPO_SUCCEEDED(err)) {
+                    MessageBoxA(NULL, "sf4e system could not advance frame after normal sim! Will likely crash!", NULL, MB_OK);
+                }
+                else {
+                    CaptureSnapshot(_this);
                 }
             }
         }
@@ -242,7 +262,7 @@ void fSystem::BattleUpdate() {
     else {
         (_this->*rSystem::publicMethods.BattleUpdate)();
     }
-
+    
     if (nExtraFramesToSimulate > 0) {
         for (int i = 0; i < nExtraFramesToSimulate; i++) {
             fPadSystem::playbackFrame = i;
@@ -256,6 +276,16 @@ void fSystem::BattleUpdate() {
         bHaltAfterNext = false;
         bUpdateAllowed = false;
     }
+}
+
+void fSystem::CloseBattle() {
+    rSystem* _this = (rSystem*)this;
+    if (ggpo) {
+        ggpo_close_session(ggpo);
+        ggpo = nullptr;
+    }
+    (_this->*rSystem::publicMethods.CloseBattle)();
+
 }
 
 void fSystem::OnBattleFlow_BattleStart(System* s) {
@@ -389,7 +419,7 @@ void fSystem::RecordAllToInternalMementos(rSystem* system, GameMementoKey::Memen
 }
 
 
-void fSystem::StartGGPO(int remotePosition, const SteamNetworkingIPAddr* remoteAddr) {
+void fSystem::StartGGPO(GGPOPlayer* inPlayers, int numPlayers, int port, int frameDelay, DWORD rngSeed) {
     GGPOSessionCallbacks cb = { 0 };
     cb.begin_game = ggpo_begin_game_callback;
     cb.advance_frame = ggpo_advance_frame_callback;
@@ -399,34 +429,87 @@ void fSystem::StartGGPO(int remotePosition, const SteamNetworkingIPAddr* remoteA
     cb.on_event = ggpo_on_event_callback;
     cb.log_game_state = ggpo_log_game_state;
 
-    char ipbuffer[32];
-    int localPosition = remotePosition == 1 ? 0 : 1;
-    int localPort = 23456 + 1 + localPosition;
-    GGPOErrorCode result = ggpo_start_session(&ggpo, &cb, "sf4e", 2, sizeof(fPadSystem::Inputs), localPort);
-    ggpo_set_disconnect_timeout(ggpo, 3000);
-    ggpo_set_disconnect_notify_start(ggpo, 1000);
+    GGPOErrorCode result = ggpo_start_session(
+        &ggpo,
+        &cb,
+        "sf4e",
+        2,
+        sizeof(fPadSystem::Inputs),
+        port
+    );
+    if (result != GGPO_OK) {
+        spdlog::error("GGPO session could not start: {}", result);
+        MessageBoxA(NULL, "GGPO could not start, check logs", NULL, MB_OK);
+    }
+    ggpo_set_disconnect_timeout(ggpo, 10000);
+    ggpo_set_disconnect_notify_start(ggpo, 5000);
 
+    int localPlayerIdx = -1;
     for (int i = 0; i < 2; i++) {
-        // GGPO is one-indexed.
-        players[i].player_num = i + 1;
-        if (i == remotePosition) {
-            players[i].type = GGPO_PLAYERTYPE_REMOTE;
-            remoteAddr->ToString(players[i].u.remote.ip_address, 32, false);
-            players[i].u.remote.port = 23456 + 1 + remotePosition;
+        players[i].type = inPlayers[i].type;
+        result = ggpo_add_player(ggpo, inPlayers + i, &players[i].handle);
+        if (!GGPO_SUCCEEDED(result)) {
+            spdlog::error("GGPO session could not add player: {}", result);
+            MessageBoxA(NULL, "GGPO could not add player", NULL, MB_OK);
+            continue;
         }
-        else {
-            players[i].type = GGPO_PLAYERTYPE_LOCAL;
-        }
-
-        result = ggpo_add_player(ggpo, players + i, &playerHandles[i]);
 
         if (players[i].type == GGPO_PLAYERTYPE_LOCAL) {
-            ggpo_set_frame_delay(ggpo, playerHandles[i], 3);
+            ggpo_set_frame_delay(ggpo, players[i].handle, frameDelay);
+            localPlayerHandle = players[i].handle;
+            localPlayerIdx = i;
+        }
+    }
+    if (localPlayerIdx == 0) {
+        for (int i = 2; i < numPlayers; i++) {
+            players[i].type = inPlayers[i].type;
+            result = ggpo_add_player(ggpo, inPlayers + i, &players[i].handle);
+            if (!GGPO_SUCCEEDED(result)) {
+                spdlog::error("GGPO session could not add spectator: {}", result);
+                MessageBoxA(NULL, "GGPO could not add spectator", NULL, MB_OK);
+                continue;
+            }
         }
     }
 
     nNextBattleStartFlowTarget = BF__MATCH_START;
+    bUpdateAllowed = false;
     fVsBattle::bTerminateOnNextLeftBattle = true;
+    fVsBattle::bOverrideNextRandomSeed = true;
+    fVsBattle::nextMatchRandomSeed = rngSeed;
+}
+
+void fSystem::StartSpectating(unsigned short localport, int num_players, char* host_ip, unsigned short host_port, DWORD rngSeed) {
+    localPlayerHandle = GGPO_INVALID_HANDLE;
+    GGPOSessionCallbacks cb = { 0 };
+    cb.begin_game = ggpo_begin_game_callback;
+    cb.advance_frame = ggpo_advance_frame_callback;
+    cb.load_game_state = ggpo_load_game_state_callback;
+    cb.save_game_state = ggpo_save_game_state_callback;
+    cb.free_buffer = ggpo_free_buffer;
+    cb.on_event = ggpo_on_event_callback;
+    cb.log_game_state = ggpo_log_game_state;
+
+    GGPOErrorCode result = ggpo_start_spectating(
+        &ggpo,
+        &cb,
+        "sf4e",
+        num_players,
+        sizeof(fPadSystem::Inputs),
+        localport,
+        host_ip,
+        host_port
+    );
+    if (result != GGPO_OK) {
+        spdlog::error("GGPO session could not start: {}", result);
+        MessageBoxA(NULL, "GGPO could not start, check logs", NULL, MB_OK);
+    }
+
+    nNextBattleStartFlowTarget = BF__MATCH_START;
+    bUpdateAllowed = false;
+    fVsBattle::bTerminateOnNextLeftBattle = true;
+    fVsBattle::bOverrideNextRandomSeed = true;
+    fVsBattle::nextMatchRandomSeed = rngSeed;
 }
 
 bool fSystem::ggpo_begin_game_callback(const char*)
@@ -440,8 +523,11 @@ bool fSystem::ggpo_advance_frame_callback(int)
     int disconnect_flags = 0;
 
     // Make sure we fetch new inputs from GGPO and use those to update
-    // the game state instead of reading from the keyboard.
-    ggpo_synchronize_input(ggpo, (void*)inputs, sizeof(fPadSystem::Inputs) * 2, &disconnect_flags);
+    // the game state instead of reading from the selected input device.
+    GGPOErrorCode result = ggpo_synchronize_input(ggpo, (void*)inputs, sizeof(fPadSystem::Inputs) * 2, &disconnect_flags);
+    if (!GGPO_SUCCEEDED(result)) {
+        MessageBoxA(NULL, "sf4e system could not sync input during forward-sim! Will likely crash!", NULL, MB_OK);
+    }
     fPadSystem::playbackFrame = 0;
     fPadSystem::playbackData[0][0] = inputs[0];
     fPadSystem::playbackData[0][1] = inputs[1];
@@ -453,9 +539,12 @@ bool fSystem::ggpo_advance_frame_callback(int)
     rSystem* system = rSystem::staticMethods.GetSingleton();
     (system->*rSystem::publicMethods.BattleUpdate)();
 
-    GGPOErrorCode err = ggpo_advance_frame(ggpo);
-    if (!GGPO_SUCCEEDED(err)) {
+    result = ggpo_advance_frame(ggpo);
+    if (!GGPO_SUCCEEDED(result)) {
         MessageBoxA(NULL, "sf4e system could not advance frame after callback! Will likely crash!", NULL, MB_OK);
+    }
+    else {
+        CaptureSnapshot(system);
     }
 
     fPadSystem::playbackFrame = -1;
@@ -501,8 +590,9 @@ bool fSystem::ggpo_load_game_state_callback(unsigned char* buffer, int len)
 
 bool fSystem::ggpo_save_game_state_callback(unsigned char** buffer, int* len, int* checksum, int)
 {
-    // No GGPO callback allocates data- SF4e preallocates and
-    // manages all its savestates. Consequently the memory
+    // No GGPO callback allocates data, then hands ownership to GGPO-
+    // sf4e preallocates and manages all its savestates, and the memory
+    // allocation all happens internally. Consequently the memory
     // utilization of _GGPO_ is technically zero- but GGPO
     // errors with an assertion if the length is zero.
     *len = 1;
@@ -581,7 +671,9 @@ void fSystem::ggpo_free_buffer(void* buffer)
 }
 
 bool fSystem::ggpo_on_event_callback(GGPOEvent* info) {
+    rSystem* system = rSystem::staticMethods.GetSingleton();
     int progress;
+
     switch (info->code) {
     case GGPO_EVENTCODE_CONNECTED_TO_PEER:
         spdlog::info("GGPO: Connected!");
@@ -594,6 +686,7 @@ bool fSystem::ggpo_on_event_callback(GGPOEvent* info) {
         spdlog::info("GGPO: Synchronized with peer");
         break;
     case GGPO_EVENTCODE_RUNNING:
+        bUpdateAllowed = true;
         spdlog::info("GGPO: Running");
         break;
     case GGPO_EVENTCODE_CONNECTION_INTERRUPTED:
@@ -603,7 +696,7 @@ bool fSystem::ggpo_on_event_callback(GGPOEvent* info) {
         spdlog::info("GGPO: GGPO_EVENTCODE_CONNECTION_RESUMED");
         break;
     case GGPO_EVENTCODE_DISCONNECTED_FROM_PEER:
-        MessageBoxA(NULL, "Disconnected from peer!", NULL, MB_OK);
+        *rSystem::GetReadyState(system) = rSystem::RS_ISLEAVING;
         break;
     case GGPO_EVENTCODE_TIMESYNC:
         Sleep(1000 * info->u.timesync.frames_ahead / 60);
@@ -617,6 +710,56 @@ fSystem::SaveState::SaveState() {
     // is unclear, but we can minimize memory allocation delays by
     // reserving the lower bound.
     keys.reserve(88);
+}
+
+std::map<int, std::pair<StateSnapshot, fSystem::StateSnapshotMeta>> fSystem::snapshotMap;
+
+void fSystem::CaptureSnapshot(rSystem* src) {
+    int frameIdx = rSystem::GetNumFramesSimulated_FixedPoint(src)->integral;
+
+    // Only capture snapshots every second.
+    if (frameIdx % 60 != 0) {
+        return;
+    }
+
+    auto iter = snapshotMap.find(frameIdx);
+    if (iter != snapshotMap.end()) {
+        snapshotMap.erase(iter);
+    }
+    
+    StateSnapshot snapshot;
+    snapshot.frameIdx = frameIdx;
+
+    CharaActor::__publicMethods& methods = CharaActor::publicMethods;
+    CharaUnit* lpCharaUnit = (src->*rSystem::publicMethods.GetCharaUnit)();
+    for (int i = 0; i < 2; i++) {
+        CharaActor* a = (lpCharaUnit->*CharaUnit::publicMethods.GetActorByIndex)(i);
+        memcpy_s(
+            snapshot.chara[i].rootPos,
+            sizeof(float) * 4,
+            (a->*methods.GetCurrentRootPosition)(),
+            sizeof(float) * 4
+        );
+        snapshot.chara[i].status = (a->*methods.GetStatus)();
+        snapshot.chara[i].side = (a->*methods.GetCurrentSide)();
+
+        (a->*methods.GetVitalityAmt_FixedPoint)(&snapshot.chara[i].vit);
+        (a->*methods.GetVitalityMax_FixedPoint)(&snapshot.chara[i].vitmax);
+        (a->*methods.GetRevengeAmt_FixedPoint)(&snapshot.chara[i].revenge);
+        (a->*methods.GetRevengeMax_FixedPoint)(&snapshot.chara[i].revengemax);
+        (a->*methods.GetRecoverableVitalityAmt_FixedPoint)(&snapshot.chara[i].recoverable);
+        (a->*methods.GetRecoverableVitalityMax_FixedPoint)(&snapshot.chara[i].recoverablemax);
+        (a->*methods.GetSuperComboAmt_FixedPoint)(&snapshot.chara[i].super);
+        (a->*methods.GetSuperComboMax_FixedPoint)(&snapshot.chara[i].supermax);
+        (a->*methods.GetSCTimeAmt_FixedPoint)(&snapshot.chara[i].sctimeamt);
+        (a->*methods.GetSCTimeMax_FixedPoint)(&snapshot.chara[i].sctimemax);
+        (a->*methods.GetUCTimeAmt_FixedPoint)(&snapshot.chara[i].uctime);
+        (a->*methods.GetUCTimeMax_FixedPoint)(&snapshot.chara[i].uctimemax);
+        (a->*methods.GetComboDamage)(&snapshot.chara[i].combodamage);
+        (a->*methods.GetDamage)(&snapshot.chara[i].damage);
+    }
+    StateSnapshotMeta meta{ false, false };
+    snapshotMap.emplace(frameIdx, std::make_pair(std::move(snapshot), meta));
 }
 
 void fSystem::SaveState::Save(SaveState* dst) {
