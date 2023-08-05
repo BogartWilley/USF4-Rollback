@@ -73,6 +73,7 @@ GameMementoKey::MementoID fSystem::saveRequest = { 0xffffffff, 0xffffffff };
 void fSystem::Install() {
     void (fSystem:: * _fBattleUpdate)() = &BattleUpdate;
     void (fSystem:: * _fSysMain_HandleTrainingModeFeatures)() = &SysMain_HandleTrainingModeFeatures;
+    void (fSystem:: * _fSysMain_UpdatePauseState)() = &SysMain_UpdatePauseState;
     int (fSystem:: * _fGetMementoSize)() = &GetMementoSize;
     int (fSystem:: * _fRecordToMemento)(Memento * m, GameMementoKey::MementoID * id) = &RecordToMemento;
     int (fSystem:: * _fRestoreFromMemento)(Memento * m, GameMementoKey::MementoID * id) = &RestoreFromMemento;
@@ -83,6 +84,7 @@ void fSystem::Install() {
 
     DetourAttach((PVOID*)&rSystem::publicMethods.BattleUpdate, *(PVOID*)&_fBattleUpdate);
     DetourAttach((PVOID*)&rSystem::publicMethods.SysMain_HandleTrainingModeFeatures, *(PVOID*)&_fSysMain_HandleTrainingModeFeatures);
+    DetourAttach((PVOID*)&rSystem::publicMethods.SysMain_UpdatePauseState, *(PVOID*)&_fSysMain_UpdatePauseState);
     DetourAttach((PVOID*)&rSystem::staticMethods.OnBattleFlow_BattleStart, OnBattleFlow_BattleStart);
 }
 
@@ -288,6 +290,11 @@ void fSystem::SysMain_HandleTrainingModeFeatures() {
     (_this->*rSystem::publicMethods.SysMain_HandleTrainingModeFeatures)();
 }
 
+void fSystem::SysMain_UpdatePauseState() {
+    if (!ggpo) {
+        (this->*rSystem::publicMethods.SysMain_UpdatePauseState)();
+    }
+}
 
 void fSystem::RestoreAllFromInternalMementos(rSystem* system, rKey::MementoID * id) {
     void* (rSystem:: * GetUnitByIndex)(unsigned int) = rSystem::publicMethods.GetUnitByIndex;
@@ -420,7 +427,6 @@ void fSystem::StartGGPO(int remotePosition, const SteamNetworkingIPAddr* remoteA
 
     nNextBattleStartFlowTarget = BF__MATCH_START;
     fVsBattle::bTerminateOnNextLeftBattle = true;
-    fVsBattle::bForceNextMatchOnline = true;
 }
 
 bool fSystem::ggpo_begin_game_callback(const char*)

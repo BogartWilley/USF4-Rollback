@@ -128,6 +128,7 @@ namespace Dimps {
                     void* (System::* GetUnitByIndex)(unsigned int index);
 
                     void (System::* SysMain_HandleTrainingModeFeatures)();
+                    void (System::* SysMain_UpdatePauseState)();
                     Eva::TaskCore* (System::* GetTaskCore)(unsigned int index);
                     bool (System::* IsFight)();
                     bool (System::* IsLeavingBattle)();

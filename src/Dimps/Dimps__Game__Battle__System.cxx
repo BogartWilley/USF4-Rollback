@@ -26,6 +26,7 @@ void System::Locate(HMODULE peRoot) {
     *(PVOID*)&publicMethods.GetGameManager = (PVOID)(peRootOffset + 0x1d9950);
     *(PVOID*)&publicMethods.GetUnitByIndex = (PVOID)(peRootOffset + 0x1d9720);
     *(PVOID*)&publicMethods.SysMain_HandleTrainingModeFeatures = (PVOID)(peRootOffset + 0x1dab30);
+    *(PVOID*)&publicMethods.SysMain_UpdatePauseState = (PVOID)(peRootOffset + 0x1dbaa0);
     *(PVOID*)&publicMethods.IsFight = (PVOID)(peRootOffset + 0x1d9f60);
     *(PVOID*)&publicMethods.IsLeavingBattle = (PVOID)(peRootOffset + 0x1d6a70);
     *(PVOID*)&publicMethods.RecordAllToInternalMementoKeys = (PVOID)(peRootOffset + 0x1d7f80);

@@ -56,6 +56,7 @@ namespace sf4e {
 				void BattleUpdate();
 				static void OnBattleFlow_BattleStart(System* s);
 				void SysMain_HandleTrainingModeFeatures();
+				void SysMain_UpdatePauseState();
 
 				struct SaveState {
 					bool used = false;
