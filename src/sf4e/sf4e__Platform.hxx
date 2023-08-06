@@ -13,6 +13,7 @@ namespace sf4e {
 			static void Install();
 
 			void Destroy();
+			DWORD Reset();
 			static void WINAPI RunD3DOperations(void* arg1);
 		};
 

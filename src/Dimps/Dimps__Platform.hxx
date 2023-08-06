@@ -8,7 +8,7 @@
 
 #include "Dimps__Eva.hxx"
 
-// These are derived from address 0x9670f0- GFxApp::Initialize is not called
+// These are derived from address 0x9670f0- GfxApp::Initialize is not called
 // with a pointer to the various sizes that define the app, so the app uses
 // its defaults at that address.
 #define NUM_GFX_ACTIONS 0x44c
@@ -75,6 +75,7 @@ namespace Dimps {
 		{
 			typedef struct __privateMethods {
 				void(D3D::* Destroy)();
+				DWORD (D3D::* Reset)();
 			} __privateMethods;
 
 			typedef struct __publicMethods {
@@ -113,6 +114,7 @@ namespace Dimps {
 			} __publicMethods;
 
 			typedef struct __staticMethods {
+				Main* (*GetSingleton)();
 				void (WINAPI* RunWindowFunc)(Main* lpMain, HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 			} __staticMethods;
 
@@ -126,6 +128,8 @@ namespace Dimps {
 				HWND hWnd;
 				char field_0x8[44];
 			} Win32_WindowData;
+
+			static Win32_WindowData** GetWindowData(Main* m);
 		};
 
 		struct GFxApp

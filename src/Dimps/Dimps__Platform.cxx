@@ -55,6 +55,7 @@ void dString::Locate(HMODULE peRoot) {
 void D3D::Locate(HMODULE peRoot) {
     unsigned int peRootOffset = (unsigned int)peRoot;
     *(PVOID*)&privateMethods.Destroy = (PVOID)(peRootOffset + 0x372820);
+    *(PVOID*)&privateMethods.Reset = (PVOID)(peRootOffset + 0x3725b0);
     staticMethods.RunD3DOperations = (void(WINAPI*)(void*))(peRootOffset + 0x370cc0);
     staticMethods.GetSingleton = (D3D * (WINAPI*)())(peRootOffset + 0x371180);
 }
@@ -63,7 +64,12 @@ void Main::Locate(HMODULE peRoot) {
     unsigned int peRootOffset = (unsigned int)peRoot;
     *(PVOID*)&publicMethods.Initialize = (PVOID)(peRootOffset + 0x37e3e0);
     *(PVOID*)&publicMethods.Destroy = (PVOID)(peRootOffset + 0x37e6c0);
+    staticMethods.GetSingleton = (Main*(*)())(peRootOffset + 0x37eab0);
     staticMethods.RunWindowFunc = (void(WINAPI*)(Main*, HWND, UINT, WPARAM, LPARAM))(peRootOffset + 0x37eb20);
+}
+
+Main::Win32_WindowData** Main::GetWindowData(Main* m) {
+    return (Win32_WindowData**)((unsigned int)m + 0x490);
 }
 
 void GFxApp::Locate(HMODULE peRoot) {

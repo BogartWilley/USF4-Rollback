@@ -38,7 +38,9 @@ void fPlatform::Install() {
 
 void fD3D::Install() {
     void (fD3D:: * _fDestroy)() = &Destroy;
+    DWORD (fD3D:: * _fReset)() = &Reset;
     DetourAttach((PVOID*)&rD3D::privateMethods.Destroy, *(PVOID*)&_fDestroy);
+    DetourAttach((PVOID*)&rD3D::privateMethods.Reset, *(PVOID*)&_fReset);
     DetourAttach((PVOID*)&rD3D::staticMethods.RunD3DOperations, RunD3DOperations);
 }
 
@@ -50,6 +52,16 @@ void WINAPI fD3D::RunD3DOperations(void* data) {
 void fD3D::Destroy() {
     FreeOverlay();
     (this->*rD3D::privateMethods.Destroy)();
+}
+
+DWORD fD3D::Reset() {
+    FreeOverlay();
+    DWORD out = (this->*rD3D::privateMethods.Reset)();
+    InitializeOverlay(
+        (*rMain::GetWindowData(rMain::staticMethods.GetSingleton()))->hWnd,
+        Dimps::Platform::D3D::staticMethods.GetSingleton()->lpD3DDevice
+    );
+    return out;
 }
 
 void fGFxApp::RecordToAdditionalMemento(rGFxApp* a, AdditionalMemento& m) {
@@ -112,10 +124,10 @@ int fMain::Initialize(void* a, void* b, void* c) {
     }
     CoTaskMemFree(path);
 
-    // Once Dimps::Platform::Main is fully specified, we can stop doing this
-    // pointer math.
-    rMain::Win32_WindowData** windowData = (rMain::Win32_WindowData**)((unsigned int)this + 0x490);
-    InitializeOverlay((*windowData)->hWnd, Dimps::Platform::D3D::staticMethods.GetSingleton()->lpD3DDevice);
+    InitializeOverlay(
+        (*rMain::GetWindowData(rMain::staticMethods.GetSingleton()))->hWnd,
+        Dimps::Platform::D3D::staticMethods.GetSingleton()->lpD3DDevice
+    );
 
     SteamDatagramErrMsg errMsg;
     if (!GameNetworkingSockets_Init(nullptr, errMsg)) {
