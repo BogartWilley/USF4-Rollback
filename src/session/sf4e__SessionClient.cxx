@@ -45,6 +45,7 @@ SessionClient::SessionClient(
 	uint8_t deviceIdx,
 	uint8_t delay
 ):
+	_serverAddr(serverAddr),
 	_name(name),
 	_port(port),
 	_interface(SteamNetworkingSockets()),
@@ -55,14 +56,14 @@ SessionClient::SessionClient(
 	char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
 	SteamNetworkingConfigValue_t opt;
 
-	serverAddr.ToString(szAddr, sizeof(szAddr), true);
+	_serverAddr.ToString(szAddr, sizeof(szAddr), true);
 	spdlog::info("Connecting to session server at {}", szAddr);
 
 	opt.SetPtr(
 		k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
 		(void*)SteamNetConnectionStatusChangedCallback
 	);
-	_conn = _interface->ConnectByIPAddress(serverAddr, 1, &opt);
+	_conn = _interface->ConnectByIPAddress(_serverAddr, 1, &opt);
 	if (_conn == k_HSteamNetConnection_Invalid) {
 		spdlog::error("Client failed to create connection");
 	}
@@ -205,7 +206,15 @@ int SessionClient::Step()
 						else {
 							SessionProtocol::MemberData& memberData = _lobbyData[i];
 							player.type = GGPO_PLAYERTYPE_REMOTE;
-							strcpy_s(player.u.remote.ip_address, 32, memberData.ip.c_str());
+							if (memberData.ip.empty()) {
+								char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
+								_serverAddr.ToString(szAddr, sizeof(szAddr), false);
+								strcpy_s(player.u.remote.ip_address, 32, szAddr);
+							}
+							else {
+								strcpy_s(player.u.remote.ip_address, 32, memberData.ip.c_str());
+							}
+							
 							player.u.remote.port = memberData.port;
 						}
 					}
@@ -219,16 +228,26 @@ int SessionClient::Step()
 					fSystem::StartGGPO(players, _lobbyData.size(), _port, _delay, _matchData.rngSeed);
 				}
 				else {
+					// Always spectate from	P1 for now- the protocol has
+					// limited enough players that there's marginal bandwidth
+					// differences.	
+					// 
+					char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
+					char* hostIP;
+					if (_lobbyData[0].ip.empty()) {
+						_serverAddr.ToString(szAddr, sizeof(szAddr), false);
+						hostIP = szAddr;
+					}
+					else {
+						// Safe-_ish_ removal of const. This gets passed through
+						// to an inet_pton() call and never modified.
+						hostIP = (char*)_lobbyData[0].ip.c_str();
+					}
+
 					fSystem::StartSpectating(
 						_port,
 						2,
-						// Always spectate from the host for now- the protocol has
-						// limited enough players that there's marginal bandwidth
-						// differences.
-						// 
-						// Safe-_ish_ removal of const. This gets passed through
-						// to an inet_pton() call and never modified.
-						(char*)_lobbyData[0].ip.c_str(),
+						hostIP,
 						_lobbyData[0].port,
 						_matchData.rngSeed
 					);

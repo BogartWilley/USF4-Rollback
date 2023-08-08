@@ -342,7 +342,12 @@ SessionProtocol::JoinResult SessionServer::RegisterToWait(const HSteamNetConnect
 	}
 
 	char peerAddrStr[SteamNetworkingIPAddr::k_cchMaxString];
-	peerAddr.ToString(peerAddrStr, SteamNetworkingIPAddr::k_cchMaxString, false);
+	if (peerAddr.IsLocalHost()) {
+		peerAddrStr[0] = 0;
+	}
+	else {
+		peerAddr.ToString(peerAddrStr, SteamNetworkingIPAddr::k_cchMaxString, false);
+	}
 	SessionMember newMember{ {name, peerAddrStr, port}, conn };
 	clients.push_back(std::move(newMember));
 	return SessionProtocol::JOIN_OK;

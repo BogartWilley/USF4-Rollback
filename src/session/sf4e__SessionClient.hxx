@@ -39,6 +39,7 @@ namespace sf4e {
 	private:
 		// Connection related data
 		bool _connected = false;
+		SteamNetworkingIPAddr _serverAddr;
 		HSteamNetConnection _conn;
 		ISteamNetworkingSockets* _interface;
 
