@@ -10,6 +10,7 @@ project (
     HOMEPAGE_URL "https://gitlab.com/adanducci/sf4e"
 )
 
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 add_compile_definitions(WIN32_LEAN_AND_MEAN)

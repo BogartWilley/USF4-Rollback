@@ -72,7 +72,11 @@ void FindCrypto(LPSTR szDllPathA) {
 void FindFmt(LPSTR szDllPathA) {
 	char szCwdBuffer[1024] = { 0 };
 	GetCurrentDirectoryA(1024, szCwdBuffer);
+#if DEBUG
 	PathCombineA(szDllPathA, szCwdBuffer, "fmtd.dll");
+#else
+	PathCombineA(szDllPathA, szCwdBuffer, "fmt.dll");
+#endif
 }
 
 void FindGameNetworkingSockets(LPSTR szDllPathA) {
@@ -90,7 +94,11 @@ void FindGGPO(LPSTR szDllPathA) {
 void FindProtobuf(LPSTR szDllPathA) {
 	char szCwdBuffer[1024] = { 0 };
 	GetCurrentDirectoryA(1024, szCwdBuffer);
+#if DEBUG
 	PathCombineA(szDllPathA, szCwdBuffer, "libprotobufd.dll");
+#else
+	PathCombineA(szDllPathA, szCwdBuffer, "libprotobuf.dll");
+#endif
 }
 
 
@@ -103,7 +111,11 @@ void FindSidecar(LPSTR szDllPathA) {
 void FindSpdlog(LPSTR szDllPathA) {
 	char szCwdBuffer[1024] = { 0 };
 	GetCurrentDirectoryA(1024, szCwdBuffer);
+#if DEBUG
 	PathCombineA(szDllPathA, szCwdBuffer, "spdlogd.dll");
+#else
+	PathCombineA(szDllPathA, szCwdBuffer, "spdlog.dll");
+#endif
 }
 
 void CreateAppIDFile(LPWSTR szGuiltyDirectory) {
