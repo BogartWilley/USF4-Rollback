@@ -34,6 +34,7 @@
 
 #include "../session/sf4e__SessionProtocol.hxx"
 
+#include "../sf4e/sf4e.hxx"
 #include "../sf4e/sf4e__Event.hxx"
 #include "../sf4e/sf4e__Game.hxx"
 #include "../sf4e/sf4e__Game__Battle.hxx"
@@ -907,7 +908,7 @@ void DrawNetworkJoinPanel() {
 	ImGui::InputScalar("Delay", ImGuiDataType_U8, &delay);
 
 	if (Button("Join")) {
-		fUserApp::StartClient(joinAddr, port, std::string(name), deviceType, deviceIdx, delay);
+		fUserApp::StartClient(joinAddr, port, sf4e::sidecarHash, std::string(name), deviceType, deviceIdx, delay);
 	}
 }
 
@@ -952,8 +953,8 @@ void DrawNetworkHostPanel() {
 	if (Button("Host")) {
 		char hostAddr[64];
 		snprintf(hostAddr, 64, "127.0.0.1:%d", hostPort);
-		fUserApp::StartServer(hostPort);
-		fUserApp::StartClient(hostAddr, ggpoPort, std::string(name), deviceType, deviceIdx, delay);
+		fUserApp::StartServer(hostPort, sf4e::sidecarHash);
+		fUserApp::StartClient(hostAddr, ggpoPort, sf4e::sidecarHash, std::string(name), deviceType, deviceIdx, delay);
 	}
 	ImGui::EndDisabled();
 }

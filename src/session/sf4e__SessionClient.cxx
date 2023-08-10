@@ -38,6 +38,7 @@ const int sf4e::SESSION_CLIENT_MAX_MESSAGES_PER_POLL = 20;
 SessionClient* SessionClient::s_pCallbackInstance;
 
 SessionClient::SessionClient(
+	std::string sidecarHash,
 	const SteamNetworkingIPAddr& serverAddr,
 	uint16_t port,
 	std::string& name,
@@ -45,6 +46,7 @@ SessionClient::SessionClient(
 	uint8_t deviceIdx,
 	uint8_t delay
 ):
+	_sidecarHash(sidecarHash),
 	_serverAddr(serverAddr),
 	_name(name),
 	_port(port),
@@ -399,6 +401,7 @@ void SessionClient::OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusCh
 		spdlog::info("Client connected to server OK, attempting to join...");
 		_connected = true;
 		SessionProtocol::JoinRequest request;
+		request.sidecarHash = _sidecarHash;
 		request.username = _name;
 		request.port = _port;
 		json msg = request;

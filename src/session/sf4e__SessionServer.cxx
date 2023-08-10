@@ -34,7 +34,8 @@ using sf4e::SessionServer;
 const int sf4e::SESSION_SERVER_MAX_MESSAGES_PER_POLL = 200;
 SessionServer* SessionServer::s_pCallbackInstance;
 
-SessionServer::SessionServer(uint16 nPort) :
+SessionServer::SessionServer(uint16 nPort, std::string sidecarHash) :
+	_sidecarHash(sidecarHash),
 	_interface(SteamNetworkingSockets()),
 	_lobbyData(),
 	_matchData(),
@@ -124,7 +125,7 @@ int SessionServer::Step()
 			}
 
 			SteamNetworkingIPAddr peerAddr = *(pIncomingMsg->m_identityPeer.GetIPAddr());
-			SessionProtocol::JoinResult joinResult = RegisterToWait(conn, request.port, request.username, peerAddr);
+			SessionProtocol::JoinResult joinResult = RegisterToWait(conn, request.port, request.sidecarHash, request.username, peerAddr);
 			if (joinResult != SessionProtocol::JOIN_OK) {
 				spdlog::info("Server: rejecting registration for reason {}", joinResult);
 				SessionProtocol::JoinReject reject;
@@ -330,7 +331,11 @@ void SessionServer::SteamNetConnectionStatusChangedCallback(SteamNetConnectionSt
 	s_pCallbackInstance->OnSteamNetConnectionStatusChanged(pInfo);
 }
 
-SessionProtocol::JoinResult SessionServer::RegisterToWait(const HSteamNetConnection& conn, const uint16_t& port, const std::string& name, const SteamNetworkingIPAddr& peerAddr) {
+SessionProtocol::JoinResult SessionServer::RegisterToWait(const HSteamNetConnection& conn, const uint16_t& port, const std::string& sidecarHash, const std::string& name, const SteamNetworkingIPAddr& peerAddr) {
+	if (sidecarHash != _sidecarHash) {
+		return SessionProtocol::JR_HASH_INVALID;
+	}
+
 	if (clients.size() >= MAX_SF4E_PROTOCOL_USERS) {
 		return SessionProtocol::JR_LOBBY_FULL;
 	}

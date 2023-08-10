@@ -16,6 +16,7 @@ namespace sf4e {
 	{
 	public:
 		SessionClient(
+			std::string sidecarHash,
 			const SteamNetworkingIPAddr& serverAddr,
 			uint16_t port,
 			std::string& name,
@@ -38,6 +39,7 @@ namespace sf4e {
 		
 	private:
 		// Connection related data
+		std::string _sidecarHash;
 		bool _connected = false;
 		SteamNetworkingIPAddr _serverAddr;
 		HSteamNetConnection _conn;

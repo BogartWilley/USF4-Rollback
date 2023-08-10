@@ -62,7 +62,8 @@ namespace sf4e {
 			JOIN_OK = 0,
 			JR_REQUEST_INVALID = 1,
 			JR_LOBBY_FULL = 2,
-			JR_NAME_TAKEN = 3
+			JR_NAME_TAKEN = 3,
+			JR_HASH_INVALID = 4,
 		};
 
 		NLOHMANN_JSON_SERIALIZE_ENUM(JoinResult, {
@@ -85,6 +86,7 @@ namespace sf4e {
 
 		struct JoinRequest {
 			MessageType type = MT_JOIN_REQ;
+			std::string sidecarHash;
 			std::string username;
 			uint16_t port;
 		};
@@ -135,7 +137,7 @@ namespace sf4e {
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MatchData, readyMessageNum, chara, stageID, rngSeed);
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(DataUpdate, type, lobbyData, matchData);
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JoinReject, type, result);
-		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JoinRequest, type, username, port);
+		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(JoinRequest, type, sidecarHash, username, port);
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SetConditionsRequest, type, chara, stageID, rngSeed);
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(ReportResultsRequest, type, loserSide);
 		NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(StateSnapshot::CharaStateSnapshot, status, rootPos, side, vit, vitmax, revenge, revengemax, recoverable, recoverablemax, super, supermax, sctimeamt, sctimemax, uctime, uctimemax, damage, combodamage);

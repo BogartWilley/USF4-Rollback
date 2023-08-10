@@ -17,6 +17,7 @@ namespace sf4e {
 	{
 	private:
 		// Connection related data
+		std::string _sidecarHash;
 		HSteamListenSocket _listenSock;
 		HSteamNetPollGroup _pollGroup;
 		ISteamNetworkingSockets* _interface;
@@ -38,6 +39,7 @@ namespace sf4e {
 		SessionProtocol::JoinResult RegisterToWait(
 			const HSteamNetConnection& conn,
 			const uint16_t& port,
+			const std::string& sidecarHash,
 			const std::string& name,
 			const SteamNetworkingIPAddr& peerAddr
 		);
@@ -46,7 +48,10 @@ namespace sf4e {
 		int BroadcastMatchData();
 
 	public:
-		SessionServer(uint16 nPort);
+		SessionServer(
+			uint16 nPort,
+			std::string sidecarHash
+		);
 		~SessionServer();
 
 		int Step();
