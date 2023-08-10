@@ -748,6 +748,32 @@ void DrawGGPOStatsOverlay(GGPOSession* ggpo, fSystem::PlayerConnectionInfo* play
 	End();
 }
 
+void DrawHashOverlay() {
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuiStyle& style = ImGui::GetStyle();
+	ImVec2 textWidth = ImGui::CalcTextSize(sf4e::sidecarHash.c_str());
+	ImVec2 window_pos(
+		(io.DisplaySize.x - textWidth.x) / 2 - style.WindowPadding.x,
+		io.DisplaySize.y - (textWidth.y + style.WindowPadding.y * 2)
+	);
+	ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
+	ImGui::SetNextWindowBgAlpha(0.35f);
+	Begin(
+		"Sidecar Hash",
+		nullptr,
+		ImGuiWindowFlags_NoDecoration |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoScrollWithMouse |
+		ImGuiWindowFlags_NoSavedSettings |
+		ImGuiWindowFlags_NoFocusOnAppearing |
+		ImGuiWindowFlags_NoBringToFrontOnFocus |
+		ImGuiWindowFlags_NoInputs |
+		ImGuiWindowFlags_AlwaysAutoResize
+	);
+	Text("%s", sf4e::sidecarHash.c_str());
+	End();
+}
+
 void DrawMainMenuWindow(bool* pOpen) {
 	static BYTE skipStep = 1;
 
@@ -1731,6 +1757,7 @@ void DrawOverlay() {
 	ImGui_ImplWin32_NewFrame();
 	NewFrame();
 
+	DrawHashOverlay();
 	if (ImGui::IsMousePosValid() && ImGui::GetIO().MousePos.y < 200) {
 		if (BeginMainMenuBar()) {
 			if (BeginMenu("Eva")) {

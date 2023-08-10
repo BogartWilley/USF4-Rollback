@@ -1,12 +1,15 @@
 #pragma once
 
 #include <random>
+#include <string>
+#include <windows.h>
 
 #include "../Dimps/Dimps__Eva.hxx"
 
 namespace sf4e {
+	extern std::string sidecarHash;
 	extern std::mt19937 localRand;
-	void Install();
+	void Install(HINSTANCE hinstDll);
 
 	namespace Eva {
 		struct IEmSpriteAction : Dimps::Eva::IEmSpriteAction {

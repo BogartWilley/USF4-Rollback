@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <windows.h>
+#include <bcrypt.h>
 #include <strsafe.h>
 #include <d3d9.h>
 #include <dinput.h>
@@ -37,7 +38,7 @@ __declspec(dllexport) BOOL WINAPI DllMain(
 		DetourRestoreAfterWith();
 		Dimps::Locate(LocatePERoot());
 		DetourTransactionBegin();
-		sf4e::Install();
+		sf4e::Install(hinstDLL);
 		error = DetourTransactionCommit();
 		if (error != NO_ERROR) {
 			MessageBox(NULL, DETOUR_FAILED_MESSAGE, NULL, MB_OK);
