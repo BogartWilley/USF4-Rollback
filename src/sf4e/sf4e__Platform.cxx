@@ -1,4 +1,5 @@
 #include <memory>
+#include <vector>
 
 #include <windows.h>
 #include <KnownFolders.h>
@@ -12,6 +13,7 @@
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
+#include "spdlog/sinks/wincolor_sink.h"
 
 #include "../Dimps/Dimps__Eva.hxx"
 #include "../Dimps/Dimps__Platform.hxx"
@@ -98,6 +100,10 @@ void fMain::Install() {
 
 int fMain::Initialize(void* a, void* b, void* c) {
     int rval = (this->*(rMain::publicMethods.Initialize))(a, b, c);
+    BOOL hasConsole = AllocConsole();
+    if (!hasConsole) {
+        MessageBox(NULL, TEXT("Could not allocate console!"), NULL, MB_OK);
+    }
 
     // Set up spdlog
     PWSTR path;
@@ -109,7 +115,17 @@ int fMain::Initialize(void* a, void* b, void* c) {
             PathCombineW(logpath, path, L"sf4e/logs/sf4e.log");
             int max_size = 1048576 * 5; // 5MB
             int max_files = 10;
-            auto logger = spdlog::rotating_logger_mt("sf4e", logpath, max_size, max_files, true);
+
+            std::vector<spdlog::sink_ptr> sinks;
+            sinks.push_back(std::shared_ptr<spdlog::sinks::rotating_file_sink_mt>(
+                new spdlog::sinks::rotating_file_sink_mt(logpath, max_size, max_files, true)
+            ));
+            if (hasConsole) {
+                sinks.push_back(std::shared_ptr<spdlog::sinks::wincolor_stdout_sink_mt>(
+                    new spdlog::sinks::wincolor_stdout_sink_mt()
+                ));
+            }
+            std::shared_ptr<spdlog::logger> logger(new spdlog::logger("sf4e", sinks.begin(), sinks.end()));
             spdlog::set_default_logger(logger);
             spdlog::info("Welcome to sf4e");
         }
