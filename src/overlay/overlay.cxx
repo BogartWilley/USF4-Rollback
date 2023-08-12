@@ -974,9 +974,10 @@ void DrawNetworkLobbyPanel() {
 	for (int i = 0; i < 2 && i < lobbyData.size(); i++) {
 		const char* label = i == 0 ? "P1" : "P2";
 		Text(
-			"%s: %s",
+			"%s: %s (%s)",
 			label,
-			lobbyData[i].name.c_str()
+			lobbyData[i].name.c_str(),
+			fUserApp::client->_matchData.readyMessageNum[i] > -1 ? "Ready!" : "Waiting"
 		);
 		if (lobbyData[i].name == fUserApp::client->_name) {
 			isSelfActiveSide = i;
