@@ -27,6 +27,7 @@ namespace SessionProtocol = sf4e::SessionProtocol;
 using Dimps::Event::EventBase;
 using Dimps::Event::EventController;
 using rSystem = Dimps::Game::Battle::System;
+using rMainMenu = Dimps::GameEvents::MainMenu;
 using rVsMode = Dimps::GameEvents::VsMode;
 using fMainMenu = sf4e::GameEvents::MainMenu;
 using fSystem = sf4e::Game::Battle::System;
@@ -177,7 +178,7 @@ int SessionClient::Step()
 				s_pCallbackInstance = this;
 				fVsPreBattle::bSkipToVersus = true;
 				fVsPreBattle::OnTasksRegistered = _OnVsPreBattleTasksRegistered;
-				fMainMenu::GoToVersusBattle();
+				(rMainMenu::ToItemObserver(fMainMenu::instance)->*rMainMenu::itemObserverMethods.GoToVersusMode)();
 
 				// Start the GGPO connection
 				bool isPlayer = false;

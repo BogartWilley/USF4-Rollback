@@ -17,6 +17,7 @@ using GameEvents::VsPreBattle;
 using GameEvents::VsStageSelect;
 using Dimps::Platform::dString;
 
+MainMenu::__itemObserverMethods MainMenu::itemObserverMethods;
 MainMenu::__publicMethods MainMenu::publicMethods;
 MainMenu::__staticMethods MainMenu::staticMethods;
 char** RootEvent::eventFlowDefinition;
@@ -60,7 +61,17 @@ void MainMenu::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	*(PVOID*)&publicMethods.Destroy = (PVOID)(peRootOffset + 0x212f90);
+	*(PVOID*)&itemObserverMethods.GoToVersusMode = (PVOID)(peRootOffset + 0x2131a0);
 	staticMethods.Factory = (MainMenu*(*)(DWORD, DWORD, DWORD))(peRootOffset + 0x212f30);
+}
+
+
+MainMenu* MainMenu::ToItemObserver(MainMenu* s) {
+	return (MainMenu*)((unsigned int)s + 0x40);
+}
+
+MainMenu* MainMenu::FromItemObserver(MainMenu* s) {
+	return (MainMenu*)((unsigned int)s - 0x40);
 }
 
 void RootEvent::Locate(HMODULE peRoot) {

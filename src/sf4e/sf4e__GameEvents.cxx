@@ -130,11 +130,6 @@ void fMainMenu::Install() {
 	DetourAttach((PVOID*)&rMainMenu::staticMethods.Factory, &Factory);
 }
 
-void fMainMenu::GoToVersusBattle() {
-	Dimps::Event::EventController* ec = *Dimps::Event::EventBase::GetSourceController(instance);
-	(ec->*Dimps::Event::EventController::publicMethods.CreateEventWithFlow)(2, 0, 0, 0, 1);
-}
-
 rMainMenu* fMainMenu::Factory(DWORD arg1, DWORD arg2, DWORD arg3) {
 	rMainMenu* out = rMainMenu::staticMethods.Factory(arg1, arg2, arg3);
 	instance = out;

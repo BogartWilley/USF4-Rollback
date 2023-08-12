@@ -16,7 +16,6 @@ namespace sf4e {
 			static Dimps::GameEvents::MainMenu* instance;
 			static Dimps::GameEvents::MainMenu* Factory(DWORD arg1, DWORD arg2, DWORD arg3);
 			static void Install();
-			static void GoToVersusBattle();
 		};
 
 		struct RootEvent : Dimps::GameEvents::RootEvent

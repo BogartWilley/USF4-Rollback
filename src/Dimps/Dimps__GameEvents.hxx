@@ -49,12 +49,25 @@ namespace Dimps {
 				void* (MainMenu::* Destroy)(DWORD arg1);
 			} __publicMethods;
 
+			typedef struct __itemObserverMethods {
+				void* (MainMenu::* GoToVersusMode)();
+			} __itemObserverMethods;
+
 			typedef struct __staticMethods {
 				MainMenu* (*Factory)(DWORD arg1, DWORD arg2, DWORD arg3);
 			} __staticMethods;
 
+			static __itemObserverMethods itemObserverMethods;
 			static __publicMethods publicMethods;
 			static __staticMethods staticMethods;
+
+			// When item-observer methods are called, the base of the `this`
+			// pointer needs to point at the item observer vtable contained
+			// in the MainMenu object, which is _not_ the base of the object-
+			// it's at offset 0x40. These helpers can make things a little
+			// more clear when invoking item observer methods.
+			static MainMenu* ToItemObserver(MainMenu* s);
+			static MainMenu* FromItemObserver(MainMenu* s);
 		};
 
 		struct VsCharaSelect : Dimps::Event::EventBase {

@@ -75,6 +75,7 @@ using Dimps::Game::Battle::System;
 using Dimps::Game::Battle::Vfx::ColorFade;
 using Dimps::Game::Battle::Vfx::ColorFadeUnit;
 using Dimps::Game::GameMementoKey;
+using rMainMenu = Dimps::GameEvents::MainMenu;
 using Dimps::GameEvents::VsCharaSelect;
 using rVsMode = Dimps::GameEvents::VsMode;
 using Dimps::GameEvents::VsStageSelect;
@@ -857,7 +858,7 @@ void DrawMainMenuWindow(bool* pOpen) {
 			(padSys->*padSysMethods.SetSideHasAssignedController)(1, 1);
 			(padSys->*padSysMethods.SetActiveButtonMapping)(PadSystem::BUTTON_MAPPING_FIGHT);
 		}
-		fMainMenu::GoToVersusBattle();
+		(rMainMenu::ToItemObserver(fMainMenu::instance)->*rMainMenu::itemObserverMethods.GoToVersusMode)();
 	}
 
 	End();
