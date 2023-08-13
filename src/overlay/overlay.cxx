@@ -1034,6 +1034,15 @@ void DrawNetworkLobbyPanel() {
 	}
 }
 
+void DrawNetworkWarningPopup(bool* pOpen) {
+	Begin(
+		"Network Warning",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+	Text("Steam multiplayer is disabled while sf4e is running- please restart.");
+	End();
+}
 void DrawNetworkWindow(bool* pOpen) {
 	static bool bDebug = false;
 
@@ -1895,6 +1904,10 @@ void DrawOverlay() {
 
 	if (show_network_window) {
 		DrawNetworkWindow(&show_network_window);
+	}
+
+	if (fMainMenu::bShowOnlinePreventedPopup) {
+		DrawNetworkWarningPopup(&fMainMenu::bShowOnlinePreventedPopup);
 	}
 
 	if (show_pad_window) {

@@ -31,6 +31,7 @@ using fVsMode = fGameEvents::VsMode;
 using fVsPreBattle = fGameEvents::VsPreBattle;
 using fVsStageSelect = fGameEvents::VsStageSelect;
 
+bool fMainMenu::bShowOnlinePreventedPopup = false;
 rMainMenu* fMainMenu::instance = nullptr;
 rVsMode* fVsMode::instance = nullptr;
 void (*fVsPreBattle::OnTasksRegistered)() = nullptr;
@@ -126,7 +127,9 @@ void fGameEvents::Install() {
 
 void fMainMenu::Install() {
 	void* (fMainMenu:: * _fDestroy)(DWORD) = &Destroy;
+	void (fMainMenu:: * _fGoToNetworkMode)() = &GoToNetworkMode;
 	DetourAttach((PVOID*)&rMainMenu::publicMethods.Destroy, *(PVOID*)&_fDestroy);
+	DetourAttach((PVOID*)&rMainMenu::vfxObserverMethods.GoToNetworkMode, *(PVOID*)&_fGoToNetworkMode);
 	DetourAttach((PVOID*)&rMainMenu::staticMethods.Factory, &Factory);
 }
 
@@ -146,6 +149,10 @@ void* fMainMenu::Destroy(DWORD arg1) {
 	}
 
 	return (_this->*rMainMenu::publicMethods.Destroy)(arg1);
+}
+
+void fMainMenu::GoToNetworkMode() {
+	bShowOnlinePreventedPopup = true;
 }
 
 void fRootEvent::Install() {
