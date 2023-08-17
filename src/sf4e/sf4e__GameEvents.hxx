@@ -11,10 +11,8 @@ namespace sf4e {
 
 		struct MainMenu : Dimps::GameEvents::MainMenu
 		{
-			void GoToNetworkMode();
 			void* Destroy(DWORD arg1);
 
-			static bool bShowOnlinePreventedPopup;
 			static Dimps::GameEvents::MainMenu* instance;
 			static Dimps::GameEvents::MainMenu* Factory(DWORD arg1, DWORD arg2, DWORD arg3);
 			static void Install();

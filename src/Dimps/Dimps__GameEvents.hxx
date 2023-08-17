@@ -53,10 +53,6 @@ namespace Dimps {
 				void* (MainMenu::* GoToVersusMode)();
 			} __itemObserverMethods;
 
-			typedef struct __vfxObserverMethods {
-				void* (MainMenu::* GoToNetworkMode)();
-			} __vfxObserverMethods;
-
 			typedef struct __staticMethods {
 				MainMenu* (*Factory)(DWORD arg1, DWORD arg2, DWORD arg3);
 			} __staticMethods;
@@ -64,7 +60,6 @@ namespace Dimps {
 			static __itemObserverMethods itemObserverMethods;
 			static __publicMethods publicMethods;
 			static __staticMethods staticMethods;
-			static __vfxObserverMethods vfxObserverMethods;
 
 			// When item-observer methods are called, the base of the `this`
 			// pointer needs to point at the item observer vtable contained

@@ -20,7 +20,6 @@ using Dimps::Platform::dString;
 MainMenu::__itemObserverMethods MainMenu::itemObserverMethods;
 MainMenu::__publicMethods MainMenu::publicMethods;
 MainMenu::__staticMethods MainMenu::staticMethods;
-MainMenu::__vfxObserverMethods MainMenu::vfxObserverMethods;
 char** RootEvent::eventFlowDefinition;
 VsBattle::__privateMethods VsBattle::privateMethods;
 VsCharaSelect::__publicMethods VsCharaSelect::publicMethods;
@@ -63,7 +62,6 @@ void MainMenu::Locate(HMODULE peRoot) {
 
 	*(PVOID*)&publicMethods.Destroy = (PVOID)(peRootOffset + 0x212f90);
 	*(PVOID*)&itemObserverMethods.GoToVersusMode = (PVOID)(peRootOffset + 0x2131a0);
-	*(PVOID*)&vfxObserverMethods.GoToNetworkMode = (PVOID)(peRootOffset + 0x213100);
 	staticMethods.Factory = (MainMenu*(*)(DWORD, DWORD, DWORD))(peRootOffset + 0x212f30);
 }
 
