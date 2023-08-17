@@ -225,8 +225,16 @@ int SessionClient::Step()
 						SessionProtocol::MemberData& memberData = _lobbyData[i];
 						GGPOPlayer& player = players[i];
 						player.type = GGPO_PLAYERTYPE_SPECTATOR;
-						strcpy_s(player.u.remote.ip_address, 32, memberData.ip.c_str());
 						player.u.remote.port = memberData.port;
+
+						if (memberData.ip.empty()) {
+							char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
+							_serverAddr.ToString(szAddr, sizeof(szAddr), false);
+							strcpy_s(player.u.remote.ip_address, 32, szAddr);
+						}
+						else {
+							strcpy_s(player.u.remote.ip_address, 32, memberData.ip.c_str());
+						}
 					}
 					fSystem::StartGGPO(players, _lobbyData.size(), _port, _delay, _matchData.rngSeed);
 				}
