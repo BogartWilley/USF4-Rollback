@@ -35,6 +35,7 @@ rMainMenu* fMainMenu::instance = nullptr;
 rVsMode* fVsMode::instance = nullptr;
 void (*fVsPreBattle::OnTasksRegistered)() = nullptr;
 
+bool fVsBattle::bBlockInitialization = false;
 bool fVsBattle::bForceNextMatchOnline = false;
 bool fVsBattle::bOverrideNextRandomSeed = false;
 bool fVsBattle::bTerminateOnNextLeftBattle = false;
@@ -154,6 +155,7 @@ void fRootEvent::Install() {
 
 void fVsBattle::Install() {
 	int (fVsBattle:: * _fCheckAndMaybeExitBasedOnBattleType)() = &CheckAndMaybeExitBasedOnExitType;
+	int (fVsBattle:: * _fHasInitialized)() = &HasInitialized;
 	void (fVsBattle:: * _fPrepareBattleRequest)() = &PrepareBattleRequest;
 	DetourAttach(
 		(PVOID*)&fVsBattle::privateMethods.CheckAndMaybeExitBasedOnExitType,
@@ -162,6 +164,10 @@ void fVsBattle::Install() {
 	DetourAttach(
 		(PVOID*)&fVsBattle::privateMethods.PrepareBattleRequest,
 		*(PVOID*)&_fPrepareBattleRequest
+	);
+	DetourAttach(
+		(PVOID*)&fVsBattle::publicMethods.HasInitialized,
+		*(PVOID*)&_fHasInitialized
 	);
 }
 
@@ -177,6 +183,16 @@ int fVsBattle::CheckAndMaybeExitBasedOnExitType() {
 	return (this->*rVsBattle::privateMethods.CheckAndMaybeExitBasedOnExitType)();
 }
 
+int fVsBattle::HasInitialized() {
+	if (!(this->*rVsBattle::publicMethods.HasInitialized)()) {
+		// The real system hasn't initialized yet.
+		return 0;
+	}
+
+	// The real system has initialized, but we may want to intentionally
+	// delay.
+	return !bBlockInitialization;
+}
 void fVsBattle::PrepareBattleRequest() {
 	(this->*rVsBattle::privateMethods.PrepareBattleRequest)();
 	Request* r = *rVsBattle::GetRequest(this);

@@ -22,6 +22,7 @@ MainMenu::__publicMethods MainMenu::publicMethods;
 MainMenu::__staticMethods MainMenu::staticMethods;
 char** RootEvent::eventFlowDefinition;
 VsBattle::__privateMethods VsBattle::privateMethods;
+VsBattle::__publicMethods VsBattle::publicMethods;
 VsCharaSelect::__publicMethods VsCharaSelect::publicMethods;
 VsCharaSelect::__staticMethods VsCharaSelect::staticMethods;
 VsMode::__publicMethods VsMode::publicMethods;
@@ -51,6 +52,7 @@ void VsBattle::Locate(HMODULE peRoot) {
 
 	*(PVOID*)&privateMethods.CheckAndMaybeExitBasedOnExitType = (PVOID)(peRootOffset + 0x23b9f0);
 	*(PVOID*)&privateMethods.PrepareBattleRequest = (PVOID)(peRootOffset + 0x23c6a0);
+	*(PVOID*)&publicMethods.HasInitialized = (PVOID)(peRootOffset + 0x23bd90);
 }
 
 Request** VsBattle::GetRequest(VsBattle* battleEvent) {

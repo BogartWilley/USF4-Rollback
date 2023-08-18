@@ -1526,6 +1526,7 @@ void DrawVsBattleWindow(bool* pOpen) {
 		ImGuiWindowFlags_None
 	);
 
+	ImGui::Checkbox("Block initialization?", &fVsBattle::bBlockInitialization);
 	ImGui::Checkbox("Force next battle online?", &fVsBattle::bForceNextMatchOnline);
 	ImGui::Checkbox("Skip results menu on next result?", &fVsBattle::bTerminateOnNextLeftBattle);
 	ImGui::Checkbox("Override next random seed?", &fVsBattle::bOverrideNextRandomSeed);

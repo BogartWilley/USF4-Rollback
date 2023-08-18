@@ -125,9 +125,14 @@ namespace Dimps {
 			typedef struct __privateMethods {
 				int (VsBattle::* CheckAndMaybeExitBasedOnExitType)();
 				void(VsBattle::* PrepareBattleRequest)();
+			} __privateMethods;
+
+			typedef struct __publicMethods {
+				int (VsBattle::* HasInitialized)();
 			} __publicMethods;
 
 			static __privateMethods privateMethods;
+			static __publicMethods publicMethods;
 			static Game::Request** GetRequest(VsBattle* battleEvent);
 		};
 

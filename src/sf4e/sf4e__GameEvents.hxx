@@ -36,7 +36,9 @@ namespace sf4e {
 		struct VsBattle : Dimps::GameEvents::VsBattle
 		{
 			int CheckAndMaybeExitBasedOnExitType();
+			int HasInitialized();
 			void PrepareBattleRequest();
+			static bool bBlockInitialization;
 			static bool bForceNextMatchOnline;
 			static bool bOverrideNextRandomSeed;
 			static bool bTerminateOnNextLeftBattle;
