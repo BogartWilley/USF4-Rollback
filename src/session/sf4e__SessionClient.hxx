@@ -59,6 +59,7 @@ namespace sf4e {
 
 		static SessionClient* s_pCallbackInstance;
 		static void SteamNetConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* pInfo);
+		static void _OnVsBattleTasksRegistered();
 		static void _OnVsPreBattleTasksRegistered();
 	};
 }

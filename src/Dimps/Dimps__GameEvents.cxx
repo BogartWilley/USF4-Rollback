@@ -53,6 +53,7 @@ void VsBattle::Locate(HMODULE peRoot) {
 	*(PVOID*)&privateMethods.CheckAndMaybeExitBasedOnExitType = (PVOID)(peRootOffset + 0x23b9f0);
 	*(PVOID*)&privateMethods.PrepareBattleRequest = (PVOID)(peRootOffset + 0x23c6a0);
 	*(PVOID*)&publicMethods.HasInitialized = (PVOID)(peRootOffset + 0x23bd90);
+	*(PVOID*)&publicMethods.RegisterTasks = (PVOID)(peRootOffset + 0x23cad0);
 }
 
 Request** VsBattle::GetRequest(VsBattle* battleEvent) {

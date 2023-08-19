@@ -33,6 +33,7 @@ using fVsStageSelect = fGameEvents::VsStageSelect;
 
 rMainMenu* fMainMenu::instance = nullptr;
 rVsMode* fVsMode::instance = nullptr;
+void (*fVsBattle::OnTasksRegistered)() = nullptr;
 void (*fVsPreBattle::OnTasksRegistered)() = nullptr;
 
 bool fVsBattle::bBlockInitialization = false;
@@ -157,17 +158,22 @@ void fVsBattle::Install() {
 	int (fVsBattle:: * _fCheckAndMaybeExitBasedOnBattleType)() = &CheckAndMaybeExitBasedOnExitType;
 	int (fVsBattle:: * _fHasInitialized)() = &HasInitialized;
 	void (fVsBattle:: * _fPrepareBattleRequest)() = &PrepareBattleRequest;
+	void (fVsBattle:: * _fRegisterTasks)() = &RegisterTasks;
 	DetourAttach(
-		(PVOID*)&fVsBattle::privateMethods.CheckAndMaybeExitBasedOnExitType,
+		(PVOID*)&rVsBattle::privateMethods.CheckAndMaybeExitBasedOnExitType,
 		*(PVOID*)&_fCheckAndMaybeExitBasedOnBattleType
 	);
 	DetourAttach(
-		(PVOID*)&fVsBattle::privateMethods.PrepareBattleRequest,
+		(PVOID*)&rVsBattle::privateMethods.PrepareBattleRequest,
 		*(PVOID*)&_fPrepareBattleRequest
 	);
 	DetourAttach(
-		(PVOID*)&fVsBattle::publicMethods.HasInitialized,
+		(PVOID*)&rVsBattle::publicMethods.HasInitialized,
 		*(PVOID*)&_fHasInitialized
+	);
+	DetourAttach(
+		(PVOID*)&rVsBattle::publicMethods.RegisterTasks,
+		*(PVOID*)&_fRegisterTasks
 	);
 }
 
@@ -193,6 +199,7 @@ int fVsBattle::HasInitialized() {
 	// delay.
 	return !bBlockInitialization;
 }
+
 void fVsBattle::PrepareBattleRequest() {
 	(this->*rVsBattle::privateMethods.PrepareBattleRequest)();
 	Request* r = *rVsBattle::GetRequest(this);
@@ -207,6 +214,15 @@ void fVsBattle::PrepareBattleRequest() {
 	bForceNextMatchOnline = false;
 	bOverrideNextRandomSeed = false;
 	nextMatchRandomSeed = 0xffffffff;
+}
+
+void fVsBattle::RegisterTasks() {
+	rVsBattle* _this = (rVsBattle*)this;
+	(_this->*rVsBattle::publicMethods.RegisterTasks)();
+	if (OnTasksRegistered) {
+		OnTasksRegistered();
+		OnTasksRegistered = nullptr;
+	}
 }
 
 void fVsCharaSelect::Install() {
@@ -271,7 +287,7 @@ void fVsPreBattle::RegisterTasks() {
 	(_this->*rVsPreBattle::publicMethods.RegisterTasks)();
 	if (OnTasksRegistered) {
 		OnTasksRegistered();
-		OnTasksRegistered = false;
+		OnTasksRegistered = nullptr;
 	}
 }
 

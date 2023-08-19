@@ -38,6 +38,9 @@ namespace sf4e {
 			int CheckAndMaybeExitBasedOnExitType();
 			int HasInitialized();
 			void PrepareBattleRequest();
+			void RegisterTasks();
+
+			static void (*OnTasksRegistered)();
 			static bool bBlockInitialization;
 			static bool bForceNextMatchOnline;
 			static bool bOverrideNextRandomSeed;

@@ -32,6 +32,7 @@ using rVsMode = Dimps::GameEvents::VsMode;
 using fMainMenu = sf4e::GameEvents::MainMenu;
 using fSystem = sf4e::Game::Battle::System;
 using fVsMode = sf4e::GameEvents::VsMode;
+using fVsBattle = sf4e::GameEvents::VsBattle;
 using fVsPreBattle = sf4e::GameEvents::VsPreBattle;
 using sf4e::SessionClient;
 
@@ -178,91 +179,9 @@ int SessionClient::Step()
 				s_pCallbackInstance = this;
 				fVsPreBattle::bSkipToVersus = true;
 				fVsPreBattle::OnTasksRegistered = _OnVsPreBattleTasksRegistered;
+				fVsBattle::OnTasksRegistered = _OnVsBattleTasksRegistered;
 				(rMainMenu::ToItemObserver(fMainMenu::instance)->*rMainMenu::itemObserverMethods.GoToVersusMode)();
 
-				// Start the GGPO connection
-				bool isPlayer = false;
-				for (int i = 0; i < 2; i++) {
-					if (_lobbyData[i].name == _name) {
-						isPlayer = true;
-						break;
-					}
-				}
-				if (isPlayer) {
-					GGPOPlayer players[MAX_SF4E_PROTOCOL_USERS];
-					for (int i = 0; i < 2 && i < _lobbyData.size(); i++) {
-						SessionProtocol::MemberData& memberData = _lobbyData[i];
-						GGPOPlayer& player = players[i];
-						player.size = sizeof(GGPOPlayer);
-						player.player_num = i + 1;
-						if (_lobbyData[i].name == _name) {
-							player.type = GGPO_PLAYERTYPE_LOCAL;
-
-							// Inject the chosen device into this player's side
-							Dimps::Pad::System* padSys = Dimps::Pad::System::staticMethods.GetSingleton();
-							Dimps::Pad::System::__publicMethods& padSysMethods = Dimps::Pad::System::publicMethods;
-							(padSys->*padSysMethods.AssociatePlayerAndGamepad)(i, _deviceIdx);
-							(padSys->*padSysMethods.SetDeviceTypeForPlayer)(i, _deviceType);
-							(padSys->*padSysMethods.SetSideHasAssignedController)(i, 1);
-							(padSys->*padSysMethods.SetActiveButtonMapping)(Dimps::Pad::System::BUTTON_MAPPING_FIGHT);
-						}
-						else {
-							SessionProtocol::MemberData& memberData = _lobbyData[i];
-							player.type = GGPO_PLAYERTYPE_REMOTE;
-							if (memberData.ip.empty()) {
-								char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
-								_serverAddr.ToString(szAddr, sizeof(szAddr), false);
-								strcpy_s(player.u.remote.ip_address, 32, szAddr);
-							}
-							else {
-								strcpy_s(player.u.remote.ip_address, 32, memberData.ip.c_str());
-							}
-							
-							player.u.remote.port = memberData.port;
-						}
-					}
-					for (int i = 2; i < _lobbyData.size(); i++) {
-						SessionProtocol::MemberData& memberData = _lobbyData[i];
-						GGPOPlayer& player = players[i];
-						player.type = GGPO_PLAYERTYPE_SPECTATOR;
-						player.u.remote.port = memberData.port;
-
-						if (memberData.ip.empty()) {
-							char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
-							_serverAddr.ToString(szAddr, sizeof(szAddr), false);
-							strcpy_s(player.u.remote.ip_address, 32, szAddr);
-						}
-						else {
-							strcpy_s(player.u.remote.ip_address, 32, memberData.ip.c_str());
-						}
-					}
-					fSystem::StartGGPO(players, _lobbyData.size(), _port, _delay, _matchData.rngSeed);
-				}
-				else {
-					// Always spectate from	P1 for now- the protocol has
-					// limited enough players that there's marginal bandwidth
-					// differences.	
-					// 
-					char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
-					char* hostIP;
-					if (_lobbyData[0].ip.empty()) {
-						_serverAddr.ToString(szAddr, sizeof(szAddr), false);
-						hostIP = szAddr;
-					}
-					else {
-						// Safe-_ish_ removal of const. This gets passed through
-						// to an inet_pton() call and never modified.
-						hostIP = (char*)_lobbyData[0].ip.c_str();
-					}
-
-					fSystem::StartSpectating(
-						_port,
-						2,
-						hostIP,
-						_lobbyData[0].port,
-						_matchData.rngSeed
-					);
-				}
 			}
 		}
 		else if (type == SessionProtocol::MT_SNAPSHOT) {
@@ -349,6 +268,95 @@ int SessionClient::Step()
 	}
 
 	return 0;
+}
+
+void SessionClient::_OnVsBattleTasksRegistered()
+{
+	SessionClient* _this = s_pCallbackInstance;
+
+	// Start the GGPO connection
+	bool isPlayer = false;
+	for (int i = 0; i < 2; i++) {
+		if (_this->_lobbyData[i].name == _this->_name) {
+			isPlayer = true;
+			break;
+		}
+	}
+	if (isPlayer) {
+		GGPOPlayer players[MAX_SF4E_PROTOCOL_USERS];
+		for (int i = 0; i < 2 && i < _this->_lobbyData.size(); i++) {
+			SessionProtocol::MemberData& memberData = _this->_lobbyData[i];
+			GGPOPlayer& player = players[i];
+			player.size = sizeof(GGPOPlayer);
+			player.player_num = i + 1;
+			if (_this->_lobbyData[i].name == _this->_name) {
+				player.type = GGPO_PLAYERTYPE_LOCAL;
+
+				// Inject the chosen device into this player's side
+				Dimps::Pad::System* padSys = Dimps::Pad::System::staticMethods.GetSingleton();
+				Dimps::Pad::System::__publicMethods& padSysMethods = Dimps::Pad::System::publicMethods;
+				(padSys->*padSysMethods.AssociatePlayerAndGamepad)(i, _this->_deviceIdx);
+				(padSys->*padSysMethods.SetDeviceTypeForPlayer)(i, _this->_deviceType);
+				(padSys->*padSysMethods.SetSideHasAssignedController)(i, 1);
+				(padSys->*padSysMethods.SetActiveButtonMapping)(Dimps::Pad::System::BUTTON_MAPPING_FIGHT);
+			}
+			else {
+				SessionProtocol::MemberData& memberData = _this->_lobbyData[i];
+				player.type = GGPO_PLAYERTYPE_REMOTE;
+				if (memberData.ip.empty()) {
+					char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
+					_this->_serverAddr.ToString(szAddr, sizeof(szAddr), false);
+					strcpy_s(player.u.remote.ip_address, 32, szAddr);
+				}
+				else {
+					strcpy_s(player.u.remote.ip_address, 32, memberData.ip.c_str());
+				}
+
+				player.u.remote.port = memberData.port;
+			}
+		}
+		for (int i = 2; i < _this->_lobbyData.size(); i++) {
+			SessionProtocol::MemberData& memberData = _this->_lobbyData[i];
+			GGPOPlayer& player = players[i];
+			player.type = GGPO_PLAYERTYPE_SPECTATOR;
+			player.u.remote.port = memberData.port;
+
+			if (memberData.ip.empty()) {
+				char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
+				_this->_serverAddr.ToString(szAddr, sizeof(szAddr), false);
+				strcpy_s(player.u.remote.ip_address, 32, szAddr);
+			}
+			else {
+				strcpy_s(player.u.remote.ip_address, 32, memberData.ip.c_str());
+			}
+		}
+		fSystem::StartGGPO(players, _this->_lobbyData.size(), _this->_port, _this->_delay, _this->_matchData.rngSeed);
+	}
+	else {
+		// Always spectate from	P1 for now- the protocol has
+		// limited enough players that there's marginal bandwidth
+		// differences.	
+		// 
+		char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
+		char* hostIP;
+		if (_this->_lobbyData[0].ip.empty()) {
+			_this->_serverAddr.ToString(szAddr, sizeof(szAddr), false);
+			hostIP = szAddr;
+		}
+		else {
+			// Safe-_ish_ removal of const. This gets passed through
+			// to an inet_pton() call and never modified.
+			hostIP = (char*)_this->_lobbyData[0].ip.c_str();
+		}
+
+		fSystem::StartSpectating(
+			_this->_port,
+			2,
+			hostIP,
+			_this->_lobbyData[0].port,
+			_this->_matchData.rngSeed
+		);
+	}
 }
 
 void SessionClient::_OnVsPreBattleTasksRegistered()
