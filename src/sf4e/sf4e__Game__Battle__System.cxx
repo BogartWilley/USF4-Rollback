@@ -436,8 +436,8 @@ void fSystem::StartGGPO(GGPOPlayer* inPlayers, int numPlayers, int port, int fra
         spdlog::error("GGPO session could not start: {}", result);
         MessageBoxA(NULL, "GGPO could not start, check logs", NULL, MB_OK);
     }
-    ggpo_set_disconnect_timeout(ggpo, 10000);
-    ggpo_set_disconnect_notify_start(ggpo, 5000);
+    ggpo_set_disconnect_timeout(ggpo, 1000);
+    ggpo_set_disconnect_notify_start(ggpo, 500);
 
     int localPlayerIdx = -1;
     for (int i = 0; i < 2; i++) {
