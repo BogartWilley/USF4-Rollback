@@ -154,11 +154,17 @@ int fSystem::RestoreFromMemento(Memento* m, GameMementoKey::MementoID* id) {
     *CameraUnit::GetCamShakeTask(cam) = nullptr;
     *rHud::Announce::Unit::GetHudAnnounceUpdateTask(announce) = nullptr;
     *rHud::Cockpit::Unit::GetHudCockpitUpdateTask(*HudUnit::GetCockpit(hud)) = nullptr;
-    *rHud::Continue::Unit::GetHudContinueUpdateTask(*HudUnit::GetContinue(hud)) = nullptr;
+    if (*HudUnit::GetContinue(hud)) {
+        *rHud::Continue::Unit::GetHudContinueUpdateTask(*HudUnit::GetContinue(hud)) = nullptr;
+    }
     *rHud::Cursor::Unit::GetHudCursorUpdateTask(*HudUnit::GetCursor(hud)) = nullptr;
     *rHud::Notice::Unit::GetHudNoticeUpdateTask(*HudUnit::GetNotice(hud)) = nullptr;
-    *rHud::Result::Unit::GetHudResultUpdateTask(*HudUnit::GetResult(hud)) = nullptr;
-    *rHud::Subtitle::Unit::GetHudSubtitleUpdateTask(*HudUnit::GetSubtitle(hud)) = nullptr;
+    if (*HudUnit::GetResult(hud)) {
+        *rHud::Result::Unit::GetHudResultUpdateTask(*HudUnit::GetResult(hud)) = nullptr;
+    }
+    if (*HudUnit::GetSubtitle(hud)) {
+        *rHud::Subtitle::Unit::GetHudSubtitleUpdateTask(*HudUnit::GetSubtitle(hud)) = nullptr;
+    }
     if (*HudUnit::GetTraining(hud)) {
         *rHud::Training::Unit::GetHudTrainingUpdateTask(*HudUnit::GetTraining(hud)) = nullptr;
     }
