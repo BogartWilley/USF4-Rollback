@@ -27,6 +27,7 @@ VsCharaSelect::__publicMethods VsCharaSelect::publicMethods;
 VsCharaSelect::__staticMethods VsCharaSelect::staticMethods;
 VsMode::__publicMethods VsMode::publicMethods;
 VsMode::__staticMethods VsMode::staticMethods;
+BOOL(VsBattle::** VsBattle::vt_IsTerminationComplete)();
 VsPreBattle::__publicMethods VsPreBattle::publicMethods;
 VsStageSelect::__publicMethods VsStageSelect::publicMethods;
 VsStageSelect::__staticMethods VsStageSelect::staticMethods;
@@ -50,6 +51,7 @@ void StageSelect::Locate(HMODULE peRoot) {
 void VsBattle::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
+	vt_IsTerminationComplete = (BOOL(VsBattle::**)())(peRootOffset + 0x55f878);
 	*(PVOID*)&privateMethods.CheckAndMaybeExitBasedOnExitType = (PVOID)(peRootOffset + 0x23b9f0);
 	*(PVOID*)&privateMethods.PrepareBattleRequest = (PVOID)(peRootOffset + 0x23c6a0);
 	*(PVOID*)&publicMethods.HasInitialized = (PVOID)(peRootOffset + 0x23bd90);

@@ -134,6 +134,16 @@ namespace Dimps {
 
 			static __privateMethods privateMethods;
 			static __publicMethods publicMethods;
+
+			// The VsBattle class's IsTerminationComplete method is shared
+			// with 16 other events and is deduplicated, but we want to
+			// inject unique behavior into the VsBattle's implementation.
+			// We could detour the shared implementation and check the
+			// vtable address to determine if the `this` pointer is
+			// referring to a VsBattle, but it's easier to just inject
+			// a new method directly into the VsBattle vtable.
+			static BOOL (VsBattle::** vt_IsTerminationComplete)();
+
 			static Game::Request** GetRequest(VsBattle* battleEvent);
 		};
 

@@ -37,6 +37,7 @@ void (*fVsBattle::OnTasksRegistered)() = nullptr;
 void (*fVsPreBattle::OnTasksRegistered)() = nullptr;
 
 bool fVsBattle::bBlockInitialization = false;
+bool fVsBattle::bBlockTermination = false;
 bool fVsBattle::bForceNextMatchOnline = false;
 bool fVsBattle::bOverrideNextRandomSeed = false;
 bool fVsBattle::bTerminateOnNextLeftBattle = false;
@@ -159,6 +160,7 @@ void fVsBattle::Install() {
 	int (fVsBattle:: * _fHasInitialized)() = &HasInitialized;
 	void (fVsBattle:: * _fPrepareBattleRequest)() = &PrepareBattleRequest;
 	void (fVsBattle:: * _fRegisterTasks)() = &RegisterTasks;
+
 	DetourAttach(
 		(PVOID*)&rVsBattle::privateMethods.CheckAndMaybeExitBasedOnExitType,
 		*(PVOID*)&_fCheckAndMaybeExitBasedOnBattleType
@@ -175,6 +177,22 @@ void fVsBattle::Install() {
 		(PVOID*)&rVsBattle::publicMethods.RegisterTasks,
 		*(PVOID*)&_fRegisterTasks
 	);
+
+	DWORD dwOld = 0;
+	if (VirtualProtect(
+		rVsBattle::vt_IsTerminationComplete,
+		sizeof(void*),
+		PAGE_EXECUTE_READWRITE,
+		&dwOld
+	)) {
+		*rVsBattle::vt_IsTerminationComplete = (BOOL(rVsBattle::*)()) & IsTerminationComplete;
+		VirtualProtect(rVsBattle::vt_IsTerminationComplete, sizeof(void*), dwOld, &dwOld);
+	}
+	else {
+		MessageBoxA(NULL, "Could not install VsBattle IsTerminationComplete override! Will crash!", NULL, MB_OK);
+		DWORD error = GetLastError();
+		DebugBreak();
+	}
 }
 
 
@@ -198,6 +216,18 @@ int fVsBattle::HasInitialized() {
 	// The real system has initialized, but we may want to intentionally
 	// delay.
 	return !bBlockInitialization;
+}
+
+BOOL fVsBattle::IsTerminationComplete() {
+	rVsBattle* _this = (rVsBattle*)this;
+	if (!(_this->*rEventBase::publicMethods.IsTerminationComplete)()) {
+		// The real system hasn't terminated yet.
+		return 0;
+	}
+
+	// The real system has terminated, but we may want to intentionally
+	// delay.
+	return !bBlockTermination;
 }
 
 void fVsBattle::PrepareBattleRequest() {
