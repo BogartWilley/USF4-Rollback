@@ -240,12 +240,12 @@ void fTask::RecordToAdditionalMemento(rTask* t, AdditionalMemento& m) {
 	// pointers, it'll turn incorrect accesses into null pointer
 	// accesses rather than arbitrary memory accesses, which is at least
 	// less dangerous.
-	// it is more sound to not .
 	memcpy_s(&m.rawTask, sizeof(rTask), t, sizeof(rTask));
 	*rTask::GetCancelFunctor(&m.rawTask) = nullptr;
 	*rTask::GetWorkFunctor(&m.rawTask) = nullptr;
 	*rTask::GetNext(&m.rawTask) = nullptr;
 	*rTask::GetPrevious(&m.rawTask) = nullptr;
+	*rTask::GetTaskData(&m.rawTask) = nullptr;
 
 	rIEmTaskFunctor* cancelFunctor = *rTask::GetCancelFunctor(t);
 	m.hasCancelFunctor = cancelFunctor != nullptr;
@@ -287,13 +287,34 @@ void fTask::RestoreFromAdditionalMemento(rTask* t, const AdditionalMemento& m) {
 	assert(*rTask::GetCancelFunctor((rTask*)&m.rawTask) == nullptr);
 	assert(*rTask::GetWorkFunctor((rTask*)&m.rawTask) == nullptr);
 
-	// Set aside the current next and prev tasks, copy the old state
-	// directly into place, then re-link the next and prev tasks.
+	// The "raw" task shouldn't have a task data pointer- the task
+	// data is stored with the TaskCore memento.
+	assert(*rTask::GetTaskData((rTask*)&m.rawTask) == nullptr);
+
+	// Set aside any non-game-state pointers, copy the old state
+	// directly into place, then re-link the non-game-state pointers.
+	//
+	// The two key pieces of non-game-state in each task are:
+	// * The next and previous pointers of the linked list, managed
+	//   (mostly) by the task core itself, and
+	// * The task's "private data" pointer, which is allocated by the
+	//   task core when the task object pool is created and is constant
+	//   for the life of the task core. The data at the pointer is mutable,
+	//   but the pointer itself isn't.
+	// 
+	// Failure to preserve the pointers from the newly-allocated Task when
+	// copying the old data into place almost certainly results in segfaults.
+	// Having a stronger breakdown of the Task object so that the fields
+	// could be directly copied rather than using a memcpy()-and-fix approach
+	// might make this more clear, but the full contents of the tasks are
+	// unknown.
 	rTask* next = *rTask::GetNext(t);
 	rTask* prev = *rTask::GetPrevious(t);
+	void* taskData = *rTask::GetTaskData(t);
 	memcpy_s(t, sizeof(rTask), &m.rawTask, sizeof(rTask));
 	*rTask::GetNext(t) = next;
 	*rTask::GetPrevious(t) = prev;
+	*rTask::GetTaskData(t) = taskData;
 
 	// The functors need to actually be allocated pointers, as the task cancellation
 	// will attempt to free the memory that the IEmTaskFunctor* pointers are pointing
