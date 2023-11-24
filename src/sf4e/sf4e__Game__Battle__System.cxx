@@ -60,10 +60,10 @@ using fSystem = sf4e::Game::Battle::System;
 using fVsBattle = sf4e::GameEvents::VsBattle;
 
 bool fSystem::bHaltAfterNext = false;
-bool fSystem::bRandomizeLocalInputsInGGPO = false;
 bool fSystem::bUpdateAllowed = true;
 int fSystem::nExtraFramesToSimulate = 0;
 int fSystem::nNextBattleStartFlowTarget = -1;
+int fSystem::nRandomizeLocalInputsEveryXFramesInGGPO = 0;
 
 GGPOPlayerHandle fSystem::localPlayerHandle = GGPO_INVALID_HANDLE;
 GGPOSession* fSystem::ggpo = nullptr;
@@ -217,6 +217,8 @@ void fSystem::BattleUpdate() {
     rSystem::__publicMethods& sysMethods = rSystem::publicMethods;
     rPadSystem* p = rPadSystem::staticMethods.GetSingleton();
     rPadSystem::__publicMethods& padMethods = rPadSystem::publicMethods;
+    static int nLastRandomInputFrame = -1;
+    static fPadSystem::Inputs randomInputs = { 0, 0 };
 
     if (!bUpdateAllowed) {
         return;
@@ -228,8 +230,16 @@ void fSystem::BattleUpdate() {
             for (int i = 0; i < 2; i++) {
                 if (players[i].type == GGPO_PLAYERTYPE_LOCAL) {
                     fPadSystem::Inputs inputs;
-                    if (bRandomizeLocalInputsInGGPO) {
-                        inputs = { localRand(), localRand() };
+                    if (nRandomizeLocalInputsEveryXFramesInGGPO != 0) {
+                        int currentFrame = rSystem::GetNumFramesSimulated_FixedPoint(_this)->integral;
+                        if (
+                            nLastRandomInputFrame < 0 ||
+                            (currentFrame - nLastRandomInputFrame) > nRandomizeLocalInputsEveryXFramesInGGPO
+                        ) {
+                            randomInputs = { localRand(), localRand() };
+                            nLastRandomInputFrame = currentFrame;
+                        }
+                        inputs = randomInputs;
                     }
                     else {
                         inputs = { (p->*padMethods.GetButtons_MappedOn)(i), (p->*padMethods.GetButtons_RawOn)(i) };

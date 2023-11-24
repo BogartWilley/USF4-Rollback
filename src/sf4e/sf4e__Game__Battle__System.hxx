@@ -45,10 +45,10 @@ namespace sf4e {
 				};
 
 				static bool bHaltAfterNext;
-				static bool bRandomizeLocalInputsInGGPO;
 				static bool bUpdateAllowed;
 				static int nExtraFramesToSimulate;
 				static int nNextBattleStartFlowTarget;
+				static int nRandomizeLocalInputsEveryXFramesInGGPO;
 
 				static Dimps::Game::GameMementoKey::MementoID loadRequest;
 				static Dimps::Game::GameMementoKey::MementoID saveRequest;

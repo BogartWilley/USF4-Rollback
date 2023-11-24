@@ -1042,7 +1042,7 @@ void DrawNetworkWindow(bool* pOpen) {
 		pOpen,
 		ImGuiWindowFlags_None
 	);
-	ImGui::Checkbox("Randomize inputs?", &fSystem::bRandomizeLocalInputsInGGPO);
+	ImGui::InputInt("Randomize inputs every X frames", &fSystem::nRandomizeLocalInputsEveryXFramesInGGPO);
 
 	ImGui::Checkbox("Show debug data?", &bDebug);
 	if (BeginTabBar("Network window")) {
