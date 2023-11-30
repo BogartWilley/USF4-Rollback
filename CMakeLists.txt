@@ -130,13 +130,38 @@ target_compile_definitions(Launcher PRIVATE -D_UNICODE -DUNICODE)
 
 install(
   TARGETS Launcher Sidecar
-  CONFIGURATIONS Debug
   RUNTIME DESTINATION "."
 )
 install(
-  TARGETS Launcher Sidecar
-  CONFIGURATIONS Release
-  RUNTIME DESTINATION "."
+    FILES "${fmt_DIR}/copyright" DESTINATION "licenses/" RENAME "fmt"
+)
+install(
+    FILES "${GameNetworkingSockets_DIR}/copyright" DESTINATION "licenses/" RENAME "gamenetworkingsockets"
+)
+install(
+    FILES "${ggpo_DIR}/copyright" DESTINATION "licenses/" RENAME "ggpo"
+)
+install(
+    FILES "${imgui_DIR}/copyright" DESTINATION "licenses/" RENAME "imgui"
+)
+install(
+    FILES "${protobuf_DIR}/copyright" DESTINATION "licenses/" RENAME "protobuf"
+)
+install(
+    FILES "${spdlog_DIR}/copyright" DESTINATION "licenses/" RENAME "spdlog"
+)
+# Neither of these use the find-package infrastructure, so they don't have $..._DIR
+# variables.
+install(
+    FILES "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/detours/copyright" DESTINATION "licenses/" RENAME "detours"
+)
+install(
+    FILES "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share/valvefilevdf/copyright" DESTINATION "licenses/" RENAME "valvefilevdf"
+)
+# This one is _extra_ weird- nlohmann-json is findable, but the port uses both ../share/nlohmann_json
+# and ../share/nlohmann-json and doesn't expose the license as a target.
+install(
+    FILES "${nlohmann_json_DIR}/../nlohmann-json/copyright" DESTINATION "licenses/" RENAME "nlohmann-json"
 )
 
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
@@ -144,3 +169,8 @@ set(CPACK_PACKAGE_VENDOR "The ${PROJECT_NAME} Dev Team")
 set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_NAME} ${PROJECT_DESCRIPTION}")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "${PROJECT_NAME}")
+set(CPACK_NSIS_MUI_ICON "${PROJECT_SOURCE_DIR}/resources/punch.ico")
+set(CPACK_NSIS_IGNORE_LICENSE_PAGE)
+
+include(CPack)

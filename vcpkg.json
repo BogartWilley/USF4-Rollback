@@ -1,21 +1,37 @@
 {
   "name": "sf4e",
-  "version-string": "0.0.1",
+  "builtin-baseline": "c9919121dde6f61c0436adda94624636e041226b",
   "dependencies": [
-    "detours",
-    "gamenetworkingsockets",
-    "ggpo",
+    {
+      "name": "detours",
+      "version>=": "4.0.1#8"
+    },
     {
 
+      "name": "gamenetworkingsockets",
+      "version>=": "1.4.1#1"
+    },
+    {
+      "name": "ggpo",
+      "version>=": "1.0.0#1"
+    },
+    {
       "name": "imgui",
+      "version>=": "1.90#3",
       "features": [ "dx9-binding", "win32-binding" ]
     },
-    "nlohmann-json",
     {
-
+      "name": "nlohmann-json",
+      "version>=": "3.11.3"
+    },
+    {
       "name": "spdlog",
+      "version>=": "1.12.0",
       "features": [ "wchar" ]
     },
-    "valvefilevdf"
+    {
+      "name": "valvefilevdf",
+      "version>=": "1.0.0#1"
+    }
   ]
 }

@@ -1,12 +1,58 @@
-# You can override the included template(s) by including variable overrides
-# SAST customization: https://docs.gitlab.com/ee/user/application_security/sast/#customizing-the-sast-settings
-# Secret Detection customization: https://docs.gitlab.com/ee/user/application_security/secret_detection/#customizing-settings
-# Dependency Scanning customization: https://docs.gitlab.com/ee/user/application_security/dependency_scanning/#customizing-the-dependency-scanning-settings
-# Note that environment variables can be set in several places
-# See https://docs.gitlab.com/ee/ci/variables/#cicd-variable-precedence
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+
 stages:
-- test
-sast:
-  stage: test
-include:
-- template: Security/SAST.gitlab-ci.yml
+  - build
+  - upload
+
+.shared_windows_runners:
+  tags:
+  - shared-windows
+  - windows
+  - windows-1809
+
+# See https://docs.gitlab.com/ee/user/project/releases/release_fields.html#use-a-generic-package-for-attaching-binaries
+variables:
+  PACKAGE_VERSION: "0.0.1"
+  MSI_PACKAGE: "${CI_PROJECT_NAME}-${PACKAGE_VERSION}-win32.msi"
+  PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${PACKAGE_VERSION}"
+
+build-job:
+  stage: build
+  extends:
+  - .shared_windows_runners
+  script:
+    - cmake.exe --build ./build
+    - cmake.exe --build ./build --target package
+  before_script:
+    - If (!(test-path vcpkg-cache)) { mkdir -p vcpkg-cache }
+    - $env:VCPKG_DEFAULT_BINARY_CACHE="$PWD\vcpkg-cache"
+    - >
+        cmake.exe
+        -B build
+        -G "Ninja"
+        -DCMAKE_BUILD_TYPE="Release"
+        -DCMAKE_TOOLCHAIN_FILE:FILEPATH="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        -DX_VCPKG_APPLOCAL_DEPS_INSTALL:BOOL="True"
+        -DCMAKE_C_COMPILER:FILEPATH="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx86/x86/cl.exe"
+        -DCMAKE_CXX_COMPILER:FILEPATH="C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30133/bin/Hostx86/x86/cl.exe"
+        -DCMAKE_MAKE_PROGRAM="C:\PROGRAM FILES (X86)\MICROSOFT VISUAL STUDIO\2019\COMMUNITY\COMMON7\IDE\COMMONEXTENSIONS\MICROSOFT\CMAKE\Ninja\ninja.exe"
+  cache:
+    - key:
+        files:
+          - vcpkg.json
+          - vcpkg-configuration.json
+      paths:
+        - vcpkg-cache
+  artifacts:
+    paths:
+      - "./build/${MSI_PACKAGE}"
+
+upload-job:
+  stage: upload
+  extends:
+    - .shared_windows_runners
+  script:
+    - >
+      curl.exe --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "./build/${MSI_PACKAGE}" "${PACKAGE_REGISTRY_URL}/${MSI_PACKAGE}"
