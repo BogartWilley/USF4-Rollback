@@ -706,7 +706,7 @@ void DrawGGPOStatsOverlay(GGPOSession* ggpo, fSystem::PlayerConnectionInfo* play
 
 	GGPOErrorCode err = ggpo_get_network_stats(ggpo, players[i].handle, &stats);
 	if (!GGPO_SUCCEEDED(err)) {
-		spdlog::warn("Couldn't get GGPO stats for overlay: {}", err);
+		spdlog::warn("Couldn't get GGPO stats for overlay: {}", (int)err);
 		return;
 	}
 

@@ -127,7 +127,7 @@ int SessionServer::Step()
 			SteamNetworkingIPAddr peerAddr = *(pIncomingMsg->m_identityPeer.GetIPAddr());
 			SessionProtocol::JoinResult joinResult = RegisterToWait(conn, request.port, request.sidecarHash, request.username, peerAddr);
 			if (joinResult != SessionProtocol::JOIN_OK) {
-				spdlog::info("Server: rejecting registration for reason {}", joinResult);
+				spdlog::info("Server: rejecting registration for reason {}", (int)joinResult);
 				SessionProtocol::JoinReject reject;
 				reject.result = joinResult;
 				json rejectMsg = reject;
@@ -192,7 +192,7 @@ int SessionServer::Step()
 			}
 		}
 		else {
-			spdlog::warn("Server: got unrecognized message type: {}", type);
+			spdlog::warn("Server: got unrecognized message type: {}", (int)type);
 		}
 	}
 

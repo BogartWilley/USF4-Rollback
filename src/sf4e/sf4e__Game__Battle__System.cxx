@@ -449,7 +449,7 @@ void fSystem::StartGGPO(GGPOPlayer* inPlayers, int numPlayers, int port, int fra
         port
     );
     if (result != GGPO_OK) {
-        spdlog::error("GGPO session could not start: {}", result);
+        spdlog::error("GGPO session could not start: {}", (int)result);
         MessageBoxA(NULL, "GGPO could not start, check logs", NULL, MB_OK);
     }
     ggpo_set_disconnect_timeout(ggpo, 1000);
@@ -460,7 +460,7 @@ void fSystem::StartGGPO(GGPOPlayer* inPlayers, int numPlayers, int port, int fra
         players[i].type = inPlayers[i].type;
         result = ggpo_add_player(ggpo, inPlayers + i, &players[i].handle);
         if (!GGPO_SUCCEEDED(result)) {
-            spdlog::error("GGPO session could not add player: {}", result);
+            spdlog::error("GGPO session could not add player: {}", (int)result);
             MessageBoxA(NULL, "GGPO could not add player", NULL, MB_OK);
             continue;
         }
@@ -476,7 +476,7 @@ void fSystem::StartGGPO(GGPOPlayer* inPlayers, int numPlayers, int port, int fra
             players[i].type = inPlayers[i].type;
             result = ggpo_add_player(ggpo, inPlayers + i, &players[i].handle);
             if (!GGPO_SUCCEEDED(result)) {
-                spdlog::error("GGPO session could not add spectator: {}", result);
+                spdlog::error("GGPO session could not add spectator: {}", (int)result);
                 MessageBoxA(NULL, "GGPO could not add spectator", NULL, MB_OK);
                 continue;
             }
@@ -512,7 +512,7 @@ void fSystem::StartSpectating(unsigned short localport, int num_players, char* h
         host_port
     );
     if (result != GGPO_OK) {
-        spdlog::error("GGPO session could not start: {}", result);
+        spdlog::error("GGPO session could not start: {}", (int)result);
         MessageBoxA(NULL, "GGPO could not start, check logs", NULL, MB_OK);
     }
 

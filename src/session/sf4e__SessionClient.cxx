@@ -138,7 +138,7 @@ int SessionClient::Step()
 				continue;
 			}
 
-			spdlog::info("Join rejected, reason: {}", reject.result);
+			spdlog::info("Join rejected, reason: {}", (int)reject.result);
 			_interface->CloseConnection(_conn, 0, nullptr, false);
 			_conn = k_HSteamNetConnection_Invalid;
 			return -1;
@@ -215,7 +215,7 @@ int SessionClient::Step()
 			}
 		}
 		else {
-			spdlog::warn("Client: got unrecognized message type: {}", type);
+			spdlog::warn("Client: got unrecognized message type: {}", (int)type);
 		}
 	}
 
@@ -445,7 +445,7 @@ EResult SessionClient::SetMatchConditions(SessionProtocol::SetConditionsRequest&
 	json msg = r;
 	EResult result = Send(msg, &_outstandingReadyRequestNumber);
 	if (result != k_EResultOK) {
-		spdlog::warn("Client: could not send match conditions! Result: {}", result);
+		spdlog::warn("Client: could not send match conditions! Result: {}", (int)result);
 	}
 	return result;
 }
@@ -455,7 +455,7 @@ EResult SessionClient::ReportResults(SessionProtocol::ReportResultsRequest& r)
 	json msg = r;
 	EResult result = Send(msg, nullptr);
 	if (result != k_EResultOK) {
-		spdlog::warn("Client: could not report results! Result: {}", result);
+		spdlog::warn("Client: could not report results! Result: {}", (int)result);
 	}
 	return result;
 }
