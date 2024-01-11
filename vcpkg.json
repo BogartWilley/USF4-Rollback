@@ -1,13 +1,11 @@
 {
   "name": "sf4e",
-  "builtin-baseline": "c9919121dde6f61c0436adda94624636e041226b",
   "dependencies": [
     {
       "name": "detours",
-      "version>=": "4.0.1#8"
+      "version>=": "4.0.1#7"
     },
     {
-
       "name": "gamenetworkingsockets",
       "version>=": "1.4.1#1"
     },
@@ -17,21 +15,27 @@
     },
     {
       "name": "imgui",
-      "version>=": "1.90#3",
-      "features": [ "dx9-binding", "win32-binding" ]
+      "version>=": "1.89.1",
+      "features": [
+        "dx9-binding",
+        "win32-binding"
+      ]
     },
     {
       "name": "nlohmann-json",
-      "version>=": "3.11.3"
+      "version>=": "3.11.2"
     },
     {
       "name": "spdlog",
-      "version>=": "1.12.0",
-      "features": [ "wchar" ]
+      "version>=": "1.11.0",
+      "features": [
+        "wchar"
+      ]
     },
     {
       "name": "valvefilevdf",
       "version>=": "1.0.0#1"
     }
-  ]
+  ],
+  "builtin-baseline": "f14984af3738e69f197bf0e647a8dca12de92996"
 }

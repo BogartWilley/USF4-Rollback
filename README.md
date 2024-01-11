@@ -19,10 +19,8 @@ To build sf4e with VS2019:
 1. Open `CMakeLists.txt` with VS2019's native CMake integration.
 2. Follow the steps in [`vcpkg`'s Getting Started guide](https://vcpkg.io/en/getting-started.html)',
    stopping after `vcpkg` has been bootstrapped.
-   * You won't need to manually run `vcpkg install` because proper CMake
-     integration will download the dependencies for you.
-3. Configure the VS2019 CMake settings to build with a 32-bit toolset
-   (`msvc_x86`).
+   * You won't need to manually run `vcpkg install`: vcpkg CMake integration will download the dependencies for you.
+3. Configure the VS2019 CMake settings to build with a 32-bit toolset (`msvc_x86`).
    - Since SF4 is a 32-bit x86 executable, `sf4e` also needs to be built with
      32-bit Detours and targeting 32-bit output to properly hook SF4's
      instructions.
@@ -34,16 +32,15 @@ To build sf4e with VS2019:
 
 To build sf4e with CMake and `vcpkg`:
 
-1. Install the project dependencies with `vcpkg install --overlay-ports=./vcpkg-ports --overlay-triplets=./vcpkg-triplets --triplet=x86-windows-wchar-filenames`.
-  * This must be run from the root of the `sf4e` repo, so that `vcpkg` installs
-    from the manifest file.
-  * The `--overlay-ports` argument extends `vcpkg`'s internal registry with
-    dependencies that `sf4e` uses that are not in `vcpkg`'s main port list.
-  * The custom triplet argument must be used to ensure Unicode support, which
-    is not optional with newer methods in the Win32 APIs.
+1. Follow the steps in [`vcpkg`'s Getting Started guide](https://vcpkg.io/en/getting-started.html)',
+   stopping after `vcpkg` has been bootstrapped.
 2. Use `cmake` or `cmake-gui` to generate a new project.
-  * Take care to ensure that the generated project will build a 32-bit x86
-    binary. `cmake-gui` on Windows refers to it as "Win32".
+   * Take care to ensure that the generated project will build a 32-bit x86
+     binary. `cmake-gui` on Windows refers to it as "Win32".
+   * Also, when generating the project, take care to ensure that the
+     `CMAKE_TOOLCHAIN_VARIABLE` is in fact defined and pointing at your
+     `vcpkg` checkout as listed under the "Using vcpkg with CMake" heading
+     of `vcpkg`'s documentation.
 3. Apply your build system to the generated project output. Confirm that
    `Launcher.exe` and `Sidecar.dll` are in the build output.
 4. Run `Launcher.exe`.
@@ -64,7 +61,7 @@ provide the following dependencies:
 * [nlohmann/json](https://github.com/nlohmann/json). `json` is used for
   message serialization.
 * [GameNetworkingSockets](https://github.com/ValveSoftware/GameNetworkingSockets/).
-  `GamenNetworkingSockets` provides a very helpful high-level API on top
+  `GameNetworkingSockets` provides a helpful high-level API on top
   of message passing, and additionally supports NAT hole punching if
   a signalling server is run.
 * [GGPO](https://github.com/pond3r/ggpo), used to provide rollback.
