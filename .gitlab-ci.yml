@@ -15,7 +15,7 @@ stages:
 # See https://docs.gitlab.com/ee/user/project/releases/release_fields.html#use-a-generic-package-for-attaching-binaries
 variables:
   PACKAGE_VERSION: "0.0.1"
-  MSI_PACKAGE: "${CI_PROJECT_NAME}-${PACKAGE_VERSION}-win32.msi"
+  ZIP_PACKAGE: "${CI_PROJECT_NAME}-${PACKAGE_VERSION}-win32.zip"
   PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${PACKAGE_VERSION}"
 
 build-job:
@@ -23,17 +23,16 @@ build-job:
   extends:
   - .shared_windows_runners
   script:
-    - cmake.exe --build ./build
-    - cmake.exe --build ./build --target package
+    - cmake.exe --build build --config Release --target package
   before_script:
     - If (!(test-path vcpkg-cache)) { mkdir -p vcpkg-cache }
     - $env:VCPKG_DEFAULT_BINARY_CACHE="$PWD\vcpkg-cache"
     - >
         cmake.exe
         -B build
-        -G "Ninja"
-        -DCMAKE_BUILD_TYPE="Release"
+        -A Win32
         -DCMAKE_TOOLCHAIN_FILE:FILEPATH="C:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        -DCPACK_GENERATOR="ZIP"
         -DX_VCPKG_APPLOCAL_DEPS_INSTALL:BOOL="True"
   cache:
     - key:
@@ -44,7 +43,7 @@ build-job:
         - vcpkg-cache
   artifacts:
     paths:
-      - "./build/${MSI_PACKAGE}"
+      - "./build/${ZIP_PACKAGE}"
 
 upload-job:
   stage: upload
@@ -52,4 +51,4 @@ upload-job:
     - .shared_windows_runners
   script:
     - >
-      curl.exe --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "./build/${MSI_PACKAGE}" "${PACKAGE_REGISTRY_URL}/${MSI_PACKAGE}"
+      curl.exe --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file "./build/${ZIP_PACKAGE}" "${PACKAGE_REGISTRY_URL}/${ZIP_PACKAGE}"
