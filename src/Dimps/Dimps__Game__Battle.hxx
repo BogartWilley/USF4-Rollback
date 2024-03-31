@@ -83,6 +83,37 @@ namespace Dimps {
 					static Eva::Task** GetPauseTask(Unit* u);
 				};
 			}
+
+			namespace Sound {
+				// Sound methods often return handles or take them as arguments-
+				// they seem intended to be opaque, and the fact that most
+				// functions return these values in `eax` and receive them
+				// without allocating an additional pointer on the stack
+				// suggests that the sound subsystem is using basic types to
+				// exchange the data. However, they can be decoded to
+				// references.
+				typedef unsigned int SoundHandle;
+				struct SoundReference {
+					unsigned short position;
+					unsigned short useCount;
+					inline static SoundReference FromHandle(SoundHandle h) {
+						return SoundReference{ 
+							(unsigned short)(h & 0xffff0000 >> 0x10),
+							(unsigned short)(h & 0xffff)
+						};
+					}
+					inline SoundHandle ToHandle() { return this->position << 0x10 & this->useCount; }
+				};
+
+				struct SoundPlayerManager {
+					typedef struct __publicMethods {
+						SoundHandle(SoundPlayerManager::* PlaySound)(SoundHandle cueSheetHandle, uint32_t cueIdx, DWORD param_3, int32_t flags, DWORD maybePosition);
+					} __publicMethods;
+
+					static void Locate(HMODULE peRoot);
+					static __publicMethods publicMethods;
+				};
+			}
 		}
 	}
 }

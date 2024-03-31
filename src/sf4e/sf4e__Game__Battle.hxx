@@ -13,6 +13,7 @@ namespace sf4e {
 	namespace Game {
 		namespace Battle {
 			using Dimps::Eva::Task;
+			using Dimps::Game::Battle::Sound::SoundHandle;
 
 			void Install();
 
@@ -27,6 +28,21 @@ namespace sf4e {
 
 				static bool bAllowHudUpdate;
 			};
+
+			namespace Sound {
+				struct SoundPlayerManager : Dimps::Game::Battle::Sound::SoundPlayerManager {
+					SoundHandle PlaySound(
+						SoundHandle cueSheetHandle,
+						uint32_t cueIdx,
+						DWORD param_3,
+						int32_t flags,
+						DWORD maybePosition
+					);
+
+					static bool bTrackPlays;
+					static void Install();
+				};
+			}
 		}
 	}
 }

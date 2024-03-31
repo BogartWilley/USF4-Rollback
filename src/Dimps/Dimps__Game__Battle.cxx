@@ -17,9 +17,11 @@ namespace Battle = Dimps::Game::Battle;
 using Dimps::Eva::Task;
 using Battle::GameManager;
 using Battle::IUnit;
+using Battle::Sound::SoundPlayerManager;
 
 GameManager::__publicMethods GameManager::publicMethods;
 IUnit::__publicMethods IUnit::publicMethods;
+SoundPlayerManager::__publicMethods SoundPlayerManager::publicMethods;
 
 int Battle::orderedEditions[NUM_VALID_EDITIONS] = {
 	Battle::ED_SF4,
@@ -48,6 +50,7 @@ void Battle::Locate(HMODULE peRoot) {
 	Effect::Locate(peRoot);
 	Hud::Locate(peRoot);
 	IUnit::Locate(peRoot);
+	Sound::SoundPlayerManager::Locate(peRoot);
 	System::Locate(peRoot);
 	Training::Locate(peRoot);
 	Vfx::Locate(peRoot);
@@ -66,4 +69,9 @@ void GameManager::Locate(HMODULE peRoot) {
 
 Task** Battle::Pause::Unit::GetPauseTask(Unit* u) {
 	return (Task**)((unsigned int)u + 0x14);
+}
+
+void Battle::Sound::SoundPlayerManager::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+	*(PVOID*)&publicMethods.PlaySound = (PVOID)(peRootOffset + 0x193e70);
 }

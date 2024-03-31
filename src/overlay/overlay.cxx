@@ -87,6 +87,7 @@ using Dimps::Platform::GFxApp;
 using fEventController = sf4e::Event::EventController;
 using fIUnit = sf4e::Game::Battle::IUnit;
 using fKey = sf4e::Game::GameMementoKey;
+using fSoundPlayerManager = sf4e::Game::Battle::Sound::SoundPlayerManager;
 using fSystem = sf4e::Game::Battle::System;
 using fColorFade = sf4e::Game::Battle::Vfx::ColorFade;
 using fMainMenu = sf4e::GameEvents::MainMenu;
@@ -138,6 +139,7 @@ static bool show_main_menu_window = false;
 static bool show_memento_window = false;
 static bool show_network_window = true;
 static bool show_pad_window = false;
+static bool show_sound_window = false;
 static bool show_system_window = false;
 static bool show_task_window = false;
 static bool show_vfx_window = false;
@@ -1229,6 +1231,16 @@ void DrawSystemTaskPanel(System* s, TaskCore* core) {
 	Columns(1);
 }
 
+void DrawSoundWindow(bool* pOpen) {
+	Begin(
+		"Sound",
+		pOpen,
+		ImGuiWindowFlags_None
+	);
+	ImGui::Checkbox("Track plays?", &fSoundPlayerManager::bTrackPlays);
+	End();
+}
+
 void DrawSystemWindow(bool* pOpen) {
 	static int selectedForwardSimFrame = 0;
 
@@ -1815,6 +1827,10 @@ void DrawOverlay() {
 					show_hud_window = true;
 				}
 
+				if (MenuItem("Sound")) {
+					show_sound_window = true;
+				}
+
 				if (MenuItem("System")) {
 					show_system_window = true;
 				}
@@ -1901,6 +1917,10 @@ void DrawOverlay() {
 
 	if (show_pad_window) {
 		DrawPadWindow(&show_pad_window);
+	}
+
+	if (show_sound_window) {
+		DrawSoundWindow(&show_sound_window);
 	}
 
 	if (show_system_window) {
