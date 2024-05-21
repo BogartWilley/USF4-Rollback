@@ -60,6 +60,7 @@ using CommandUnit = Dimps::Game::Battle::Command::Unit;
 using EffectUnit = Dimps::Game::Battle::Effect::Unit;
 using HudUnit = Dimps::Game::Battle::Hud::Unit;
 using TrainingManager = Dimps::Game::Battle::Training::Manager;
+using SoundUnit = Dimps::Game::Battle::Sound::Unit;
 using PadSystem = Dimps::Pad::System;
 using VfxUnit = rVfx::Unit;
 
@@ -74,6 +75,7 @@ using Dimps::Game::Battle::GameManager;
 using Dimps::Game::Battle::System;
 using Dimps::Game::Battle::Vfx::ColorFade;
 using Dimps::Game::Battle::Vfx::ColorFadeUnit;
+using rSoundPlayerManager = Dimps::Game::Battle::Sound::SoundPlayerManager;
 using Dimps::Game::GameMementoKey;
 using rMainMenu = Dimps::GameEvents::MainMenu;
 using Dimps::GameEvents::VsCharaSelect;
@@ -1231,13 +1233,127 @@ void DrawSystemTaskPanel(System* s, TaskCore* core) {
 	Columns(1);
 }
 
+void DrawAdapterSummary(rSoundPlayerManager::CriPlayerAdapter* adapter) {
+	Text("  Flags: %x", adapter->flags);
+	if (adapter->position != NULL) {
+		Text("  Position: %p (%f %f %f %f)", adapter->position, adapter->position->x, adapter->position->y, adapter->position->z, adapter->position->w);
+	}
+	else {
+		Text("  Position: Null");
+	}
+	Text("  Volume: %f", adapter->volume);
+	Text("  Fade scale: %f", adapter->fadeScale);
+	Text("  Play state: %d", adapter->playState);
+	Text("  UNK last field: %x", adapter->field6_0x18);
+
+	if (fSoundPlayerManager::bUsePureSounds) {
+		fSoundPlayerManager::DeferredSoundRequest& req = fSoundPlayerManager::adapterToCurrentSound[adapter];
+		Text("  Deferred islive: %d", req.bLive);
+		Text("  Deferred cueIdx: %d", req.cueIdx);
+		Text("  Deferred cueSheetHandle: %x", req.cueSheetHandle);
+		Text("  Deferred currentAdapterHandle: %x", req.currentAdapterHandle);
+		Text("  Deferred flags: %x", req.flags);
+		Text("  Deferred position: %x", req.position);
+		if (req.position != NULL) {
+			Text("  Deferred position: %p (%f %f %f %f)", req.position, req.position->x, req.position->y, req.position->z, req.position->w);
+		}
+		else {
+			Text("  Deferred position: Null");
+		}
+		Text("  Deferred type: %d", req.type);
+	}
+}
+
 void DrawSoundWindow(bool* pOpen) {
+	static int currentManagerIdx = -1;
+	static bool bShowDetails = false;
+
 	Begin(
 		"Sound",
 		pOpen,
 		ImGuiWindowFlags_None
 	);
-	ImGui::Checkbox("Track plays?", &fSoundPlayerManager::bTrackPlays);
+	ImGui::Checkbox("Track plays?", &fSoundPlayerManager::bTrackRequests);
+	ImGui::Checkbox("Show details?", &bShowDetails);
+
+	System* system = System::staticMethods.GetSingleton();
+	int isFight = (system->*System::publicMethods.IsFight)();
+	if (!isFight) {
+		ImGui::Checkbox("Use pure playback?", &fSoundPlayerManager::bUsePureSounds);
+		currentManagerIdx = -1;
+		Text("Is fight: %d", isFight);
+		End();
+		return;
+	}
+	 
+	SoundUnit* unit = (SoundUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_SOUND);
+	Text("Use count: ");
+	for (int i = 0; i < 8; i++) {
+		int used = 0;
+		int free = 0;
+		rSoundPlayerManager* m = SoundUnit::GetManagerArray(unit)[i];
+		rSoundPlayerManager::AdapterPool* pool = rSoundPlayerManager::GetAdapterPool(m);
+		rSoundPlayerManager::AdapterPool::Entry* cursor;
+		for (cursor = pool->activeHead; cursor != NULL; cursor = cursor->next) {
+			used++;
+		}
+		for (cursor = pool->inactiveHead; cursor != NULL; cursor = cursor->next) {
+			free++;
+		}
+
+		ImGui::SameLine();
+		Text(" %d (%d),", used, free);
+	}
+
+	Text("Deferred playback: %d", fSoundPlayerManager::bUsePureSounds);
+	if (bShowDetails) {
+		ImGui::BeginChild("left pane", ImVec2(150, 0), true);
+		for (int i = 0; i < 8; i++) {
+			char label[128];
+			sprintf(label, "Manager %d", i);
+			if (ImGui::Selectable(label, currentManagerIdx == i)) {
+				currentManagerIdx = i;
+			}
+		}
+		ImGui::EndChild();
+		ImGui::SameLine();
+
+		ImGui::BeginChild("right pane");
+		if (currentManagerIdx != -1) {
+			rSoundPlayerManager* currentSelectedManager = SoundUnit::GetManagerArray(unit)[currentManagerIdx];
+			rSoundPlayerManager::AdapterPool* frontAdapterPool = rSoundPlayerManager::GetAdapterPool(currentSelectedManager);
+			rSoundPlayerManager::AdapterPool::Entry* cursor;
+
+			for (cursor = frontAdapterPool->activeHead; cursor != NULL; cursor = cursor->next) {
+				rSoundPlayerManager::CriPlayerAdapter* adapter = *(rSoundPlayerManager::CriPlayerAdapter**)(cursor->data);
+				Text("Active front adapter %p:", adapter);
+				DrawAdapterSummary(adapter);
+			}
+			for (cursor = frontAdapterPool->inactiveHead; cursor != NULL; cursor = cursor->next) {
+				rSoundPlayerManager::CriPlayerAdapter* adapter = *(rSoundPlayerManager::CriPlayerAdapter**)(cursor->data);
+				Text("Inactive front adapter %p:", adapter);
+				DrawAdapterSummary(adapter);
+			}
+
+			if (fSoundPlayerManager::bUsePureSounds) {
+				rSoundPlayerManager* deferredManager = fSoundPlayerManager::shadowManagerMap[currentSelectedManager];
+				rSoundPlayerManager::AdapterPool* deferredAdapterPool = rSoundPlayerManager::GetAdapterPool(deferredManager);
+				for (cursor = deferredAdapterPool->activeHead; cursor != NULL; cursor = cursor->next) {
+					rSoundPlayerManager::CriPlayerAdapter* adapter = *(rSoundPlayerManager::CriPlayerAdapter**)(cursor->data);
+					Text("Active deferred adapter %p:", adapter);
+					DrawAdapterSummary(adapter);
+				}
+
+				for (cursor = deferredAdapterPool->inactiveHead; cursor != NULL; cursor = cursor->next) {
+					rSoundPlayerManager::CriPlayerAdapter* adapter = *(rSoundPlayerManager::CriPlayerAdapter**)(cursor->data);
+					Text("Inactive deferred adapter %p:", adapter);
+					DrawAdapterSummary(adapter);
+				}
+			}
+		}
+		ImGui::EndChild();
+	}
+
 	End();
 }
 

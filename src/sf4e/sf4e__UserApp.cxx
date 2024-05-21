@@ -13,6 +13,7 @@
 #include "../session/sf4e__SessionClient.hxx"
 #include "../session/sf4e__SessionServer.hxx"
 
+#include "sf4e__Game__Battle.hxx"
 #include "sf4e__Game__Battle__System.hxx"
 #include "sf4e__UserApp.hxx"
 
@@ -20,6 +21,7 @@ using rVsMode = Dimps::GameEvents::VsMode;
 using rUserApp = Dimps::UserApp;
 using fSystem = sf4e::Game::Battle::System;
 using fUserApp = sf4e::UserApp;
+using sf4e::Game::Battle::Sound::SoundPlayerManager;
 using sf4e::SessionClient;
 using sf4e::SessionServer;
 

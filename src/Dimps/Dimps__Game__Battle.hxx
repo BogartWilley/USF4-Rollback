@@ -5,6 +5,7 @@
 
 #include "Dimps__Eva.hxx"
 #include "Dimps__Math.hxx"
+#include "Dimps__Platform.hxx"
 
 #define NUM_VALID_EDITIONS 7
 
@@ -92,26 +93,88 @@ namespace Dimps {
 				// suggests that the sound subsystem is using basic types to
 				// exchange the data. However, they can be decoded to
 				// references.
-				typedef unsigned int SoundHandle;
+				typedef uint32_t SoundHandle;
 				struct SoundReference {
-					unsigned short position;
+					unsigned short index;
 					unsigned short useCount;
 					inline static SoundReference FromHandle(SoundHandle h) {
 						return SoundReference{ 
-							(unsigned short)(h & 0xffff0000 >> 0x10),
+							(unsigned short)((h & 0xffff0000) >> 0x10),
 							(unsigned short)(h & 0xffff)
 						};
 					}
-					inline SoundHandle ToHandle() { return this->position << 0x10 & this->useCount; }
+					inline SoundHandle ToHandle() { return this->index << 0x10 & this->useCount; }
 				};
 
+				typedef uint32_t SoundFlags;
+				enum ESoundFlags {
+					SOUNDFLAG_STEREOPAN = 0x4,
+				};
+
+				typedef uint32_t SoundType;
+
 				struct SoundPlayerManager {
+					struct CriPlayerAdapter {
+						SoundHandle playerHandle;
+						int flags;
+						Dimps::Math::Vec4F* position;
+						float volume;
+						float fadeScale;
+						DWORD playState;
+						DWORD field6_0x18;
+
+						typedef struct __publicMethods {
+							BOOL (CriPlayerAdapter::* IsStillPlaying)();
+						} __publicMethods;
+
+						static void Locate(HMODULE peRoot);
+						static __publicMethods publicMethods;
+					};
+
 					typedef struct __publicMethods {
-						SoundHandle(SoundPlayerManager::* PlaySound)(SoundHandle cueSheetHandle, uint32_t cueIdx, DWORD param_3, int32_t flags, DWORD maybePosition);
+						void (SoundPlayerManager::* destructor)(BOOL param_1);
+						SoundHandle (SoundPlayerManager::* PlaySound)(
+							SoundHandle cueSheetHandle,
+							uint32_t cueIdx,
+							SoundType type,
+							SoundFlags flags,
+							Dimps::Math::Vec4F* position
+						);
+						void(SoundPlayerManager::* StopSound)(
+							SoundHandle adapterHandle,
+							BOOL criParam
+							);
+						void(SoundPlayerManager::* StopAll)(BOOL criParam);
+						void(SoundPlayerManager::* Update)();
+					} __publicMethods;
+
+					typedef struct __staticMethods {
+						SoundPlayerManager* (*Factory)(DWORD param_1, DWORD param_2, int* numAdapters);
+					} __staticMethods;
+
+					typedef Platform::SoundObjectPool<sizeof(CriPlayerAdapter*)> AdapterPool;
+
+					static void Locate(HMODULE peRoot);
+					static __publicMethods publicMethods;
+					static __staticMethods staticMethods;
+
+					static AdapterPool* GetAdapterPool(SoundPlayerManager* m);
+					static CriPlayerAdapter** GetAdapters(SoundPlayerManager* m);
+					static int* GetNumAdapters(SoundPlayerManager* m);
+				};
+
+				struct Unit {
+					typedef struct __publicMethods {
+						BOOL (Unit::* IsStillPlaying)(
+							uint32_t managerIdx,
+							uint32_t adapterHandle
+						);
 					} __publicMethods;
 
 					static void Locate(HMODULE peRoot);
 					static __publicMethods publicMethods;
+
+					static SoundPlayerManager** GetManagerArray(Unit* u);
 				};
 			}
 		}

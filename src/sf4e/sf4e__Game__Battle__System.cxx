@@ -44,6 +44,7 @@ using EffectUnit = Dimps::Game::Battle::Effect::Unit;
 using GameManager = Dimps::Game::Battle::GameManager;
 using HudUnit = Dimps::Game::Battle::Hud::Unit;
 using NetworkUnit = Dimps::Game::Battle::Network::Unit;
+using rSoundPlayerManager = Dimps::Game::Battle::Sound::SoundPlayerManager;
 using rSystem = Dimps::Game::Battle::System;
 using PauseUnit = Dimps::Game::Battle::Pause::Unit;
 using TrainingManager = Dimps::Game::Battle::Training::Manager;
@@ -56,6 +57,7 @@ using fPadSystem = sf4e::Pad::System;
 using StateSnapshot = sf4e::SessionProtocol::StateSnapshot;
 
 namespace fHud = sf4e::Game::Battle::Hud;
+using fSoundPlayerManager = sf4e::Game::Battle::Sound::SoundPlayerManager;
 using fSystem = sf4e::Game::Battle::System;
 using fVsBattle = sf4e::GameEvents::VsBattle;
 
@@ -68,7 +70,7 @@ int fSystem::nRandomizeLocalInputsEveryXFramesInGGPO = 0;
 GGPOPlayerHandle fSystem::localPlayerHandle = GGPO_INVALID_HANDLE;
 GGPOSession* fSystem::ggpo = nullptr;
 fSystem::PlayerConnectionInfo fSystem::players[MAX_SF4E_PROTOCOL_USERS];
-fSystem::SaveState fSystem::saveStates[10];
+fSystem::SaveState fSystem::saveStates[NUM_SAVE_STATES];
 
 rKey::MementoID GGPO_MEMENTO_ID = { 1, 1 };
 
@@ -258,6 +260,9 @@ void fSystem::BattleUpdate() {
                 fPadSystem::playbackFrame = 0;
                 fPadSystem::playbackData[0][0] = ggpoInputs[0];
                 fPadSystem::playbackData[0][1] = ggpoInputs[1];
+                if (fSoundPlayerManager::bUsePureSounds) {
+                    fSoundPlayerManager::SyncState();
+                }
                 (_this->*sysMethods.BattleUpdate)();
                 fPadSystem::playbackFrame = -1;
                 GGPOErrorCode err = ggpo_advance_frame(ggpo);
@@ -265,12 +270,18 @@ void fSystem::BattleUpdate() {
                     MessageBoxA(NULL, "sf4e system could not advance frame after normal sim! Will likely crash!", NULL, MB_OK);
                 }
                 else {
+                    if (fSoundPlayerManager::bUsePureSounds) {
+                        fSoundPlayerManager::SyncState();
+                    }
                     CaptureSnapshot(_this);
                 }
             }
         }
     }
     else {
+        if (fSoundPlayerManager::bUsePureSounds) {
+            fSoundPlayerManager::SyncState();
+        }
         (_this->*rSystem::publicMethods.BattleUpdate)();
     }
     
@@ -674,6 +685,8 @@ void fSystem::ggpo_free_buffer(void* buffer)
     victim->d.PreviousBattleFlowSubstateFrame = { 0, 0 };
     victim->d.BattleFlowSubstateCallable_aa9258 = nullptr;
     victim->d.BattleFlowCallback_CallEveryFrame_aa9254 = nullptr;
+    victim->criPlayerState.clear();
+    victim->managerState.clear();
     
     // Reload the state at the start of the function. We don't need to
     // handle clearing the keys injected by this load, because the
@@ -792,6 +805,20 @@ void fSystem::SaveState::Save(SaveState* dst) {
         memset(*iter, 0, sizeof(rKey));
     }
 
+    for (
+        auto managerIter = Sound::SoundPlayerManager::shadowManagerMap.begin();
+        managerIter != Sound::SoundPlayerManager::shadowManagerMap.end();
+        managerIter++) {
+        rSoundPlayerManager* stubManager = managerIter->first;
+        rSoundPlayerManager::CriPlayerAdapter* adapters = *rSoundPlayerManager::GetAdapters(stubManager);
+        for (int i = 0; i < *rSoundPlayerManager::GetNumAdapters(stubManager); i++) {
+            dst->criPlayerState[&adapters[i]] = fSoundPlayerManager::adapterToCurrentSound[&adapters[i]];
+        }
+        Platform::SoundObjectPool<4>::SaveState poolState;
+        Platform::SoundObjectPool<4>::Save(rSoundPlayerManager::GetAdapterPool(stubManager), &poolState);
+        dst->managerState[stubManager] = poolState;
+    }
+
     dst->d.CurrentBattleFlow = *rSystem::staticVars.CurrentBattleFlow;
     dst->d.PreviousBattleFlow = *rSystem::staticVars.PreviousBattleFlow;
     dst->d.CurrentBattleFlowSubstate = *rSystem::staticVars.CurrentBattleFlowSubstate;
@@ -820,6 +847,22 @@ void fSystem::SaveState::Load(SaveState* src) {
     *rSystem::staticVars.BattleFlowSubstateCallable_aa9258 = src->d.BattleFlowSubstateCallable_aa9258;
     *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254 = src->d.BattleFlowCallback_CallEveryFrame_aa9254;
     memcpy_s((system->*rSystem::publicMethods.GetGameManager)(), sizeof(GameManager), &src->d.gameManager, sizeof(GameManager));
+
+    for (
+        auto managerIter = Sound::SoundPlayerManager::shadowManagerMap.begin();
+        managerIter != Sound::SoundPlayerManager::shadowManagerMap.end();
+        managerIter++) {
+        rSoundPlayerManager* stubManager = managerIter->first;
+        rSoundPlayerManager::CriPlayerAdapter* adapters = *rSoundPlayerManager::GetAdapters(stubManager);
+        for (int i = 0; i < *rSoundPlayerManager::GetNumAdapters(stubManager); i++) {
+            fSoundPlayerManager::adapterToCurrentSound[&adapters[i]] = src->criPlayerState[&adapters[i]];
+        }
+        Platform::SoundObjectPool<4>::SaveState poolState;
+        Platform::SoundObjectPool<4>::Load(
+            rSoundPlayerManager::GetAdapterPool(stubManager),
+            &src->managerState[stubManager]
+        );
+    }
 
     // Place each memento key back into its position.
     for (auto iter = src->keys.begin(); iter != src->keys.end(); iter++) {

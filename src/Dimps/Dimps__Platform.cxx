@@ -12,6 +12,7 @@ using Platform::dString;
 using Platform::D3D;
 using Platform::Main;
 using Platform::GFxApp;
+using Platform::Sound;
 
 Allocator::__publicMethods Allocator::publicMethods;
 Allocator::__staticMethods Allocator::staticMethods;
@@ -25,6 +26,7 @@ Main::__publicMethods Main::publicMethods;
 Main::__staticMethods Main::staticMethods;
 GFxApp::__publicMethods GFxApp::publicMethods;
 GFxApp::__staticMethods GFxApp::staticMethods;
+Sound::__staticMethods Sound::staticMethods;
 
 void Platform::Locate(HMODULE peRoot) {
     Allocator::Locate(peRoot);
@@ -33,6 +35,7 @@ void Platform::Locate(HMODULE peRoot) {
     D3D::Locate(peRoot);
     Main::Locate(peRoot);
     GFxApp::Locate(peRoot);
+    Sound::Locate(peRoot);
 }
 
 void Allocator::Locate(HMODULE peRoot) {
@@ -85,4 +88,9 @@ GFxApp::ObjectPool<IEmSpriteAction>* GFxApp::GetActionPool(GFxApp* a) {
 
 GFxApp::ObjectPool<IEmSpriteNode>* GFxApp::GetNodePool(GFxApp* a) {
     return (GFxApp::ObjectPool<IEmSpriteNode>*)((unsigned int)a + 0x24);
+}
+
+void Sound::Locate(HMODULE peRoot) {
+    unsigned int peRootOffset = (unsigned int)peRoot;
+    staticMethods.GetNewPlayerHandle = (uint32_t(*)())(peRootOffset + 0x275390);
 }

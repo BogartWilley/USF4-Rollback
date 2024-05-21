@@ -10,6 +10,13 @@ namespace Dimps {
 			short integral; // Might be unsigned? Not entirely sure
 		};
 
+		struct Vec4F {
+			float x;
+			float y;
+			float z;
+			float w;
+		};
+
 		struct Matrix4x4 {
 			float mat[16];
 		};

@@ -26,16 +26,27 @@ namespace rPlatform = Dimps::Platform;
 using rD3D = rPlatform::D3D;
 using rGFxApp = rPlatform::GFxApp;
 using rMain = rPlatform::Main;
+using rSound = rPlatform::Sound;
 
 namespace fPlatform = sf4e::Platform;
 using fD3D = fPlatform::D3D;
 using fGFxApp = fPlatform::GFxApp;
 using fMain = fPlatform::Main;
 using fUserApp = sf4e::UserApp;
+using fSound = fPlatform::Sound;
+
+template <int N>
+using fSoundObjectPoolEntry = fPlatform::SoundObjectPoolEntry<N>;
+
+template <int N>
+using fSoundObjectPool = fPlatform::SoundObjectPool<N>;
+
+bool fSound::bAllowNewPlayers = true;
 
 void fPlatform::Install() {
     D3D::Install();
     Main::Install();
+    Sound::Install();
 }
 
 void fD3D::Install() {
@@ -170,4 +181,17 @@ void WINAPI fMain::RunWindowFunc(rMain* lpMain, HWND hwnd, UINT uMsg, WPARAM wPa
         return;
     }
     rMain::staticMethods.RunWindowFunc(lpMain, hwnd, uMsg, wParam, lParam);
+}
+
+
+void fSound::Install() {
+    DetourAttach((PVOID*)&rSound::staticMethods.GetNewPlayerHandle, &GetNewPlayerHandle);
+}
+
+uint32_t fSound::GetNewPlayerHandle() {
+    if (!bAllowNewPlayers) {
+        return 0xffffffff;
+    }
+
+    return rSound::staticMethods.GetNewPlayerHandle();
 }

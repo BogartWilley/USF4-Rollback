@@ -13,6 +13,7 @@
 #include "../session/sf4e__SessionProtocol.hxx"
 
 #include "sf4e__Platform.hxx"
+#include "sf4e__Game__Battle.hxx"
 #include "sf4e__Game__Battle__Hud.hxx"
 
 #define NUM_SAVE_STATES (GGPO_MAX_PREDICTION_FRAMES + 2)
@@ -70,6 +71,14 @@ namespace sf4e {
 				struct SaveState {
 					bool used = false;
 					std::vector<std::pair<GameMementoKey*, GameMementoKey>> keys;
+					std::map<
+						Dimps::Game::Battle::Sound::SoundPlayerManager::CriPlayerAdapter*,
+						Sound::SoundPlayerManager::DeferredSoundRequest
+					> criPlayerState;
+					std::map<
+						Dimps::Game::Battle::Sound::SoundPlayerManager*,
+						Platform::SoundObjectPool<4>::SaveState
+					> managerState;
 
 					struct GlobalData {
 						DWORD CurrentBattleFlow = 0;

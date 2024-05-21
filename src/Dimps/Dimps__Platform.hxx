@@ -178,5 +178,36 @@ namespace Dimps {
 			static __publicMethods publicMethods;
 			static __staticMethods staticMethods;
 		};
+
+		struct Sound
+		{
+			typedef struct __staticMethods {
+				uint32_t (*GetNewPlayerHandle)();
+			} __staticMethods;
+
+			static void Locate(HMODULE peRoot);
+			static __staticMethods staticMethods;
+		};
+
+		template <int N>
+		struct SoundObjectPoolEntry {
+			uint32_t handle;
+			DWORD field_0x4;
+			SoundObjectPoolEntry<N>* prev;
+			SoundObjectPoolEntry<N>* next;
+			uint8_t data[N];
+		};
+
+		template <int N>
+		struct SoundObjectPool {
+			using Entry = SoundObjectPoolEntry<N>;
+
+			SoundObjectPoolEntry<N>* inactiveHead;
+			SoundObjectPoolEntry<N>* inactiveTail;
+			SoundObjectPoolEntry<N>* activeHead;
+			SoundObjectPoolEntry<N>* activeTail;
+			uint32_t count;
+			BOOL locked;
+		};
 	}
 }
