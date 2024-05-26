@@ -156,6 +156,13 @@ static Dimps::GameEvents::VsMode::ConfirmedCharaConditions mainMenuJumpCharaCond
 static int mainMenuJumpCharaCount = 2;
 static int mainMenuJumpStageID = 0;
 
+enum NetworkWindowState {
+	NWS_CAPTURE = 0,
+	NWS_DECIDE = 1,
+	NWS_HOST = 2,
+	NWS_JOIN = 3,
+};
+
 // Copied directly from the `imgui_demo.cpp` source:
 // https://github.com/ocornut/imgui/blob/a241dc7990b631fde6575771173c2442d43d2812/imgui_demo.cpp#L6919
 // Usage:
@@ -882,9 +889,7 @@ void DrawNetworkCharaConfig(rVsMode::ConfirmedCharaConditions& charaConditions) 
 	ImGui::InputScalar("Win quote", ImGuiDataType_U8, &charaConditions.winQuote, &stepSize);
 }
 
-void DrawNetworkJoinPanel() {
-	static uint8_t deviceIdx = 0xff;
-	static uint8_t deviceType = 0xff;
+void DrawNetworkJoinPanel(uint8_t deviceIdx, uint8_t deviceType) {
 	static uint8_t delay = 1;
 	static uint16 port = 23456;
 	static char name[32] = { 0 };
@@ -894,19 +899,8 @@ void DrawNetworkJoinPanel() {
 		Text("Must be on the main menu to connect");
 		return;
 	}
-	if (deviceIdx == 0xff && deviceType == 0xff) {
-		PadSystem* p = PadSystem::staticMethods.GetSingleton();
-		PadSystem::__publicMethods& methods = PadSystem::publicMethods;
-		if ((p->*methods.CaptureNextMatchingPadToSide)(0, 0x1040, 0xffffffff)) {
-			deviceIdx = (p->*methods.GetDeviceIndexForPlayer)(0);
-			deviceType = (p->*methods.GetDeviceTypeForPlayer)(0);
-			(p->*methods.SetSideHasAssignedController)(0, 0);
-		}
-		else {
-			Text("Press start or LK...");
-			return;
-		}
-	}
+	Text("Join a game");
+	Separator();
 	ImGui::InputText("Session server", joinAddr, 64);
 	ImGui::InputText("Name", name, 32);
 	ImGui::InputScalar("Local GGPO port", ImGuiDataType_U16, &port);
@@ -917,9 +911,7 @@ void DrawNetworkJoinPanel() {
 	}
 }
 
-void DrawNetworkHostPanel() {
-	static uint8_t deviceIdx = 0xff;
-	static uint8_t deviceType = 0xff;
+void DrawNetworkHostPanel(uint8_t deviceIdx, uint8_t deviceType) {
 	static uint8_t delay = 1;
 	static char name[32] = { 0 };
 	static uint16 hostPort = 23456;
@@ -930,19 +922,8 @@ void DrawNetworkHostPanel() {
 		return;
 	}
 
-	if (deviceIdx == 0xff && deviceType == 0xff) {
-		PadSystem* p = PadSystem::staticMethods.GetSingleton();
-		PadSystem::__publicMethods& methods = PadSystem::publicMethods;
-		if ((p->*methods.CaptureNextMatchingPadToSide)(0, 0x1040, 0xffffffff)) {
-			deviceIdx = (p->*methods.GetDeviceIndexForPlayer)(0);
-			deviceType = (p->*methods.GetDeviceTypeForPlayer)(0);
-			(p->*methods.SetSideHasAssignedController)(0, 0);
-		}
-		else {
-			Text("Press start or LK...");
-			return;
-		}
-	}
+	Text("Host a game");
+	Separator();
 	ImGui::InputScalar("Delay", ImGuiDataType_U8, &delay);
 	ImGui::InputScalar("Session host port", ImGuiDataType_U16, &hostPort);
 	ImGui::InputScalar("GGPO port", ImGuiDataType_U16, &ggpoPort);
@@ -955,7 +936,7 @@ void DrawNetworkHostPanel() {
 	}
 
 	ImGui::BeginDisabled(!valid);
-	if (Button("Host")) {
+	if (Button("Start hosting")) {
 		char hostAddr[64];
 		snprintf(hostAddr, 64, "127.0.0.1:%d", hostPort);
 		fUserApp::StartServer(hostPort, sf4e::sidecarHash);
@@ -1040,6 +1021,9 @@ void DrawNetworkLobbyPanel() {
 
 void DrawNetworkWindow(bool* pOpen) {
 	static bool bDebug = false;
+	static NetworkWindowState netState = NWS_CAPTURE;
+	static uint8_t deviceIdx = 0xff;
+	static uint8_t deviceType = 0xff;
 
 	Begin(
 		"Network",
@@ -1047,40 +1031,66 @@ void DrawNetworkWindow(bool* pOpen) {
 		ImGuiWindowFlags_None
 	);
 	ImGui::InputInt("Randomize inputs every X frames", &fSystem::nRandomizeLocalInputsEveryXFramesInGGPO);
-
 	ImGui::Checkbox("Show debug data?", &bDebug);
-	if (BeginTabBar("Network window")) {
-		if (BeginTabItem("Host")) {
-			if (!fUserApp::server) {
-				DrawNetworkHostPanel();
+	Separator();
+	switch (netState) {
+	case NWS_CAPTURE:
+		if (deviceIdx == 0xff && deviceType == 0xff) {
+			PadSystem* p = PadSystem::staticMethods.GetSingleton();
+			PadSystem::__publicMethods& methods = PadSystem::publicMethods;
+			if ((p->*methods.CaptureNextMatchingPadToSide)(0, 0x1040, 0xffffffff)) {
+				deviceIdx = (p->*methods.GetDeviceIndexForPlayer)(0);
+				deviceType = (p->*methods.GetDeviceTypeForPlayer)(0);
+				(p->*methods.SetSideHasAssignedController)(0, 0);
+				netState = NWS_DECIDE;
 			}
-			if (fUserApp::server && bDebug) {
+			else {
+				Text("Press start or LK...");
+			}
+		}
+		break;
+	case NWS_DECIDE:
+		if (Button("Host a game")) {
+			netState = NWS_HOST;
+		}
+		if (Button("Join a game")) {
+			netState = NWS_JOIN;
+		}
+		break;
+	case NWS_HOST:
+		if (!fUserApp::server) {
+			DrawNetworkHostPanel(deviceIdx, deviceType);
+			if (Button("Go back")) {
+				netState = NWS_DECIDE;
+			}
+		}
+		else {
+			if (bDebug) {
 				Text("Server initialized, client map:");
 				for (auto iter = fUserApp::server->clients.begin(); iter != fUserApp::server->clients.end(); iter++) {
 					Text("%x %s", iter->conn, iter->data.name.c_str());
 				}
 			}
-			if (fUserApp::server && fUserApp::client) {
-				Separator();
-			}
 			if (fUserApp::client) {
+				Separator();
 				Text("Client");
 				DrawNetworkLobbyPanel();
 			}
-			EndTabItem();
 		}
-
-		if (BeginTabItem("Join")) {
-			if (!fUserApp::client) {
-				DrawNetworkJoinPanel();
+		break;
+	case NWS_JOIN:
+		if (!fUserApp::client) {
+			DrawNetworkJoinPanel(deviceIdx, deviceType);
+			if (Button("Go back")) {
+				netState = NWS_DECIDE;
 			}
-			if (fUserApp::client) {
-				DrawNetworkLobbyPanel();
-			}
-			EndTabItem();
 		}
-
-		EndTabBar();
+		else {
+			DrawNetworkLobbyPanel();
+		}
+		break;
+	default:
+		break;
 	}
 
 	End();
