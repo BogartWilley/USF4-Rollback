@@ -3,7 +3,7 @@
 ## Testers and players: Submitting bugs
 
 **Please do**:
-* Submit issues when you find a bug! Our issue template
+* Submit issues when you find a bug! The issue template
   has a good checklist of things to include when submitting an issue. Issue
   reports without a complete description may be rejected outright.
 * Include video evidence when sending issues! Video is extremely helpful
