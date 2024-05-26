@@ -55,6 +55,7 @@ namespace Dimps {
 				char pad[0x49c];
 
 				typedef struct __publicMethods {
+					void (GameManager::* GetAgglutinateTime)(FixedPoint* out);
 					void (GameManager::* GetRoundTime)(FixedPoint* out);
 				} __publicMethods;
 

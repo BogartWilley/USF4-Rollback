@@ -339,16 +339,9 @@ void DrawCharaWindow(bool* pOpen) {
 
 	FixedPoint tmp, tmp2, tmp3;
 	System* system = System::staticMethods.GetSingleton();
-	GameManager* manager = (system->*System::publicMethods.GetGameManager)();
 
 	int isFight = (system->*System::publicMethods.IsFight)();
 	Text("Is fight: %d", isFight);
-	Text("Is leaving battle: %d", (system->*System::publicMethods.IsLeavingBattle)());
-	if (manager != NULL) {
-		(manager->*GameManager::publicMethods.GetRoundTime)(&tmp);
-		Text("Round time: %f", FixedToFloat(&tmp));
-	}
-
 	if (isFight) {
 		CharaUnit* lpCharaUnit = (system->*System::publicMethods.GetCharaUnit)();
 
@@ -427,6 +420,10 @@ void DrawCharaWindow(bool* pOpen) {
 
 					(a->*methods.GetComboDamage)(&tmp);
 					Text("Combo damage:"); NextColumn();
+					Text("%f", FixedToFloat(&tmp)); NextColumn();
+
+					(system->*System::publicMethods.GetUnitTimeScale_Fixed)(&tmp, i);
+					Text("Timescale (local):"); NextColumn();
 					Text("%f", FixedToFloat(&tmp)); NextColumn();
 
 					Columns(1);
@@ -1382,6 +1379,27 @@ void DrawSystemWindow(bool* pOpen) {
 
 	if (BeginTabBar("System tabs", ImGuiTabBarFlags_None)) {
 		if (BeginTabItem("Global state")) {
+			FixedPoint tmp;
+			GameManager* manager = (system->*System::publicMethods.GetGameManager)();
+
+			int isFight = (system->*System::publicMethods.IsFight)();
+			Text("Is fight: %d", isFight);
+			Text("Is leaving battle: %d", (system->*System::publicMethods.IsLeavingBattle)());
+			if (manager != NULL) {
+				(manager->*GameManager::publicMethods.GetAgglutinateTime)(&tmp);
+				Text("Agglutinate time: %f", FixedToFloat(&tmp));
+				(manager->*GameManager::publicMethods.GetRoundTime)(&tmp);
+				Text("Round time: %f", FixedToFloat(&tmp));
+			}
+			(system->*System::publicMethods.GetGlobalTimeScale_Fixed)(&tmp);
+			ImGui::Text("Time: %f", FixedToFloat(&tmp));
+			(system->*System::publicMethods.GetUnitTimeScale_Fixed)(&tmp, -1);
+			ImGui::Text("Timescale (stage): %f", FixedToFloat(&tmp));
+			(system->*System::publicMethods.GetUnitTimeScale_Fixed)(&tmp, 0);
+			ImGui::Text("Timescale (P1): %f", FixedToFloat(&tmp));
+			(system->*System::publicMethods.GetUnitTimeScale_Fixed)(&tmp, 1);
+			ImGui::Text("Timescale (P2): %f", FixedToFloat(&tmp));
+
 			Text("Game mode: %d", (system->*methods.GetGameMode)());
 			Text("Random seed in system: %d", System::GetRandom(system)->seed);
 			Request* r = *System::GetRequest(system);

@@ -71,6 +71,7 @@ void IUnit::Locate(HMODULE peRoot) {
 
 void GameManager::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
+	*(PVOID*)&publicMethods.GetAgglutinateTime = (PVOID)(peRootOffset + 0x1d14f0);
 	*(PVOID*)&publicMethods.GetRoundTime = (PVOID)(peRootOffset + 0x1d14d0);
 }
 

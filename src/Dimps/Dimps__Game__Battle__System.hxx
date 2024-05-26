@@ -132,6 +132,8 @@ namespace Dimps {
 
                     Chara::Unit* (System::* GetCharaUnit)();
                     GameManager* (System::* GetGameManager)();
+                    void (System::* GetGlobalTimeScale_Fixed)(FixedPoint* out);
+                    void (System::* GetUnitTimeScale_Fixed)(FixedPoint* localTimeScale, int side);
 
                     // Realistically this is an IUnit*, but since I don't have complete
                     // typings for now, just mark it as void* and rely on the caller to
