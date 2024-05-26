@@ -51,8 +51,10 @@ namespace sf4e {
 				static int nNextBattleStartFlowTarget;
 				static int nRandomizeLocalInputsEveryXFramesInGGPO;
 
-				static Dimps::Game::GameMementoKey::MementoID loadRequest;
-				static Dimps::Game::GameMementoKey::MementoID saveRequest;
+				static bool extendedLoadRequest;
+				static bool extendedSaveRequest;
+				static Dimps::Game::GameMementoKey::MementoID mementoLoadRequest;
+				static Dimps::Game::GameMementoKey::MementoID mementoSaveRequest;
 
 				static void Install();
 				static void RestoreAllFromInternalMementos(Dimps::Game::Battle::System* system, GameMementoKey::MementoID* id);
@@ -98,6 +100,7 @@ namespace sf4e {
 
 					SaveState();
 
+					static void Free(SaveState* dst);
 					static void Save(SaveState* dst);
 					static void Load(SaveState* src);
 				};

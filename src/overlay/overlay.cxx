@@ -1382,6 +1382,14 @@ void DrawSystemWindow(bool* pOpen) {
 			FixedPoint tmp;
 			GameManager* manager = (system->*System::publicMethods.GetGameManager)();
 
+			if (Button("Extended save")) {
+				fSystem::extendedSaveRequest = true;
+			}
+			ImGui::SameLine();
+			if (Button("Extended load")) {
+				fSystem::extendedLoadRequest = true;
+			}
+
 			int isFight = (system->*System::publicMethods.IsFight)();
 			Text("Is fight: %d", isFight);
 			Text("Is leaving battle: %d", (system->*System::publicMethods.IsLeavingBattle)());
@@ -1838,7 +1846,7 @@ void DrawMementoWindow(bool* pOpen) {
 			ImGui::SameLine();
 			if (Button("Request##Record")) {
 				GameMementoKey::MementoID mid = { targetID, targetID };
-				fSystem::saveRequest = mid;
+				fSystem::mementoSaveRequest = mid;
 			}
 			ImGui::SameLine();
 			if (Button("Immediate##Record")) {
@@ -1851,7 +1859,7 @@ void DrawMementoWindow(bool* pOpen) {
 			ImGui::SameLine();
 			if (Button("Request##Restore")) {
 				GameMementoKey::MementoID mid = { targetID, targetID };
-				fSystem::loadRequest = mid;
+				fSystem::mementoLoadRequest = mid;
 			}
 			ImGui::SameLine();
 			if (Button("Immediate##Restore")) {

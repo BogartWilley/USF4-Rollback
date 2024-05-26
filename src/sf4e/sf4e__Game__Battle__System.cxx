@@ -74,8 +74,10 @@ fSystem::SaveState fSystem::saveStates[NUM_SAVE_STATES];
 
 rKey::MementoID GGPO_MEMENTO_ID = { 1, 1 };
 
-GameMementoKey::MementoID fSystem::loadRequest = { 0xffffffff, 0xffffffff };
-GameMementoKey::MementoID fSystem::saveRequest = { 0xffffffff, 0xffffffff };
+bool fSystem::extendedLoadRequest = false;
+bool fSystem::extendedSaveRequest = false;
+GameMementoKey::MementoID fSystem::mementoLoadRequest = { 0xffffffff, 0xffffffff };
+GameMementoKey::MementoID fSystem::mementoSaveRequest = { 0xffffffff, 0xffffffff };
 
 void fSystem::Install() {
     void (fSystem:: * _fBattleUpdate)() = &BattleUpdate;
@@ -305,6 +307,11 @@ void fSystem::CloseBattle() {
     if (ggpo) {
         ggpo_close_session(ggpo);
         ggpo = nullptr;
+    } 
+    for (int i = 0; i < NUM_SAVE_STATES; i++) {
+        if (saveStates[i].used) {
+            SaveState::Free(&saveStates[i]);
+        }
     }
     (_this->*rSystem::publicMethods.CloseBattle)();
 
@@ -325,19 +332,33 @@ void fSystem::SysMain_HandleTrainingModeFeatures() {
     void* (rSystem:: * GetUnitByIndex)(unsigned int) = rSystem::publicMethods.GetUnitByIndex;
     CharaUnit* charaUnit = (CharaUnit*)(_this->*GetUnitByIndex)(rSystem::U_CHARA);
 
-    if (loadRequest.lo != -1 && loadRequest.hi != -1) {
-        fSystem::RestoreAllFromInternalMementos(_this, &loadRequest);
-        loadRequest.lo = -1;
-        loadRequest.hi = -1;
+    if (mementoLoadRequest.lo != -1 && mementoLoadRequest.hi != -1) {
+        fSystem::RestoreAllFromInternalMementos(_this, &mementoLoadRequest);
+        mementoLoadRequest.lo = -1;
+        mementoLoadRequest.hi = -1;
     }
 
-    if (saveRequest.lo != -1 && saveRequest.hi != -1) {
-        fSystem::RecordAllToInternalMementos(_this, &saveRequest);
+    if (mementoSaveRequest.lo != -1 && mementoSaveRequest.hi != -1) {
+        fSystem::RecordAllToInternalMementos(_this, &mementoSaveRequest);
 
-        saveRequest.lo = -1;
-        saveRequest.hi = -1;
+        mementoSaveRequest.lo = -1;
+        mementoSaveRequest.hi = -1;
     }
 
+    if (extendedLoadRequest) {
+        if (saveStates[0].used) {
+            fSystem::SaveState::Load(&saveStates[0]);
+        }
+        extendedLoadRequest = false;
+    }
+
+    if (extendedSaveRequest) {
+        if (saveStates[0].used) {
+            fSystem::SaveState::Free(&saveStates[0]);
+        }
+        fSystem::SaveState::Save(&saveStates[0]);
+        extendedSaveRequest = false;
+    }
 
     (_this->*rSystem::publicMethods.SysMain_HandleTrainingModeFeatures)();
 }
@@ -576,37 +597,7 @@ bool fSystem::ggpo_advance_frame_callback(int)
 bool fSystem::ggpo_load_game_state_callback(unsigned char* buffer, int len)
 {
     SaveState* state = (SaveState*)buffer;
-    std::vector<std::pair<rKey*, rKey>> tmpVec;
-
-    // Copy and zero all existing keys. It's possible that the initialization
-    // detour started tracking keys that were only initialized after the
-    // save state was created.
-    for (auto iter = fKey::trackedKeys.begin(); iter != fKey::trackedKeys.end(); iter++) {
-        tmpVec.push_back(std::make_pair(*iter, **iter));
-        memset(*iter, 0, sizeof(rKey));
-    }
-
     SaveState::Load(state);
-
-    // Zero the keys that were injected by the load.
-    //
-    // If the memento key data from the source state were left in the key,
-    // the next save would result in invalidating the memento key data and
-    // the `SaveState()` pointing at invalid memory. It's also possible
-    // that the keys in the loaded state are not a proper subset of the
-    // keys that existed in the state when load was called, so this
-    // function can't iterate over the existing tracked keys.
-    for (auto iter = state->keys.begin(); iter != state->keys.end(); iter++) {
-        if (iter->first) {
-            memset(iter->first, 0, sizeof(rKey));
-        }
-    }
-
-    // Finally, restore the original state of all tracked keys.
-    for (auto iter = tmpVec.begin(); iter != tmpVec.end(); iter++) {
-        *iter->first = iter->second;
-    }
-
     return true;
 }
 
@@ -649,49 +640,7 @@ bool fSystem::ggpo_log_game_state(char* filename, unsigned char* buffer, int)
 void fSystem::ggpo_free_buffer(void* buffer)
 {
     SaveState* victim = (SaveState*)buffer;
-    rSystem* system = rSystem::staticMethods.GetSingleton();
-    SaveState tmp;
-
-    SaveState::Save(&tmp);
-
-    // Calls to clear SF4's mementos delegate those calls to the mementoable
-    // object. If the mementoable object pointer isn't valid, the key can't
-    // be cleared. This isn't relevant to SF4's training mode, because clearing
-    // is only ever done on re-initialization after a save, but manually
-    // clearing keys when releasing the state is necessary for GGPO to avoid
-    // memory leaks.
-    // 
-    // Load the victim state into the engine. Once the victim state is loaded,
-    // the mementoable object pointers in each key are valid, and the key can
-    // be safely cleared.
-    SaveState::Load(victim);
-    for (auto iter = victim->keys.begin(); iter != victim->keys.end(); iter++) {
-        if (iter->first) {
-            (iter->first->*rKey::publicMethods.ClearKey)();
-            memset(iter->first, 0, sizeof(rKey));
-        }
-    }
-    victim->keys.clear();
-
-    // Restore all non-memento-key state to a sane default.
-    victim->used = false;
-    victim->d.CurrentBattleFlow = 0;
-    victim->d.PreviousBattleFlow = 0;
-    victim->d.CurrentBattleFlowSubstate = 0;
-    victim->d.PreviousBattleFlowSubstate = 0;
-    victim->d.CurrentBattleFlowFrame = { 0, 0 };
-    victim->d.CurrentBattleFlowSubstateFrame = { 0, 0 };
-    victim->d.PreviousBattleFlowFrame = { 0, 0 };
-    victim->d.PreviousBattleFlowSubstateFrame = { 0, 0 };
-    victim->d.BattleFlowSubstateCallable_aa9258 = nullptr;
-    victim->d.BattleFlowCallback_CallEveryFrame_aa9254 = nullptr;
-    victim->criPlayerState.clear();
-    victim->managerState.clear();
-    
-    // Reload the state at the start of the function. We don't need to
-    // handle clearing the keys injected by this load, because the
-    // SaveState managing the keys is short-lived.
-    SaveState::Load(&tmp);
+    SaveState::Free(victim);
 }
 
 bool fSystem::ggpo_on_event_callback(GGPOEvent* info) {
@@ -786,6 +735,128 @@ void fSystem::CaptureSnapshot(rSystem* src) {
     snapshotMap.emplace(frameIdx, std::make_pair(std::move(snapshot), meta));
 }
 
+void CopyIntoPlace(fSystem::SaveState* src) {
+    rSystem* system = rSystem::staticMethods.GetSingleton();
+
+    *rSystem::staticVars.CurrentBattleFlow = src->d.CurrentBattleFlow;
+    *rSystem::staticVars.PreviousBattleFlow = src->d.PreviousBattleFlow;
+    *rSystem::staticVars.CurrentBattleFlowSubstate = src->d.CurrentBattleFlowSubstate;
+    *rSystem::staticVars.PreviousBattleFlowSubstate = src->d.PreviousBattleFlowSubstate;
+    *rSystem::staticVars.CurrentBattleFlowFrame = src->d.CurrentBattleFlowFrame;
+    *rSystem::staticVars.CurrentBattleFlowSubstateFrame = src->d.CurrentBattleFlowSubstateFrame;
+    *rSystem::staticVars.PreviousBattleFlowFrame = src->d.PreviousBattleFlowFrame;
+    *rSystem::staticVars.PreviousBattleFlowSubstateFrame = src->d.PreviousBattleFlowSubstateFrame;
+    *rSystem::staticVars.BattleFlowSubstateCallable_aa9258 = src->d.BattleFlowSubstateCallable_aa9258;
+    *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254 = src->d.BattleFlowCallback_CallEveryFrame_aa9254;
+    memcpy_s((system->*rSystem::publicMethods.GetGameManager)(), sizeof(GameManager), &src->d.gameManager, sizeof(GameManager));
+
+    for (
+        auto managerIter = fSoundPlayerManager::shadowManagerMap.begin();
+        managerIter != fSoundPlayerManager::shadowManagerMap.end();
+        managerIter++) {
+        rSoundPlayerManager* stubManager = managerIter->first;
+        rSoundPlayerManager::CriPlayerAdapter* adapters = *rSoundPlayerManager::GetAdapters(stubManager);
+        for (int i = 0; i < *rSoundPlayerManager::GetNumAdapters(stubManager); i++) {
+            fSoundPlayerManager::adapterToCurrentSound[&adapters[i]] = src->criPlayerState[&adapters[i]];
+        }
+        sf4e::Platform::SoundObjectPool<4>::SaveState poolState;
+        sf4e::Platform::SoundObjectPool<4>::Load(
+            rSoundPlayerManager::GetAdapterPool(stubManager),
+            &src->managerState[stubManager]
+        );
+    }
+
+    // Place each memento key back into its position.
+    for (auto iter = src->keys.begin(); iter != src->keys.end(); iter++) {
+        *iter->first = iter->second;
+    }
+
+    // Force the system to reload from the replaced mementos.
+    fSystem::RestoreAllFromInternalMementos(system, &GGPO_MEMENTO_ID);
+}
+
+void Clear(fSystem::SaveState* victim) {
+    for (auto iter = victim->keys.begin(); iter != victim->keys.end(); iter++) {
+        if (iter->first) {
+            (iter->first->*rKey::publicMethods.ClearKey)();
+            memset(iter->first, 0, sizeof(rKey));
+        }
+    }
+    victim->keys.clear();
+
+    // Restore all non-memento-key state to a sane default.
+    victim->used = false;
+    victim->d.CurrentBattleFlow = 0;
+    victim->d.PreviousBattleFlow = 0;
+    victim->d.CurrentBattleFlowSubstate = 0;
+    victim->d.PreviousBattleFlowSubstate = 0;
+    victim->d.CurrentBattleFlowFrame = { 0, 0 };
+    victim->d.CurrentBattleFlowSubstateFrame = { 0, 0 };
+    victim->d.PreviousBattleFlowFrame = { 0, 0 };
+    victim->d.PreviousBattleFlowSubstateFrame = { 0, 0 };
+    victim->d.BattleFlowSubstateCallable_aa9258 = nullptr;
+    victim->d.BattleFlowCallback_CallEveryFrame_aa9254 = nullptr;
+    victim->criPlayerState.clear();
+    victim->managerState.clear();
+}
+
+void fSystem::SaveState::Free(SaveState* victim) {
+    SaveState tmp;
+
+    SaveState::Save(&tmp);
+
+    // Calls to clear SF4's mementos delegate those calls to the mementoable
+    // object. If the mementoable object pointer isn't valid, the key can't
+    // be cleared. This isn't relevant to SF4's training mode, because clearing
+    // is only ever done on re-initialization after a save, but manually
+    // clearing keys when releasing the state is necessary for GGPO to avoid
+    // memory leaks.
+    // 
+    // Copy the victim state into the engine. Once the victim state is copied,
+    // the mementoable object pointers in each key are valid, and each key can
+    // be safely cleared.
+    CopyIntoPlace(victim);
+    Clear(victim);
+
+    // Restore the state at the start of the function. We don't need to
+    // handle clearing the keys injected by this operation, because the
+    // SaveState managing the keys is short-lived.
+    CopyIntoPlace(&tmp);
+}
+
+void fSystem::SaveState::Load(SaveState* src) {
+    std::vector<std::pair<rKey*, rKey>> tmpVec;
+
+    // Copy and zero all currently tracked keys. It's possible that the
+    // initialization detour started tracking keys that were only
+    // initialized after the save state was created.
+    for (auto iter = fKey::trackedKeys.begin(); iter != fKey::trackedKeys.end(); iter++) {
+        tmpVec.push_back(std::make_pair(*iter, **iter));
+        memset(*iter, 0, sizeof(rKey));
+    }
+
+    CopyIntoPlace(src);
+
+    // Zero the keys that were injected by the load.
+    //
+    // If the memento key data from the source state were left in the key,
+    // the next save would result in invalidating the memento key data and
+    // the `SaveState()` pointing at invalid memory. It's also possible
+    // that the keys in the loaded state are not a proper subset of the
+    // keys that existed in the state when load was called, so this
+    // function can't iterate over the existing tracked keys.
+    for (auto iter = src->keys.begin(); iter != src->keys.end(); iter++) {
+        if (iter->first) {
+            memset(iter->first, 0, sizeof(rKey));
+        }
+    }
+
+    // Finally, restore the original state of all tracked keys.
+    for (auto iter = tmpVec.begin(); iter != tmpVec.end(); iter++) {
+        *iter->first = iter->second;
+    }
+}
+
 void fSystem::SaveState::Save(SaveState* dst) {
     rSystem* system = rSystem::staticMethods.GetSingleton();
     assert(dst->keys.empty());
@@ -831,44 +902,4 @@ void fSystem::SaveState::Save(SaveState* dst) {
     dst->d.BattleFlowCallback_CallEveryFrame_aa9254 = *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254;
 
     memcpy_s(&dst->d.gameManager, sizeof(GameManager), (system->*rSystem::publicMethods.GetGameManager)(), sizeof(GameManager));
-}
-
-void fSystem::SaveState::Load(SaveState* src) {
-    rSystem* system = rSystem::staticMethods.GetSingleton();
-
-    *rSystem::staticVars.CurrentBattleFlow = src->d.CurrentBattleFlow;
-    *rSystem::staticVars.PreviousBattleFlow = src->d.PreviousBattleFlow;
-    *rSystem::staticVars.CurrentBattleFlowSubstate = src->d.CurrentBattleFlowSubstate;
-    *rSystem::staticVars.PreviousBattleFlowSubstate = src->d.PreviousBattleFlowSubstate;
-    *rSystem::staticVars.CurrentBattleFlowFrame = src->d.CurrentBattleFlowFrame;
-    *rSystem::staticVars.CurrentBattleFlowSubstateFrame = src->d.CurrentBattleFlowSubstateFrame;
-    *rSystem::staticVars.PreviousBattleFlowFrame = src->d.PreviousBattleFlowFrame;
-    *rSystem::staticVars.PreviousBattleFlowSubstateFrame = src->d.PreviousBattleFlowSubstateFrame;
-    *rSystem::staticVars.BattleFlowSubstateCallable_aa9258 = src->d.BattleFlowSubstateCallable_aa9258;
-    *rSystem::staticVars.BattleFlowCallback_CallEveryFrame_aa9254 = src->d.BattleFlowCallback_CallEveryFrame_aa9254;
-    memcpy_s((system->*rSystem::publicMethods.GetGameManager)(), sizeof(GameManager), &src->d.gameManager, sizeof(GameManager));
-
-    for (
-        auto managerIter = Sound::SoundPlayerManager::shadowManagerMap.begin();
-        managerIter != Sound::SoundPlayerManager::shadowManagerMap.end();
-        managerIter++) {
-        rSoundPlayerManager* stubManager = managerIter->first;
-        rSoundPlayerManager::CriPlayerAdapter* adapters = *rSoundPlayerManager::GetAdapters(stubManager);
-        for (int i = 0; i < *rSoundPlayerManager::GetNumAdapters(stubManager); i++) {
-            fSoundPlayerManager::adapterToCurrentSound[&adapters[i]] = src->criPlayerState[&adapters[i]];
-        }
-        Platform::SoundObjectPool<4>::SaveState poolState;
-        Platform::SoundObjectPool<4>::Load(
-            rSoundPlayerManager::GetAdapterPool(stubManager),
-            &src->managerState[stubManager]
-        );
-    }
-
-    // Place each memento key back into its position.
-    for (auto iter = src->keys.begin(); iter != src->keys.end(); iter++) {
-        *iter->first = iter->second;
-    }
-
-    // Force the system to reload from the replaced mementos.
-    RestoreAllFromInternalMementos(system, &GGPO_MEMENTO_ID);
 }
