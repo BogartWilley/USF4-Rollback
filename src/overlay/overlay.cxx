@@ -2063,6 +2063,9 @@ void DrawOverlay() {
 		DrawMainMenuWindow(&show_main_menu_window);
 	}
 
+	// Imitate the main menu being in a transition to prevent typing in
+	// the network window from affecting the main menu.
+	fMainMenu::bOverrideItemObserverState = show_network_window ? rMainMenu::MMIOS_TRANSITION : -1;
 	if (show_network_window) {
 		DrawNetworkWindow(&show_network_window);
 	}

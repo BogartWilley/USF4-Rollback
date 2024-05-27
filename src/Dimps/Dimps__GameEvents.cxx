@@ -66,6 +66,7 @@ void MainMenu::Locate(HMODULE peRoot) {
 	unsigned int peRootOffset = (unsigned int)peRoot;
 
 	*(PVOID*)&publicMethods.Destroy = (PVOID)(peRootOffset + 0x212f90);
+	*(PVOID*)&itemObserverMethods.GetItemObserverState = (PVOID)(peRootOffset + 0x212c70);
 	*(PVOID*)&itemObserverMethods.GoToVersusMode = (PVOID)(peRootOffset + 0x2131a0);
 	staticMethods.Factory = (MainMenu*(*)(DWORD, DWORD, DWORD))(peRootOffset + 0x212f30);
 }

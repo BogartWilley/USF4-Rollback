@@ -45,12 +45,20 @@ namespace Dimps {
 		struct MainMenu : Dimps::Event::EventBase {
 			static void Locate(HMODULE peRoot);
 
+			enum MainMenuItemObserverState {
+				// While a background transition is active, MainMenuItem doesn't respond
+				// to any inputs. When idle, it does.
+				MMIOS_TRANSITION = 1,
+				MMIOS_IDLE = 2
+			};
+
 			typedef struct __publicMethods {
 				void* (MainMenu::* Destroy)(DWORD arg1);
 			} __publicMethods;
 
 			typedef struct __itemObserverMethods {
 				void* (MainMenu::* GoToVersusMode)();
+				int (MainMenu::* GetItemObserverState)();
 			} __itemObserverMethods;
 
 			typedef struct __staticMethods {
