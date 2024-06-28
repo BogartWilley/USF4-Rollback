@@ -117,7 +117,7 @@ target_link_libraries(
 
 add_executable(Launcher WIN32 src/launcher/launcher.cxx)
 target_include_directories(Launcher PRIVATE ${VALVEFILEVDF_INCLUDE_DIRS})
-target_link_libraries(Launcher PRIVATE ${LIB_DETOURS} "shlwapi")
+target_link_libraries(Launcher PRIVATE ${LIB_DETOURS} "shlwapi" "pathcch")
 
 add_library(Overlay STATIC src/overlay/overlay.cxx src/overlay/overlay.h)
 target_link_libraries(Overlay PRIVATE "Xinput9_1_0" imgui::imgui ggpo::GGPO spdlog::spdlog Dimps sf4e Session)

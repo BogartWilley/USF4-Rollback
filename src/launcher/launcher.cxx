@@ -3,6 +3,7 @@
 #endif
 
 #include <windows.h>
+#include <pathcch.h>
 #include <shellapi.h>
 #include <shlwapi.h>
 #include <strsafe.h>
@@ -63,59 +64,10 @@ int FindSF4(LPWSTR szGameDirectory, LPWSTR szExePath) {
 	return 1;
 }
 
-void FindCrypto(LPSTR szDllPathA) {
-	char szCwdBuffer[1024] = { 0 };
-	GetCurrentDirectoryA(1024, szCwdBuffer);
-	PathCombineA(szDllPathA, szCwdBuffer, "libcrypto-3.dll");
-}
-
-void FindFmt(LPSTR szDllPathA) {
-	char szCwdBuffer[1024] = { 0 };
-	GetCurrentDirectoryA(1024, szCwdBuffer);
-#if DEBUG
-	PathCombineA(szDllPathA, szCwdBuffer, "fmtd.dll");
-#else
-	PathCombineA(szDllPathA, szCwdBuffer, "fmt.dll");
-#endif
-}
-
-void FindGameNetworkingSockets(LPSTR szDllPathA) {
-	char szCwdBuffer[1024] = { 0 };
-	GetCurrentDirectoryA(1024, szCwdBuffer);
-	PathCombineA(szDllPathA, szCwdBuffer, "GameNetworkingSockets.dll");
-}
-
-void FindGGPO(LPSTR szDllPathA) {
-	char szCwdBuffer[1024] = { 0 };
-	GetCurrentDirectoryA(1024, szCwdBuffer);
-	PathCombineA(szDllPathA, szCwdBuffer, "GGPO.dll");
-}
-
-void FindProtobuf(LPSTR szDllPathA) {
-	char szCwdBuffer[1024] = { 0 };
-	GetCurrentDirectoryA(1024, szCwdBuffer);
-#if DEBUG
-	PathCombineA(szDllPathA, szCwdBuffer, "libprotobufd.dll");
-#else
-	PathCombineA(szDllPathA, szCwdBuffer, "libprotobuf.dll");
-#endif
-}
-
-
 void FindSidecar(LPSTR szDllPathA) {
 	char szCwdBuffer[1024] = { 0 };
 	GetCurrentDirectoryA(1024, szCwdBuffer);
 	PathCombineA(szDllPathA, szCwdBuffer, "Sidecar.dll");
-}
-
-void FindSpdlog(LPSTR szDllPathA) {
-	char szCwdBuffer[1024] = { 0 };
-	GetCurrentDirectoryA(1024, szCwdBuffer);
-#if DEBUG
-	PathCombineA(szDllPathA, szCwdBuffer, "spdlogd.dll");
-#else
-	PathCombineA(szDllPathA, szCwdBuffer, "spdlog.dll");
-#endif
 }
 
 void CreateAppIDFile(LPWSTR szGuiltyDirectory) {
@@ -168,7 +120,7 @@ void CreateSF4Process(
 			NULL,
 			NULL,
 			TRUE,
-			CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED,
+			CREATE_DEFAULT_ERROR_MODE | CREATE_SUSPENDED | CREATE_UNICODE_ENVIRONMENT,
 			NULL,
 			szGameDirectory,
 			&si,
@@ -200,33 +152,45 @@ int WINAPI wWinMain(
 	_In_ LPWSTR lpCmdLine,
 	_In_ int nShowCmd
 ) {
+	HRESULT res = S_OK;
+	wchar_t szErrorStringW[4096] = { 0 };
+	wchar_t szLauncherDirW[1024] = { 0 };
 	wchar_t szGameDirectory[1024] = { 0 };
 	wchar_t szExePath[1024] = { 0 };
-	char szCryptoDllPathA[1024] = { 0 };
-	char szFmtDllPathA[1024] = { 0 };
-	char szGameNetworkingSocketsDllPathA[1024] = { 0 };
-	char szGGPODllPathA[1024] = { 0 };
-	char szProtobufDllPathA[1024] = { 0 };
 	char szSidecarDllPathA[1024] = { 0 };
-	char szSpdlogDllPathA[1024] = { 0 };
-	int nDlls = 7;
-
-	// To prevent the need for manipulating the subprocess's import table,
-	// manipulating the subprocess's DLL search paths, or copying sf4e's
-	// dependencies into SF4's folder directly, sf4e injects dependencies
-	// manually and dynamically. Consequently, this list is order-sensitive-
-	// if the sidecar DLL depends on spdlog and spdlog is not injected first,
-	// spdlog won't be found via normal search paths and the SF4 will halt
-	// with an error.
-	const char* dlls[7] = {
-		szFmtDllPathA,
-		szSpdlogDllPathA,
-		szCryptoDllPathA,
-		szProtobufDllPathA,
-		szGameNetworkingSocketsDllPathA,
-		szGGPODllPathA,
+	int nDlls = 1;
+	const char* dlls[1] = {
 		szSidecarDllPathA,
 	};
+
+	// Modify PATH to contain the launcher's directory. While this isn't that
+	// useful for the launcher itself, child processes inherit the parent's
+	// environment by default, so the child SF4 process will search in the
+	// launcher directory for DLLs.
+	wchar_t szPathW[2048] = { 0 };
+	wchar_t szNewPathW[2048] = { 0 };
+	GetModuleFileNameW(NULL, szLauncherDirW, 1024);
+	PathCchRemoveFileSpec(szLauncherDirW, 1024);
+	GetEnvironmentVariableW(L"PATH", szPathW, 2048);
+	if (res = StringCchPrintf(
+		szNewPathW,
+		2048,
+		TEXT("%s;%s"),
+		szPathW,
+		szLauncherDirW
+	)) {
+		StringCchPrintfW(
+			szErrorStringW,
+			4096,
+			L"Could not create new PATH environment variable %s;%s : %d",
+			szPathW,
+			szLauncherDirW,
+			res
+		);
+		MessageBoxW(NULL, szErrorStringW, NULL, MB_OK);
+		return -1;
+	}
+	SetEnvironmentVariableW(L"PATH", szNewPathW);
 
 	DWORD env_size = 0;
 	env_size = GetEnvironmentVariableW(L"sf4e_LINUX_DIR", szGameDirectory, 1024);
@@ -237,13 +201,7 @@ int WINAPI wWinMain(
 	else {
 		FindSF4(szGameDirectory, szExePath);
 	}
-	FindCrypto(szCryptoDllPathA);
-	FindFmt(szFmtDllPathA);
-	FindGameNetworkingSockets(szGameNetworkingSocketsDllPathA);
-	FindGGPO(szGGPODllPathA);
-	FindProtobuf(szProtobufDllPathA);
 	FindSidecar(szSidecarDllPathA);
-	FindSpdlog(szSpdlogDllPathA);
 	CreateAppIDFile(szGameDirectory);
 	CreateSF4Process(szGameDirectory, szExePath, nDlls, dlls);
 	return 0;
