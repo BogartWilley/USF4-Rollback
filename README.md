@@ -10,43 +10,59 @@ A process-inspection and modification tool for the Steam release of _Ultra Stree
 ## Building
 
 `sf4e` is built primarily with [Visual Studio](https://visualstudio.microsoft.com/)
-2019 or later with Visual C++. Other development environments will need support for
-installing dependencies, ideally via [vcpkg](https://vcpkg.io/en/index.html), and
-build file generation via [CMake](https://cmake.org/).
+2019 16.10 or later with Visual C++. Other development environments will need
+support for installing dependencies, ideally via [vcpkg](https://vcpkg.io/en/index.html)
+and build file generation via [CMake](https://cmake.org/).
 
-To build sf4e with VS2019:
+To build sf4e with VS2019 16.10+:
 
-1. Open `CMakeLists.txt` with VS2019's native CMake integration.
-2. Follow the steps in [`vcpkg`'s Getting Started guide](https://vcpkg.io/en/getting-started.html)',
+1. Follow steps 1 and 2 in [`vcpkg`'s Getting Started guide](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started),
    stopping after `vcpkg` has been bootstrapped.
-   * You won't need to manually run `vcpkg install` because proper CMake
-     integration will download the dependencies for you.
-3. Configure the VS2019 CMake settings to build with a 32-bit toolset
-   (`msvc_x86`).
-   - Since SF4 is a 32-bit x86 executable, `sf4e` also needs to be built with
-     32-bit Detours and targeting 32-bit output to properly hook SF4's
-     instructions.
-   - Ensure that you have set the CMake Toolchain File to
-     `scripts/buildsystems/vcpkg.cmake` in the `vcpkg` checkout.
+   - You can stop at step 3- sf4e already has a manfest file.
+2. Set up a local `CMakeUserPresets.json` to describe your environment.
+   The following can be used as a quickstart, making sure to provide the
+   path to the copy of `vcpkg` checked out in step 1: 
+```
+{
+    "version": 2,
+    "configurePresets": [
+      {
+        "name": "default",
+        "inherits": "x86-msvc-ninja-relwithdebinfo",
+        "environment": {
+          "VCPKG_ROOT": "C:/Users/myuser/path/to/vcpkg"
+        }
+      }
+    ]
+  }
+  
+```
+   - Since SF4 is a 32-bit executable, `sf4e` and its dependencies
+     (most importantly Detours) also need to be built targeting a
+     32-bit host to properly hook SF4's instructions.
+3. Open `CMakeLists.txt` with VS2019's native CMake integration.
+   - Ensure [CMakePresets.json integration in Visual Studio](https://learn.microsoft.com/en-us/cpp/build/cmake-presets-vs?view=msvc-170#enable-cmakepresets-json-integration) is enabled.
 4. Run `Build All`. Confirm that `Launcher.exe` and `Sidecar.dll` are in
    the build output.
 5. Run `Launcher.exe`.
 
-To build sf4e with CMake and `vcpkg`:
+To build sf4e with the CMake command line:
 
-1. Install the project dependencies with `vcpkg install --overlay-ports=./vcpkg-ports --overlay-triplets=./vcpkg-triplets --triplet=x86-windows-wchar-filenames`.
-  * This must be run from the root of the `sf4e` repo, so that `vcpkg` installs
-    from the manifest file.
-  * The `--overlay-ports` argument extends `vcpkg`'s internal registry with
-    dependencies that `sf4e` uses that are not in `vcpkg`'s main port list.
-  * The custom triplet argument must be used to ensure Unicode support, which
-    is not optional with newer methods in the Win32 APIs.
-2. Use `cmake` or `cmake-gui` to generate a new project.
-  * Take care to ensure that the generated project will build a 32-bit x86
-    binary. `cmake-gui` on Windows refers to it as "Win32".
-3. Apply your build system to the generated project output. Confirm that
-   `Launcher.exe` and `Sidecar.dll` are in the build output.
-4. Run `Launcher.exe`.
+1. Set up `vcpkg`, as above in step 1.
+2. Set up a local `CMakeUserPresets.json` to describe your environment,
+   as above in step 2.
+3. Using a CLI environment with CMake and a compiler prepared, run
+   `cmake --preset default` from the root of the repository.
+   - VS users may wish to use either the x86 Native Tools or the
+     x64_x86 Cross Tools developer command prompts, as they already
+     provide tools like Ninja and Cmake, and have the various environment
+     variables used by CMake already prepared.
+4. Build sf4e by running `cmake --build ./path-to-binary-dir/` from the root
+   of the repository. Confirm that `Launcher.exe` and `Sidecar.dll` are in
+   the build output.
+   * If a `CMakeUserPresets.json` file like the one in step 2 is used, the
+     the binary dir is `./msvc-build/default`.
+5. Run `Launcher.exe`.
 
 Builds generated with CMake that cannot take advantage of `vcpkg` will need to
 provide the following dependencies:
