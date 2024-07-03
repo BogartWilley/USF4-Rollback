@@ -12,6 +12,7 @@ vcpkg_cmake_configure(
     OPTIONS
         ${FEATURE_OPTIONS}
         -DGGPO_BUILD_SDK=ON
+        -DGGPO_BUILD_VECTORWAR=OFF
 )
 
 vcpkg_cmake_install()
