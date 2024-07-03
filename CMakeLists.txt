@@ -1,6 +1,4 @@
 cmake_minimum_required (VERSION 3.20)
-set(VCPKG_OVERLAY_PORTS "${CMAKE_SOURCE_DIR}/vcpkg-ports")
-set(VCPKG_OVERLAY_TRIPLETS "${CMAKE_SOURCE_DIR}/vcpkg-triplets")
 set(VCPKG_TARGET_TRIPLET "x86-windows-wchar-filenames")
 
 project (
