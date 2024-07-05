@@ -64,12 +64,6 @@ int FindSF4(LPWSTR szGameDirectory, LPWSTR szExePath) {
 	return 1;
 }
 
-void FindSidecar(LPSTR szDllPathA) {
-	char szCwdBuffer[1024] = { 0 };
-	GetCurrentDirectoryA(1024, szCwdBuffer);
-	PathCombineA(szDllPathA, szCwdBuffer, "Sidecar.dll");
-}
-
 void CreateAppIDFile(LPWSTR szGuiltyDirectory) {
 	wchar_t szAppIDPath[1024] = { 0 };
 	DWORD nBytesWritten = 0;
@@ -157,11 +151,21 @@ int WINAPI wWinMain(
 	wchar_t szLauncherDirW[1024] = { 0 };
 	wchar_t szGameDirectory[1024] = { 0 };
 	wchar_t szExePath[1024] = { 0 };
+	char szLauncherDirA[1024] = { 0 };
 	char szSidecarDllPathA[1024] = { 0 };
 	int nDlls = 1;
 	const char* dlls[1] = {
 		szSidecarDllPathA,
 	};
+
+	// Compute the path to the sidecar DLL based on the launcher's directory.
+	// Ideally, this wouldn't have to convert from wide-char to multibyte in
+	// the system's codepage, but Detours uses multibyte paths when injecting
+	// DLLs.
+	GetModuleFileNameW(NULL, szLauncherDirW, 1024);
+	PathCchRemoveFileSpec(szLauncherDirW, 1024);
+	WideCharToMultiByte(CP_ACP, 0, szLauncherDirW, 1024, szLauncherDirA, 1024, NULL, NULL);
+	PathCombineA(szSidecarDllPathA, szLauncherDirA, "Sidecar.dll");
 
 	// Modify PATH to contain the launcher's directory. While this isn't that
 	// useful for the launcher itself, child processes inherit the parent's
@@ -169,8 +173,6 @@ int WINAPI wWinMain(
 	// launcher directory for DLLs.
 	wchar_t szPathW[2048] = { 0 };
 	wchar_t szNewPathW[2048] = { 0 };
-	GetModuleFileNameW(NULL, szLauncherDirW, 1024);
-	PathCchRemoveFileSpec(szLauncherDirW, 1024);
 	GetEnvironmentVariableW(L"PATH", szPathW, 2048);
 	if (res = StringCchPrintf(
 		szNewPathW,
@@ -201,7 +203,6 @@ int WINAPI wWinMain(
 	else {
 		FindSF4(szGameDirectory, szExePath);
 	}
-	FindSidecar(szSidecarDllPathA);
 	CreateAppIDFile(szGameDirectory);
 	CreateSF4Process(szGameDirectory, szExePath, nDlls, dlls);
 	return 0;
