@@ -10,7 +10,10 @@
 #include <winuser.h>
 
 #include <detours/detours.h>
+#include <spdlog/spdlog.h>
 #include <vdf_parser.hpp>
+
+#include "../sidecar/sidecar.hxx"
 
 int FindSF4(LPWSTR szGameDirectory, LPWSTR szExePath) {
 	DWORD dwDataRead = 1024;
@@ -104,6 +107,10 @@ void CreateSF4Process(
 	ZeroMemory(&si, sizeof(si));
 	ZeroMemory(&pi, sizeof(pi));
 	si.cb = sizeof(si);
+	HANDLE hSyncEvent = CreateEventW(NULL, TRUE, FALSE, NULL);
+	if (hSyncEvent == NULL) {
+		spdlog::warn("CreateSF4Process: CreateEventW() could not create game sync handle, game may be unable to access Steam: err {}", GetLastError());
+	}
 
 	SetLastError(0);
 
@@ -137,7 +144,26 @@ void CreateSF4Process(
 		ExitProcess(9009);
 	}
 
+	sf4eSidecar::Payload p = { 0 };
+	if (hSyncEvent != NULL) {
+		if (!DuplicateHandle(GetCurrentProcess(), hSyncEvent, pi.hProcess, &p.hSyncEvent, 0, false, DUPLICATE_SAME_ACCESS)) {
+			spdlog::warn("CreateSF4Process: DuplicateHandle() could not duplicate game sync handle, game may be unable to access Steam: err {}", GetLastError());
+		}
+	}
+	if (!DetourCopyPayloadToProcess(pi.hProcess, sf4eSidecar::s_guidSidecarPayload, &p, sizeof(sf4eSidecar::Payload))) {
+		StringCchPrintf(szErrorString, 1024, L"DetourCopyPayloadToProcess failed: %d", GetLastError());
+		MessageBox(NULL, szErrorString, NULL, MB_OK);
+		ExitProcess(9008);
+	}
+
 	ResumeThread(pi.hThread);
+	if (hSyncEvent != NULL) {
+		DWORD lockWaitResult = WaitForSingleObject(hSyncEvent, 60 * 1000);
+		if (lockWaitResult != 0) {
+			spdlog::warn("CreateSF4Process: WaitForSingleObject() could not wait for game sync handle, game may be unable to access Steam: err {}", GetLastError());
+		}
+		CloseHandle(hSyncEvent);
+	}
 }
 
 int WINAPI wWinMain(

@@ -110,7 +110,14 @@ void fMain::Install() {
 }
 
 int fMain::Initialize(void* a, void* b, void* c) {
+    if (sf4e::hSyncHandle != NULL) {
+        SetEvent(sf4e::hSyncHandle);
+        CloseHandle(sf4e::hSyncHandle);
+        sf4e::hSyncHandle = NULL;
+    }
+
     int rval = (this->*(rMain::publicMethods.Initialize))(a, b, c);
+
     BOOL hasConsole = AllocConsole();
     if (!hasConsole) {
         MessageBox(NULL, TEXT("Could not allocate console!"), NULL, MB_OK);

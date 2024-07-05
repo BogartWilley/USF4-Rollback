@@ -9,7 +9,9 @@
 namespace sf4e {
 	extern std::string sidecarHash;
 	extern std::mt19937 localRand;
-	void Install(HINSTANCE hinstDll);
+	extern HANDLE hSyncHandle;
+
+	void Install(HINSTANCE hinstDll, HANDLE hSyncHandle);
 
 	namespace Eva {
 		struct IEmSpriteAction : Dimps::Eva::IEmSpriteAction {

@@ -16,6 +16,7 @@
 
 std::mt19937 sf4e::localRand;
 std::string sf4e::sidecarHash;
+HANDLE sf4e::hSyncHandle;
 
 using rIEmSpriteAction = Dimps::Eva::IEmSpriteAction;
 using rIEmSpriteNode = Dimps::Eva::IEmSpriteNode;
@@ -209,8 +210,8 @@ Cleanup:
 	return ret;
 }
 
-void sf4e::Install(HINSTANCE hinstDll) {
-
+void sf4e::Install(HINSTANCE hinstDll, HANDLE hSyncHandle) {
+	sf4e::hSyncHandle = hSyncHandle;
 	HRESULT r = GetHash(hinstDll, sidecarHash);
 	if (r != S_OK) {
 		MessageBox(NULL, TEXT("Could not hash sidecar!"), NULL, MB_OK);
