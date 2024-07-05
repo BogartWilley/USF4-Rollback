@@ -15,33 +15,77 @@
 
 #include "../sidecar/sidecar.hxx"
 
-int FindSF4(LPWSTR szGameDirectory, LPWSTR szExePath) {
+LPCWCH szGameFilename = L"SSFIV.exe";
+LPCWCH szLibrarySuffix = L"steamapps\\common\\Super Street Fighter IV - Arcade Edition";
+
+int FindSF4ByEnvironmentVariable(
+	_Out_ LPWSTR szGameDirectory, _In_ int nGameDirSize,
+	_Out_ LPWSTR szExePath, _In_ int nExeSize
+) {
+	DWORD nDirSize = 0;
+	DWORD err = 0;
+	HRESULT res = S_OK;
+	nDirSize = GetEnvironmentVariableW(L"STEAM_APP_PATH", szGameDirectory, nGameDirSize);
+
+	if (nDirSize == 0) {
+		err = GetLastError();
+		// Most Windows users likely won't define this- don't warn on a very
+		// common case.
+		if (err != ERROR_ENVVAR_NOT_FOUND) {
+			spdlog::warn(L"FindSF4ByEnvironmentVariable: GetEnvironmentVariable(\"STEAM_APP_PATH\", ...) failed: {}", err);
+		}
+		return 0;
+	}
+
+	if (nDirSize > nGameDirSize) {
+		spdlog::warn(L"FindSF4ByEnvironmentVariable: STEAM_APP_PATH declared but buffer too small; had {}, needed {}", nGameDirSize, nDirSize);
+		return 0;
+	}
+
+	if ((res = PathCchCombine(szExePath, nExeSize, szGameDirectory, szGameFilename)) != S_OK) {
+		spdlog::warn(L"FindSF4ByCurrentDirectory: PathCchCombine failed: {}", res);
+		return 0;
+	}
+
+	if (!PathFileExistsW(szExePath)) {
+		spdlog::warn(L"FindSF4ByEnvironmentVariable: STEAM_APP_PATH provided as {}, but {} not found", szGameDirectory, szExePath);
+		return 0;
+	}
+
+	return 1;
+}
+
+int FindSF4ByEstimatedSteamPath(
+	_Out_ LPWSTR szGameDirectory, _In_ int nGameDirSize,
+	_Out_ LPWSTR szExePath, _In_ int nExeSize
+) {
 	DWORD dwDataRead = 1024;
-	DWORD dwRegValueType;
 	LSTATUS lQueryStatus;
-	wchar_t szError[1024];
-	const wchar_t* szGameSuffix = L"steamapps\\common\\Super Street Fighter IV - Arcade Edition";
 	wchar_t szLibraries[8][1024];
 	int nLibrariesUsed = 1;
 	wchar_t szLibraryFolderVDFPath[1024];
+	HRESULT res = S_OK;
 
+	// Capture SteamPath, which always acts as the first library
 	lQueryStatus = RegGetValueW(
 		HKEY_CURRENT_USER,
 		L"Software\\Valve\\Steam",
 		L"SteamPath",
 		RRF_RT_REG_SZ,
-		&dwRegValueType,
+		NULL,
 		szLibraries[0],
 		&dwDataRead
 	);
-
 	if (lQueryStatus != ERROR_SUCCESS) {
-		StringCchPrintfW(szError, 1024, L"Query status: %d", lQueryStatus);
-		MessageBoxW(NULL, szError, NULL, 0);
+		spdlog::warn(L"FindSF4ByEstimatedSteamPath: Could not query registry for SteamPath: {}", lQueryStatus);
+		return 0;
 	}
 
-	// Read additional libraries
-	PathCombineW(szLibraryFolderVDFPath, szLibraries[0], L"steamapps\\libraryfolders.vdf");
+	// Read the libary paths from `libraryfolders.vdf` file inside SteamPath
+	if ((res = PathCchCombine(szLibraryFolderVDFPath, 1024, szLibraries[0], L"steamapps\\libraryfolders.vdf")) != S_OK) {
+		spdlog::warn(L"FindSF4ByEstimatedSteamPath: szLibraryFolderVDFPath PathCchCombine failed: {}", res);
+		return 0;
+	}
 	std::ifstream libraryFoldersFile(szLibraryFolderVDFPath);
 	tyti::vdf::object libraryFoldersRoot = tyti::vdf::read(libraryFoldersFile);
 	for (auto it = libraryFoldersRoot.childs.begin(); it != libraryFoldersRoot.childs.end(); ++it) {
@@ -56,15 +100,50 @@ int FindSF4(LPWSTR szGameDirectory, LPWSTR szExePath) {
 		nLibrariesUsed++;
 	}
 
+	// Search the discovered libraries
 	for (int i = 0; i < nLibrariesUsed; i++) {
-		PathCombineW(szGameDirectory, szLibraries[i], szGameSuffix);
-		if (PathIsDirectoryW(szGameDirectory)) {
-			PathCombineW(szExePath, szGameDirectory, L"SSFIV.exe");
-			return 0;
+		if (!PathIsDirectoryW(szLibraries[i])) {
+			spdlog::warn(L"FindSF4ByEstimatedSteamPath: detected library {} does not exist", szLibraries[i]);
+			continue;
+		}
+
+		if ((res = PathCchCombine(szGameDirectory, nGameDirSize, szLibraries[i], szLibrarySuffix)) != S_OK) {
+			spdlog::warn(L"FindSF4ByEstimatedSteamPath: szGameDirectory PathCchCombine for {} failed: {}", szLibraries[i], res);
+			continue;
+		}
+
+		if (!PathIsDirectoryW(szGameDirectory)) {
+			// A common case- any given library may not contain SF4, so logging would
+			// add more noise than signal.
+			continue;
+		}
+
+		if ((res = PathCchCombine(szExePath, nExeSize, szGameDirectory, szGameFilename)) != S_OK) {
+			spdlog::warn(L"FindSF4ByEstimatedSteamPath: szExePath PathCchCombine failed: {}", res);
+			continue;
+		}
+
+		if (PathFileExistsW(szExePath)) {
+			return 1;
 		}
 	}
 
-	return 1;
+	return 0;
+}
+
+int FindSF4(
+	_Out_ LPWSTR szGameDirectory, _In_ int nGameDirSize,
+	_Out_ LPWSTR szExePath, _In_ int nExeSize
+) {
+	if (FindSF4ByEnvironmentVariable(szGameDirectory, nGameDirSize, szExePath, nExeSize)) {
+		return 1;
+	}
+
+	if (FindSF4ByEstimatedSteamPath(szGameDirectory, nGameDirSize, szExePath, nExeSize)) {
+		return 1;
+	}
+
+	return 0;
 }
 
 void CreateAppIDFile(LPWSTR szGuiltyDirectory) {
@@ -220,14 +299,8 @@ int WINAPI wWinMain(
 	}
 	SetEnvironmentVariableW(L"PATH", szNewPathW);
 
-	DWORD env_size = 0;
-	env_size = GetEnvironmentVariableW(L"sf4e_LINUX_DIR", szGameDirectory, 1024);
-
-	if (env_size > 0) {
-		PathCombineW(szExePath, szGameDirectory, L"SSFIV.exe");
-	}
-	else {
-		FindSF4(szGameDirectory, szExePath);
+	if (!FindSF4(szGameDirectory, 1024, szExePath, 1024)) {
+		MessageBoxW(NULL, L"Cannot find Street Fighter 4: check logs for debugging", NULL, MB_OK);
 	}
 	CreateAppIDFile(szGameDirectory);
 	CreateSF4Process(szGameDirectory, szExePath, nDlls, dlls);
