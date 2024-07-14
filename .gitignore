@@ -1,4 +1,6 @@
 /build
+/msvc-build
 /.vs
 /.vscode
 /CMakeSettings.json
+/CMakeUserPresets.json
