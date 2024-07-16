@@ -127,12 +127,6 @@ target_compile_definitions(Launcher PRIVATE -D_UNICODE -DUNICODE)
 
 install(
   TARGETS Launcher Sidecar
-  CONFIGURATIONS Debug
-  RUNTIME DESTINATION "."
-)
-install(
-  TARGETS Launcher Sidecar
-  CONFIGURATIONS Release
   RUNTIME DESTINATION "."
 )
 
