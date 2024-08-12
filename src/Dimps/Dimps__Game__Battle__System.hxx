@@ -153,6 +153,7 @@ namespace Dimps {
                     void (System::* RestoreFromInternalMementoKey)(GameMementoKey::MementoID* id);
 
                     int (System::* GetGameMode)();
+                    int (System::* GetNumCharasToSimulateThisFrame)();
                 } __publicMethods;
 
                 typedef struct __mementoableMethods {

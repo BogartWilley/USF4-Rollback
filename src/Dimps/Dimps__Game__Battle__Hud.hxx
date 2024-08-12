@@ -17,6 +17,7 @@ namespace Dimps {
 				using Dimps::Game::Sprite::Control;
 				using Dimps::Game::Sprite::SingleNodeControl;
 				using Dimps::Platform::dDeque_0x10;
+				using Dimps::Platform::WithReleaser;
 
 				void Locate(HMODULE peRoot);
 
@@ -135,8 +136,75 @@ namespace Dimps {
 				}
 
 				namespace Notice {
+					enum NoticeType {
+						NT_COMBO = 0,
+						NT_FIRSTATTACK = 1,
+						NT_REVERSAL = 2,
+						NT_TECHNICAL = 3,
+						NT_COUNTERHIT = 4,
+						NT_SUPERCANCEL = 5,
+						NT_STUN = 6,
+						NT_SCFINISH = 7,
+						NT_UCFINISH = 8,
+						NT_NULL = 9
+					};
+
+					struct NoticeData {
+						int type;
+						int score;
+						int comboLen;
+						int bShouldShowAdjective;
+					};
+
+					struct Bonus : Dimps::Game::Sprite::Control {
+						typedef struct __publicMethods {
+							void (Bonus::* Enable)();
+							void (Bonus::* Disable)();
+						} __publicMethods;
+						
+						static void Locate(HMODULE peRoot);
+						static __publicMethods publicMethods;
+						static Eva::IEmSpriteNode** GetActiveSprite(Bonus* b);
+						static DWORD* GetCurrentBonus(Bonus* b);
+						static int32_t* GetScore(Bonus* b);
+						static DWORD* GetIsActive(Bonus* b);
+					};
+
+					struct Combo : Dimps::Game::Sprite::Control {	
+						typedef struct __publicMethods {
+							void (Combo::* Enable)();
+							// Disabling is 0057bd80
+						} __publicMethods;
+						
+						static void Locate(HMODULE peRoot);
+						static __publicMethods publicMethods;
+						static uint32_t* GetComboLength(Combo* c);
+						static int32_t* GetScore(Combo* c);
+						static DWORD* GetIsActive(Combo* c);
+						static DWORD* GetShouldShowAdjective(Combo* c);
+					};
+
+					struct Player {
+
+						static WithReleaser<Bonus>* GetBonuses(Player* p);
+						static WithReleaser<Combo>* GetCombo(Player* p);
+						static dDeque_0x10* GetQueuedComboNotices(Player* p);
+						static dDeque_0x10* GetQueuedBonusNotices(Player* p);
+					};
+
+					struct View {
+						static WithReleaser<Player>* GetPlayers(View* v);
+					};
+
 					struct Unit : IUnit {
+						typedef struct __publicMethods {
+							void (Unit::* RestoreFromInternalMementoKey)();
+						} __publicMethods;
+
+						static void Locate(HMODULE peRoot);
+						static __publicMethods publicMethods;
 						static Eva::Task** GetHudNoticeUpdateTask(Unit* u);
+						static View** GetView(Unit* u);
 					};
 				}
 

@@ -36,6 +36,7 @@ namespace sf4e {
 
 					Dimps::Game::Battle::Network::Unit network;
 					Hud::Announce::Unit::AdditionalMemento announce;
+					Hud::Notice::Player::AdditionalMemento playerNotices[2];
 					Platform::GFxApp::AdditionalMemento gfxApp;
 					Eva::TaskCore::AdditionalMemento updateCore;
 				} AdditionalMemento;

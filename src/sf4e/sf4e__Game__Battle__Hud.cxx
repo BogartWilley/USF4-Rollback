@@ -20,6 +20,7 @@ using Dimps::Game::GameMementoKey;
 using Dimps::Game::Sprite::Control;
 using Dimps::Platform::dDeque_0x10;
 using Dimps::Platform::GFxApp;
+using Dimps::Platform::WithReleaser;
 
 using fIUnit = sf4e::Game::Battle::IUnit;
 using rIUnit = Dimps::Game::Battle::IUnit;
@@ -32,6 +33,7 @@ void fHud::Install() {
     Cockpit::Unit::Install();
     Cockpit::View::Install();
     Cursor::Unit::Install();
+    Notice::Unit::Install();
     Result::Unit::Install();
     Subtitle::Unit::Install();
     Training::Unit::Install();
@@ -240,6 +242,137 @@ void fHud::Cursor::Unit::HudCursor_Update(Task** task) {
     if (bAllowHudUpdate) {
         (this->*rHud::Cursor::Unit::publicMethods.HudCursor_Update)(task);
     }
+}
+
+void fHud::Notice::Bonus::RecordToAdditionalMemento(
+    rHud::Notice::Bonus* b,
+    AdditionalMemento& m
+) {
+    m.isEnabled = *Control::GetEnabled(b);
+    m.activeSprite = *rHud::Notice::Bonus::GetActiveSprite(b);
+    m.currentBonus = *rHud::Notice::Bonus::GetCurrentBonus(b);
+    m.score = *rHud::Notice::Bonus::GetScore(b);
+    m.isActive = *rHud::Notice::Bonus::GetIsActive(b);
+}
+
+void fHud::Notice::Bonus::RestoreFromAdditionalMemento(
+    rHud::Notice::Bonus* b,
+    const AdditionalMemento& m
+) {
+    *rHud::Notice::Bonus::GetActiveSprite(b) = m.activeSprite;
+    *rHud::Notice::Bonus::GetCurrentBonus(b) = m.currentBonus;
+    *rHud::Notice::Bonus::GetScore(b) = m.score;
+    *rHud::Notice::Bonus::GetIsActive(b) = m.isActive;
+    if (m.isEnabled) {
+        (b->*rHud::Notice::Bonus::publicMethods.Enable)();
+    } else {
+        (b->*rHud::Notice::Bonus::publicMethods.Disable)();
+    }
+}
+
+void fHud::Notice::Combo::RecordToAdditionalMemento(
+    rHud::Notice::Combo* c,
+    AdditionalMemento& m
+) {
+    m.isEnabled = *Control::GetEnabled(c);
+    m.comboLength = *rHud::Notice::Combo::GetComboLength(c);
+    m.score = *rHud::Notice::Combo::GetScore(c);
+    m.isActive = *rHud::Notice::Combo::GetIsActive(c);
+    m.shouldShowAdjective = *rHud::Notice::Combo::GetShouldShowAdjective(c);
+}
+
+void fHud::Notice::Combo::RestoreFromAdditionalMemento(
+    rHud::Notice::Combo* c,
+    const AdditionalMemento& m
+) {
+    *rHud::Notice::Combo::GetComboLength(c) = m.comboLength;
+    *rHud::Notice::Combo::GetScore(c) = m.score;
+    *rHud::Notice::Combo::GetIsActive(c) = m.isActive;
+    *rHud::Notice::Combo::GetShouldShowAdjective(c) = m.shouldShowAdjective;
+    if (m.isEnabled) {
+        (c->*rHud::Notice::Combo::publicMethods.Enable)();
+    } else {
+        (c->*Control::publicMethods.Disable_0x57bd80)();
+    }
+}
+
+void fHud::Notice::Player::RecordToAdditionalMemento(
+    rHud::Notice::Player* p,
+    AdditionalMemento& m
+) {
+    dDeque_0x10* queuedBonuses = rHud::Notice::Player::GetQueuedBonusNotices(p);
+    dDeque_0x10* queuedCombos = rHud::Notice::Player::GetQueuedComboNotices(p);
+    int i;
+    dDeque_0x10::iterator iter;
+    assert(queuedBonuses->size() <= 8);
+    assert(queuedCombos->size() <= 8);
+    assert(sizeof(rHud::Notice::NoticeData) == sizeof(dDeque_0x10::value_type));
+    for (iter = queuedBonuses->begin(), i = 0; iter != queuedBonuses->end(); iter++, i++) {
+        memcpy_s(&m.queuedBonuses[i], sizeof(rHud::Notice::NoticeData), &*iter, sizeof(dDeque_0x10::value_type));
+    }
+    m.nQueuedBonuses = i;
+    for (iter = queuedCombos->begin(), i = 0; iter != queuedCombos->end(); iter++, i++) {
+        memcpy_s(&m.queuedCombos[i], sizeof(rHud::Notice::NoticeData), &*iter, sizeof(dDeque_0x10::value_type));
+    }
+    m.nQueuedCombos = i;
+
+    fHud::Notice::Combo::RecordToAdditionalMemento(
+        rHud::Notice::Player::GetCombo(p)->obj,
+        m.combo
+    );
+    WithReleaser<rHud::Notice::Bonus>* bonusCursor = rHud::Notice::Player::GetBonuses(p);
+    for (int bonusIdx = 0; bonusIdx < 2; bonusIdx++) {
+        fHud::Notice::Bonus::RecordToAdditionalMemento(
+            bonusCursor[bonusIdx].obj,
+            m.bonuses[bonusIdx]
+        );
+    }
+}
+
+void fHud::Notice::Player::RestoreFromAdditionalMemento(
+    rHud::Notice::Player* p,
+    const AdditionalMemento& m
+) {
+    dDeque_0x10* queuedBonuses = rHud::Notice::Player::GetQueuedBonusNotices(p);
+    dDeque_0x10* queuedCombos = rHud::Notice::Player::GetQueuedComboNotices(p);
+    (queuedBonuses->*dDeque_0x10::publicMethods.clear)();
+    (queuedCombos->*dDeque_0x10::publicMethods.clear)();
+    assert(sizeof(rHud::Notice::NoticeData) == sizeof(dDeque_0x10::value_type));
+    int i;
+    for (i = 0; i < m.nQueuedBonuses; i++) {
+        (queuedBonuses->*dDeque_0x10::publicMethods.push_back)((dDeque_0x10::value_type*)&m.queuedBonuses[i]);
+    }
+    for (i = 0; i < m.nQueuedCombos; i++) {
+        (queuedCombos->*dDeque_0x10::publicMethods.push_back)((dDeque_0x10::value_type*)&m.queuedCombos[i]);
+    }
+
+    fHud::Notice::Combo::RestoreFromAdditionalMemento(
+        rHud::Notice::Player::GetCombo(p)->obj,
+        m.combo
+    );
+    WithReleaser<rHud::Notice::Bonus>* bonusCursor = rHud::Notice::Player::GetBonuses(p);
+    for (int bonusIdx = 0; bonusIdx < 2; bonusIdx++) {
+        fHud::Notice::Bonus::RestoreFromAdditionalMemento(
+            bonusCursor[bonusIdx].obj,
+            m.bonuses[bonusIdx]
+        );
+    }
+}
+
+void fHud::Notice::Unit::Install() {
+    void (Unit:: * _fRestoreFromInternalMementoKey)() = &RestoreFromInternalMementoKey;
+    DetourAttach(
+        (PVOID*)&rHud::Notice::Unit::publicMethods.RestoreFromInternalMementoKey,
+        *(PVOID*)&_fRestoreFromInternalMementoKey
+    );
+}
+
+void fHud::Notice::Unit::RestoreFromInternalMementoKey() {
+    // SF4's existing Notice code doesn't actually restore from the key-
+    // it uses the method as a way to clear any existing notices. If that
+    // is the case for states used in rollback, all bonus and combo notices
+    // would be completely hidden.
+    return;
 }
 
 void fHud::Result::Unit::Install() {

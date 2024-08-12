@@ -21,6 +21,12 @@
 namespace Dimps {
 	namespace Platform {
 		template <class T>
+		struct WithReleaser {
+			T* obj;
+			void (T::* releaser)();
+		};
+
+		template <class T>
 		struct list_entry {
 			list_entry<T>* next;
 			list_entry<T>* prev;

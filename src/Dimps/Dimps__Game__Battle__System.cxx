@@ -25,6 +25,7 @@ void System::Locate(HMODULE peRoot) {
     *(PVOID*)&publicMethods.GetCharaUnit = (PVOID)(peRootOffset + 0x163510);
     *(PVOID*)&publicMethods.GetGameManager = (PVOID)(peRootOffset + 0x1d9950);
     *(PVOID*)&publicMethods.GetGlobalTimeScale_Fixed = (PVOID)(peRootOffset + 0x1d9fe0);
+    *(PVOID*)&publicMethods.GetNumCharasToSimulateThisFrame = (PVOID)(peRootOffset + 0x1d9960);
     *(PVOID*)&publicMethods.GetUnitTimeScale_Fixed = (PVOID)(peRootOffset + 0x1da060);
     *(PVOID*)&publicMethods.GetUnitByIndex = (PVOID)(peRootOffset + 0x1d9720);
     *(PVOID*)&publicMethods.SysMain_HandleTrainingModeFeatures = (PVOID)(peRootOffset + 0x1dab30);

@@ -13,6 +13,7 @@ namespace sf4e {
 	namespace Game {
 		namespace Battle {
 			namespace Hud {
+				using Dimps::Eva::IEmSpriteNode;
 				using Dimps::Eva::Task;
 				using Dimps::Game::GameMementoKey;
 
@@ -83,6 +84,58 @@ namespace sf4e {
 					struct Unit : Dimps::Game::Battle::Hud::Cursor::Unit {
 						void HudCursor_Update(Task** task);
 						static void Install();
+					};
+				}
+
+				namespace Notice {
+					using rBonus = Dimps::Game::Battle::Hud::Notice::Bonus;
+					using rCombo = Dimps::Game::Battle::Hud::Notice::Combo;
+					using rPlayer = Dimps::Game::Battle::Hud::Notice::Player;
+					using rUnit = Dimps::Game::Battle::Hud::Notice::Unit;
+
+					struct Bonus : rBonus {
+						struct AdditionalMemento {
+							DWORD isEnabled;
+							IEmSpriteNode* activeSprite;
+							DWORD currentBonus;
+							DWORD score;
+							DWORD isActive;
+						};
+
+						static void RecordToAdditionalMemento(rBonus* b, AdditionalMemento& m);
+						static void RestoreFromAdditionalMemento(rBonus* b, const AdditionalMemento& m);
+					};
+
+					struct Combo : rCombo {
+						struct AdditionalMemento {
+							DWORD isEnabled;
+							uint32_t comboLength;
+							int32_t score;
+							DWORD isActive;
+							DWORD shouldShowAdjective;
+						};
+
+						static void RecordToAdditionalMemento(rCombo* c, AdditionalMemento& m);
+						static void RestoreFromAdditionalMemento(rCombo* c, const AdditionalMemento& m);
+					};
+
+					struct Player : rPlayer {
+						struct AdditionalMemento {
+							Bonus::AdditionalMemento bonuses[2];
+							Combo::AdditionalMemento combo;
+							int nQueuedBonuses;
+							int nQueuedCombos;
+							Dimps::Game::Battle::Hud::Notice::NoticeData queuedBonuses[8];
+							Dimps::Game::Battle::Hud::Notice::NoticeData queuedCombos[8];
+						};
+
+						static void RecordToAdditionalMemento(rPlayer* c, AdditionalMemento& m);
+						static void RestoreFromAdditionalMemento(rPlayer* c, const AdditionalMemento& m);
+					};
+
+					struct Unit : rUnit {
+						static void Install();
+						void RestoreFromInternalMementoKey();
 					};
 				}
 

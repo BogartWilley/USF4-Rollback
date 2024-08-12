@@ -12,6 +12,7 @@ using Dimps::Game::Battle::IUnit;
 using Dimps::Game::Sprite::Control;
 using Dimps::Game::Sprite::SingleNodeControl;
 using Dimps::Platform::dDeque_0x10;
+using Dimps::Platform::WithReleaser;
 
 namespace Hud = Dimps::Game::Battle::Hud;
 using Hud::Unit;
@@ -24,6 +25,9 @@ Hud::Announce::Unit::__publicMethods Hud::Announce::Unit::publicMethods;
 Hud::Cockpit::Unit::__publicMethods Hud::Cockpit::Unit::publicMethods;
 Hud::Cockpit::View::__publicMethods Hud::Cockpit::View::publicMethods;
 Hud::Cursor::Unit::__publicMethods Hud::Cursor::Unit::publicMethods;
+Hud::Notice::Bonus::__publicMethods Hud::Notice::Bonus::publicMethods;
+Hud::Notice::Combo::__publicMethods Hud::Notice::Combo::publicMethods;
+Hud::Notice::Unit::__publicMethods Hud::Notice::Unit::publicMethods;
 Hud::Result::Unit::__publicMethods Hud::Result::Unit::publicMethods;
 Hud::Subtitle::Unit::__publicMethods Hud::Subtitle::Unit::publicMethods;
 Hud::Training::Unit::__publicMethods Hud::Training::Unit::publicMethods;
@@ -37,6 +41,9 @@ void Hud::Locate(HMODULE peRoot) {
 	Cockpit::Unit::Locate(peRoot);
 	Cockpit::View::Locate(peRoot);
 	Cursor::Unit::Locate(peRoot);
+	Notice::Bonus::Locate(peRoot);
+	Notice::Combo::Locate(peRoot);
+	Notice::Unit::Locate(peRoot);
 	Result::Unit::Locate(peRoot);
 	Subtitle::Unit::Locate(peRoot);
 	Training::Unit::Locate(peRoot);
@@ -194,12 +201,88 @@ void Hud::Cursor::Unit::Locate(HMODULE peRoot) {
 	*(PVOID*)&publicMethods.HudCursor_Update = (PVOID)(peRootOffset + 0x18c130);
 }
 
+void Hud::Notice::Bonus::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&publicMethods.Enable = (PVOID)(peRootOffset + 0x189770);
+	*(PVOID*)&publicMethods.Disable = (PVOID)(peRootOffset + 0x1898c0);
+}
+
+IEmSpriteNode** Hud::Notice::Bonus::GetActiveSprite(Bonus* b) {
+	return (IEmSpriteNode**)((unsigned int)b + 0x64);
+}
+
+DWORD* Hud::Notice::Bonus::GetCurrentBonus(Bonus* b) {
+	return (DWORD*)((unsigned int)b + 0x74);
+}
+
+int32_t* Hud::Notice::Bonus::GetScore(Bonus* b) {
+	return (int32_t*)((unsigned int)b + 0x78);
+}
+
+DWORD* Hud::Notice::Bonus::GetIsActive(Bonus* b) {
+	return (DWORD*)((unsigned int)b + 0x7c);
+}
+
+void Hud::Notice::Combo::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&publicMethods.Enable = (PVOID)(peRootOffset + 0x18a0e0);
+}
+
+uint32_t* Hud::Notice::Combo::GetComboLength(Combo* c) {
+	return (uint32_t*)((unsigned int)c + 0x60);
+}
+
+int32_t* Hud::Notice::Combo::GetScore(Combo* c) {
+	return (int32_t*)((unsigned int)c + 0x64);
+}
+
+DWORD* Hud::Notice::Combo::GetIsActive(Combo* c) {
+	return (DWORD*)((unsigned int)c + 0x68);
+}
+
+DWORD* Hud::Notice::Combo::GetShouldShowAdjective(Combo* c) {
+	return (DWORD*)((unsigned int)c + 0x6c);
+}
+
+WithReleaser<Hud::Notice::Bonus>* Hud::Notice::Player::GetBonuses(Player* p) {
+	return (WithReleaser<Hud::Notice::Bonus>*)((unsigned int)p + 0x28);
+}
+
+WithReleaser<Hud::Notice::Combo>* Hud::Notice::Player::GetCombo(Player* p) {
+	return (WithReleaser<Hud::Notice::Combo>*)((unsigned int)p + 0x20);
+}
+
+dDeque_0x10* Hud::Notice::Player::GetQueuedBonusNotices(Player* p) {
+	return (dDeque_0x10*)((unsigned int)p + 0x50);
+}
+
+dDeque_0x10* Hud::Notice::Player::GetQueuedComboNotices(Player* p) {
+	return (dDeque_0x10*)((unsigned int)p + 0x38);
+
+}
+
+void Hud::Notice::Unit::Locate(HMODULE peRoot) {
+	unsigned int peRootOffset = (unsigned int)peRoot;
+
+	*(PVOID*)&publicMethods.RestoreFromInternalMementoKey = (PVOID)(peRootOffset + 0x1886c0);
+}
+
 Task** Hud::Notice::Unit::GetHudNoticeUpdateTask(Unit* u) {
 	return (Task**)((unsigned int)u + 0x8);
 }
 
+Hud::Notice::View** Hud::Notice::Unit::GetView(Unit* u) {
+	return (View**)((unsigned int)u + 0x18);
+}
+
 Task** Hud::Result::Unit::GetHudResultUpdateTask(Unit* u) {
 	return (Task**)((unsigned int)u + 0x8);
+}
+
+WithReleaser<Hud::Notice::Player>* Hud::Notice::View::GetPlayers(View* v) {
+	return (WithReleaser<Hud::Notice::Player>*)((unsigned int)v + 0x20);
 }
 
 void Hud::Result::Unit::Locate(HMODULE peRoot) {

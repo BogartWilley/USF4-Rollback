@@ -51,6 +51,7 @@
 namespace rBattle = Dimps::Game::Battle;
 namespace rVfx = Dimps::Game::Battle::Vfx;
 namespace rStageSelect = Dimps::GameEvents::StageSelect;
+namespace rHud = Dimps::Game::Battle::Hud;
 namespace fHud = sf4e::Game::Battle::Hud;
 
 using CameraUnit = Dimps::Game::Battle::Camera::Unit;
@@ -85,6 +86,7 @@ using Dimps::Math::FixedPoint;
 using Dimps::Math::FixedToFloat;
 using Dimps::Platform::dString;
 using Dimps::Platform::GFxApp;
+using Dimps::Platform::WithReleaser;
 
 using fEventController = sf4e::Event::EventController;
 using fIUnit = sf4e::Game::Battle::IUnit;
@@ -1810,6 +1812,30 @@ void DrawHudWindow(bool* pOpen) {
 		if (Button("Enable HUD updates")) {
 			fHud::bAllowHudUpdate = true;
 			fIUnit::bAllowHudUpdate = true;
+		}
+	}
+
+	System* system = System::staticMethods.GetSingleton();
+
+	int isFight = (system->*System::publicMethods.IsFight)();
+	Text("Is fight: %d", isFight);
+	if (isFight) {
+		HudUnit* hud = (HudUnit*)(system->*System::publicMethods.GetUnitByIndex)(System::U_HUD);
+		rHud::Announce::Unit* announce = *HudUnit::GetAnnounce(hud);
+		rHud::Notice::View* noticeView = *rHud::Notice::Unit::GetView(*HudUnit::GetNotice(hud));
+		WithReleaser<rHud::Notice::Player>* noticePlayers = rHud::Notice::View::GetPlayers(noticeView);
+		Text("noticeView: %x", noticeView);
+		Text("noticePlayers: %x", noticePlayers);
+		for (int playerIdx = 0; playerIdx < (system->*System::publicMethods.GetNumCharasToSimulateThisFrame)(); playerIdx++) {
+			Text("Player %d: %x", playerIdx, noticePlayers[playerIdx].obj);
+			WithReleaser<rHud::Notice::Bonus>* bonuses = rHud::Notice::Player::GetBonuses(noticePlayers[playerIdx].obj);
+			Text("bonuses: %x", bonuses);
+			Text("bonus 0: %x", bonuses[0].obj);
+			Text("bonus 1: %x", bonuses[1].obj);
+
+			WithReleaser<rHud::Notice::Combo>* combo = rHud::Notice::Player::GetCombo(noticePlayers[playerIdx].obj);
+			Text("combo: %x", combo);
+			Text("real combo: %x", combo->obj);
 		}
 	}
 

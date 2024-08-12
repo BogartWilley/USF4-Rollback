@@ -35,6 +35,8 @@
 #include "sf4e__Pad.hxx"
 #include "sf4e__Platform.hxx"
 
+using Dimps::Platform::WithReleaser;
+
 namespace rHud = Dimps::Game::Battle::Hud;
 using CameraUnit = Dimps::Game::Battle::Camera::Unit;
 using CharaActor = Dimps::Game::Battle::Chara::Actor;
@@ -116,6 +118,16 @@ int fSystem::RecordToMemento(Memento* m, GameMementoKey::MementoID* id) {
 
     HudUnit* hud = (HudUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(System::U_HUD);
     fHud::Announce::Unit::RecordToAdditionalMemento(*HudUnit::GetAnnounce(hud), additional->announce);
+
+    rHud::Notice::View* noticeView = *rHud::Notice::Unit::GetView(*HudUnit::GetNotice(hud));
+    WithReleaser<rHud::Notice::Player>* noticePlayers = rHud::Notice::View::GetPlayers(noticeView);
+    for (int playerIdx = 0; playerIdx < (_this->*rSystem::publicMethods.GetNumCharasToSimulateThisFrame)(); playerIdx++) {
+        fHud::Notice::Player::RecordToAdditionalMemento(
+            noticePlayers[playerIdx].obj,
+            additional->playerNotices[playerIdx]
+        );
+    }
+
     Platform::GFxApp::RecordToAdditionalMemento(
         Dimps::Platform::GFxApp::staticMethods.GetSingleton(),
         additional->gfxApp
@@ -143,6 +155,16 @@ int fSystem::RestoreFromMemento(Memento* m, GameMementoKey::MementoID* id) {
     HudUnit* hud = (HudUnit*)(_this->*rSystem::publicMethods.GetUnitByIndex)(System::U_HUD);
     rHud::Announce::Unit* announce = *HudUnit::GetAnnounce(hud);
     fHud::Announce::Unit::RestoreFromAdditionalMemento(announce, additional->announce);
+
+    rHud::Notice::View* noticeView = *rHud::Notice::Unit::GetView(*HudUnit::GetNotice(hud));
+    WithReleaser<rHud::Notice::Player>* noticePlayers = rHud::Notice::View::GetPlayers(noticeView);
+    for (int playerIdx = 0; playerIdx < (_this->*rSystem::publicMethods.GetNumCharasToSimulateThisFrame)(); playerIdx++) {
+        fHud::Notice::Player::RestoreFromAdditionalMemento(
+            noticePlayers[playerIdx].obj,
+            additional->playerNotices[playerIdx]
+        );
+    }
+
     Platform::GFxApp::RestoreFromAdditionalMemento(
         Dimps::Platform::GFxApp::staticMethods.GetSingleton(),
         additional->gfxApp
