@@ -1,0 +1,13 @@
+{
+    "version": 2,
+    "configurePresets": [
+      {
+        "name": "default",
+        "inherits": "x86-msvc-ninja-relwithdebinfo",
+        "environment": {
+          "VCPKG_ROOT": "C:/Users/Admin/vcpkg"
+        }
+      }
+    ]
+  }
+  

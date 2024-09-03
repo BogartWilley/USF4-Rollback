@@ -1,0 +1,23 @@
+                                                                    
+
+
+
+
+                                                                    I'm going to teach you how to minimize input delay in SF4, this method will work with other games, but SF4 gets a huge boost from this. Even offline.
+
+
+
+                                    1. Right-Click your Desktop, and Select NVIDIA CONTROL PANEL.
+                                   
+                                    2. Click on MANAGE 3D SETTINGS, and click PROGRAM SETTINGS, then locate SUPER STREET FIGHTER IV: ARCADE EDITION in the list. 
+                                    If it isn't listed, click ADD, it might be in that list, if it isn't in that list, click BROWSE, and find the SSFIV.exe file, and click OK. 
+                                    (For MOST people this will be "C:\Program Files (x86)\Steam\steamapps\common\SUPER STREET FIGHTER IV ARCADE EDITION\SSFIV.EXE)
+
+                                    3. Find the setting labeled LOW LATENCY MODE, and set it to ULTRA.
+                                       Find the setting labeled POWER MANAGEMENT MODE, and set it to PREFER MAXIMUM PERFORMANCE.
+                                       Find the setting labeled THREADED OPTIMIZATION, and set it to ON.
+                                       Find the setting labeled VERTICAL SYNC, and set it to FAST,
+
+
+
+                                       (USF4 players, BE SURE TO REFER TO "_Instructions (In-Game Settings)")

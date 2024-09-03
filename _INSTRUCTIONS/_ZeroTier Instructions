@@ -1,0 +1,55 @@
+                        !!!!!!!!!!!!! WHY I USE ZEROTIER !!!!!!!!!!!
+                            I USE ZEROTIER SOLELY BECAUSE I AM
+                            RESTRICTED BY COMCAST FROM HOLE
+                            PUNCHING, AND PORT FORWARDING!!!!!!!!!
+                            
+                            
+                            ZEROTIER IS NOT REQUIRED
+                            TO PLAY THIS MOD!!!!!!!!
+
+                            YOU MAY HOLE PUNCH, OR PORT FORWARD!
+                            I CANNOT, SO I WILL NOT BE GIVING
+                            A TUTORIAL ON THESE METHODS!
+                            IF YOU WISH TO DO WITHOUT ZEROTIER
+                            OR SOMETHING SIMILAR, GOOGLE YOUR 
+                            PREFERED METHOD!!!!!!!!!!
+
+
+                        !!!!!!!!!!!!!!!! DISCLAIMER !!!!!!!!!!!!!!!! 
+                IF YOU DO NOT TRUST A PERSON, OR ANY SOFTWARE, DO NOT RUN IT!
+                        IF YOU INTEND TO RUN SOMETHING LIKE ZEROTIER                    
+                        ONLY RUN THE SOFTWARE WHEN YOU ARE PLAYING!!!!
+
+
+
+
+
+                        SHIT YOU GOTTA KNOW
+                        1. When not playing the Mod, exit ZeroTier.
+                        
+                        2. ZeroTier, and other like-programs, such as VPNs, and such, are all additional code, and potentionally an addition attack vector!
+                        I highly doubt ZeroTier is a problem in itself, as it is free, and open sourced software, and is used for literal space-travel.
+                        
+                        3. IF SOMEONE IS CONNECTED TO ZEROTIER AND GETS INFECTED, THIS COULD PUT OTHERS CONNECTED TO ZEROTIER AT RISK!
+                        HOWEVER! SEVERAL PEOPLE, HIGH PROFILE PEOPLE HAVE BEEN CONNECTED TO MY NETWORK FOR OVER A YEAR, AND WE'VE NOT HAD ANY ISSUES!
+                        IF YOU ARE CONCERNED ABOUT THIS, PERHAPS ZEROTIER (AND FRANKLY ALL VPN-LIKE SOFTWARE) IS NOT FOR YOU!
+
+                        1. Download and Install ZeroTier, from their Website, or the Github. 
+                        
+                        Download Site: https://www.zerotier.com/download/
+                        Github: https://github.com/zerotier/ZeroTierOne
+         ----------->   For MOST people,you want the Windows Version. Found here: https://download.zerotier.com/dist/ZeroTier%20One.msi
+
+                        2. Run the Installer, keep clicking NEXT until it finishes, very standard.
+                           ZeroTier will run in your Taskbar, botton right near your Clock. Often you will need to click the UP ARROW
+                           to find the Icon. Right click the Icon and select JOIN NEW NETWORK. 
+                           
+                           Paste in the NETWORK ID, the Network most people are using, and I personally pay for
+                           is NETWORK ID "272f5eae16d120c0" - Whoever you intend to play with all need to be on the same ZeroTier Network
+
+                        3. To find your personal ZeroTier IP ADDRESS, right click your ZeroTier icon in the Taskbar, and goto the Network,
+                        (In this case NETWORK ID "272f5eae16d120c0"), and goto MANAGED ADDRESSES, then left click the IP ADDRESS.
+         ----------->   This copies your ZEROTIER IP ADDRESS to the clipboard, you will need this ZeroTier IP ADDRESS to give to your friends 
+                        if you want to play, BE SURE to paste the IP ADDRESS followed by ":23456"!
+
+                        (Refer to Rollback Instructions from this piont forward!)

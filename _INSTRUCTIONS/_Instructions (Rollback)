@@ -1,0 +1,52 @@
+     ---------->   I will not bother going over how to build this Yourself, if you have that level of tech knowledge you will likely not be
+                   Looking for my built versions, and almost certainly are one to Tinker and discover all this stuff yourself.     
+
+I'm going to go into some decent detail about a few things
+    1. How to run the Rollback mod.
+    2. How to avoid some random jank.
+
+
+                            ------How to run the Rollback------
+
+                          1. Extract the Mod. It does not need to be in any specific folder,
+                          but it must be in it's own folder. "Launcher.exe" is how you run
+                          the Mod. DO NOT HAVE THE VANILLA GAME OPEN ALREADY, if it is open already, Close it!
+						  (If you're Smart, you will add the Launcher as a Non-Steam game, inside Steam, so you get the Steam Overlay)
+							
+							2. BEFORE you try the Rollback!!!! Boot the vanilla game, and goto OFFLINE VERSUS,
+                         PLAYER VS PLAYER, and set Rounds to 3, time to 99, and EDITION SELECT ON! ALL players involved MUST do this!
+							
+							3. Launch "Launcher.exe"
+
+              4. You likely will think that nothing happend, look in your taskbar for SF4, and bring SF4 to the front.
+                Sometimes the Command Prompt will open in front, this is normal, just use the Taskbar, or ALT+TAB to swap over to the game. 
+
+              5. MASH LIGHT KICK UNTIL YOU GET TO THE MAIN MENU!!!! (Do so on whatever device you intend to play with, this is to avoid a bit of jank later!)
+                 (IF you don't do this, you may think the game is unresponsive, and can't get to the main menu. If you press Light Kick on another device,
+                 then when you get into the actual match, your actual device might not work in the match, but will work fine in the menus)
+
+              6. When you get to the MAIN MENU, you will notice a very primitive menu that is not there in the vanilla game. (You have a DELAY option, MOST people will set this to "1", if you have consistent desynces and crashing, bump this to "2")
+                 This is where everything for you will select Character, Costume, Colors, Ultras, Taunts, Stages, choose your EDITION, Handicaps, and so on.
+                      The first thing you need to do with this Menu is goto the lower right, and expand it out some, make sure to make it taller so you can find your Ultras and your SEND CHAR button.     
+                      (SEND CHAR acts as your Ready button.)
+                      DECIDE if you want to host or join.
+                            6a. IF HOSTING: Click HOST on the Network Menu, BE SURE TO TYPE A NAME, and click HOST. Give anyone joining your IP address.
+                            (IF you are Port Forwarding, this will be your real IP Address. IF you are using ZeroTier, give them your ZerotTier IP Address.)
+                            6b. IF JOINING: Get the IP Address of the Host, and paste it into the SESSION SERVER field, followed by ";23456", BE SURE TO TYPE A NAME!
+              
+              7.  Select your character, costume, color, Ultra, and so on from the drop-down box, when you have selected the character you want, and your Ultra and so on, click SEND CHAR.
+                        NOTE 1: "0" is the default for everything. The Rollback's Menu WILL NOT pull your saved character settings from the vanilla game!
+                                 So the Value for Chun-Li's Hosenka is "0", her Kikosho is "1", and ULTRA COMBO DOUBLE is "2"
+                                 Handicap value "0" is NO HANDICAP
+                        NOTE 2: Character appear in the list in the order they were added to the game, and use the JAPANESE NAMES!
+                                This means Dictator, Boxer, and Claw are Vega, M. Bison, and Balrog respectively
+                        NOTE 3: IF both players do not enter anything into the NAME field, the Rollback mod will throw an error, and the error is unrelated. JUST ENTER A NAME!
+                        
+
+              8. If the Menu is annoying, click the Arrow in the upper left corner of the NETWORK MENU, to collapse, and expand. 
+
+
+
+
+              (Please submit any corrections, or suggestions to me. If you have bugs to report, report them to me so I can try to recreate them and record it to submit it to Lulowen,
+              and please include your Screenname so you can be credited, or post the Bug in the bug tracker on Gitlab.)        
