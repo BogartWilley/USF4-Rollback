@@ -145,7 +145,7 @@ int fMain::Initialize(void* a, void* b, void* c) {
             }
             std::shared_ptr<spdlog::logger> logger(new spdlog::logger("sf4e", sinks.begin(), sinks.end()));
             spdlog::set_default_logger(logger);
-            spdlog::info("Welcome to sf4e");
+            spdlog::info("Welcome to USF4 Rollback");
         }
         catch (const spdlog::spdlog_ex& ex)
         {
