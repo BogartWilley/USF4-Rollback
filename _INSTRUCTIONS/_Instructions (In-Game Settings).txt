@@ -1,33 +1,18 @@
+  In-Game Settings
+1. Goto your Settings from the main menu, and goto GRAPHICS.
+2. Find the setting labeled VSYNC, and set it to OFF.
+3. Find the setting labeled FRAMERATE, and set it to FIXED.
+4. Find the setting labeled FILTERING, and set it to OFF, or no more than 4X (This looks nice, but it causes input delay)
 
 
-
-
-                                                                    In-Game Settings
-                                                                1. Goto your Settings from the main menu, and goto GRAPHICS.
-                                                                2. Find the setting labeled VSYNC, and set it to OFF.
-                                                                3. Find the setting labeled FRAMERATE, and set it to FIXED.
-                                                                4. Find the setting labeled FILTERING, and set it to OFF, or no more than 4X (This looks nice, but it causes input delay)
-
-
-
-
-
-
-
-
-
-
-                                                                                            In-Game Settings (Rollback specific)
-                                                                                        1. Follow Instructions detailed above.
+  In-Game Settings (Rollback specific)
+1. Follow Instructions detailed above.
+2. Goto the Main Menu, and goto VS, then select PLAYER VS PLAYER, and make sure your settings are as follows
+       ROUNDS: 3
+       TIME: 99
+       EDITION SELECT: ON
+       You are welcome to save your replays, just know there is some jank involved with playing them back, best to use OBS-Studio for recording replays.)
                                                                                         
-                                                                                        2. Goto the Main Menu, and goto VS, then select PLAYER VS PLAYER, and make sure your settings are as follows
-                                                                                        ROUNDS: 3
-                                                                                        TIME: 99
-                                                                                        EDITION SELECT: ON
-                                                                                        (You are welcome to save your replays, just know there is some jank involved with playing them back, best to use OBS-Studio for recording replays.)
-                                                                                        
-                                                                                        3. Be sure if you are setting these settings from within the Rollback launcher, you go all the way to the Character selection screen in PLAYER VS PLAYER VERSUS MODE. 
-                                                                                        If you don't get tot he Character Selection screen, it WILL NOT SAVE your settings!
-                                                                                        
-                                                                                        4. (Semi-optional: Refer to Nvidia Control panel Tutorial)
-
+ 3. Be sure if you are setting these settings from within the Rollback launcher, you go all the way to the Character selection screen in PLAYER VS PLAYER VERSUS MODE. 
+     If you don't get tot he Character Selection screen, it WILL NOT SAVE your settings!                               
+ 4. (Semi-optional: Refer to Nvidia Control panel Tutorial)
