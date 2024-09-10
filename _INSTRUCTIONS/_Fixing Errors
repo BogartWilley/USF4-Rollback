@@ -1,0 +1,5 @@
+If  you get  error 0x0000142
+Install x86 Redistrobutables
+Then install x64
+(In that order!)
+https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170
