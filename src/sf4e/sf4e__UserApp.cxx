@@ -36,11 +36,13 @@ void fUserApp::StartClient(char* joinAddr, uint16_t port, std::string& sidecarHa
     SteamNetworkingIPAddr addr;
     addr.Clear();
     addr.ParseString(joinAddr);
-    client.reset(new SessionClient(sidecarHash, addr, port, name, deviceType, deviceIdx, delay));
+    client.reset(new SessionClient(sidecarHash, port, name, deviceType, deviceIdx, delay));
+    client->Connect(addr);
 }
 
 void fUserApp::StartServer(uint16 hostPort, std::string& sidecarHash) {
-    server.reset(new SessionServer(hostPort, sidecarHash));
+    server.reset(new SessionServer(sidecarHash));
+    server->Listen(hostPort);
 }
 
 void fUserApp::Steam_PostUpdate() {

@@ -34,29 +34,16 @@ using sf4e::SessionServer;
 const int sf4e::SESSION_SERVER_MAX_MESSAGES_PER_POLL = 200;
 SessionServer* SessionServer::s_pCallbackInstance;
 
-SessionServer::SessionServer(uint16 nPort, std::string sidecarHash) :
+SessionServer::SessionServer(std::string sidecarHash) :
 	_sidecarHash(sidecarHash),
 	_interface(SteamNetworkingSockets()),
 	_lobbyData(),
 	_matchData(),
-	_dataDirty(false)
+	_dataDirty(false),
+	_listenSock(k_HSteamListenSocket_Invalid)
 {
-
 	clients.reserve(MAX_SF4E_PROTOCOL_USERS + 1);
 	_pollGroup = _interface->CreatePollGroup();
-
-	// Start listening
-	SteamNetworkingIPAddr serverLocalAddr;
-	serverLocalAddr.Clear();
-	serverLocalAddr.m_port = nPort;
-	SteamNetworkingConfigValue_t opt;
-	opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)SteamNetConnectionStatusChangedCallback);
-	_listenSock = _interface->CreateListenSocketIP(serverLocalAddr, 1, &opt);
-	if (_listenSock == k_HSteamListenSocket_Invalid) {
-		spdlog::error("Failed to listen on port {}", nPort);
-		return;
-	}
-	spdlog::info("Server listening on port {}", nPort);
 }
 
 SessionServer::~SessionServer()
@@ -67,12 +54,28 @@ SessionServer::~SessionServer()
 	}
 }
 
-int SessionServer::Step()
-{
+
+void SessionServer::AddConnection(HSteamNetConnection newConn) {
+	_interface->SetConnectionPollGroup(newConn, _pollGroup);
+}
+
+int SessionServer::Listen(uint16 nPort) {
+	SteamNetworkingIPAddr serverLocalAddr;
+	serverLocalAddr.Clear();
+	serverLocalAddr.m_port = nPort;
+	SteamNetworkingConfigValue_t opt;
+	opt.SetPtr(k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged, (void*)SteamNetConnectionStatusChangedCallback);
+	_listenSock = _interface->CreateListenSocketIP(serverLocalAddr, 1, &opt);
 	if (_listenSock == k_HSteamListenSocket_Invalid) {
+		spdlog::error("Failed to listen on port {}", nPort);
 		return -1;
 	}
+	spdlog::info("Server listening on port {}", nPort);
+	return 0;
+}
 
+int SessionServer::Step()
+{
 	ISteamNetworkingMessage* pIncomingMsgs[SESSION_SERVER_MAX_MESSAGES_PER_POLL] = { 0 };
 	int numMsgs = _interface->ReceiveMessagesOnPollGroup(_pollGroup, pIncomingMsgs, SESSION_SERVER_MAX_MESSAGES_PER_POLL);
 
@@ -244,8 +247,10 @@ int SessionServer::Close()
 	clients.clear();
 	_interface->DestroyPollGroup(_pollGroup);
 	_pollGroup = k_HSteamNetPollGroup_Invalid;
-	_interface->CloseListenSocket(_listenSock);
-	_listenSock = k_HSteamListenSocket_Invalid;
+	if (_listenSock != k_HSteamListenSocket_Invalid) {
+		_interface->CloseListenSocket(_listenSock);
+		_listenSock = k_HSteamListenSocket_Invalid;
+	}
 	return 0;
 }
 
@@ -318,7 +323,7 @@ void SessionServer::OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusCh
 			break;
 		}
 
-		_interface->SetConnectionPollGroup(pInfo->m_hConn, _pollGroup);
+		AddConnection(pInfo->m_hConn);
 	}
 
 	default:

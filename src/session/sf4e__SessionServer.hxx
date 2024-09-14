@@ -22,11 +22,6 @@ namespace sf4e {
 		HSteamNetPollGroup _pollGroup;
 		ISteamNetworkingSockets* _interface;
 
-		// Lobby data
-		bool _dataDirty;
-		SessionProtocol::LobbyData _lobbyData;
-		SessionProtocol::MatchData _matchData;
-
 		// Connection callbacks and message utilities
 		static SessionServer* s_pCallbackInstance;
 		static void _OnVsPreBattleTasksRegistered();
@@ -49,11 +44,12 @@ namespace sf4e {
 
 	public:
 		SessionServer(
-			uint16 nPort,
 			std::string sidecarHash
 		);
 		~SessionServer();
 
+		void AddConnection(HSteamNetConnection newConn);
+		int Listen(uint16 nPort);
 		int Step();
 		int Close();
 		void PrepareForCallbacks();
@@ -64,6 +60,12 @@ namespace sf4e {
 		} SessionMember;
 
 		std::vector<SessionMember> clients;
+
+
+		// Lobby data: Public for visibility into tests only.
+		bool _dataDirty;
+		SessionProtocol::LobbyData _lobbyData;
+		SessionProtocol::MatchData _matchData;
 	};
 
 	void from_json(const nlohmann::json& j, SessionServer::SessionMember& m);

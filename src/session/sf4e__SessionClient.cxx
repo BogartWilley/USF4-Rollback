@@ -41,36 +41,79 @@ SessionClient* SessionClient::s_pCallbackInstance;
 
 SessionClient::SessionClient(
 	std::string sidecarHash,
-	const SteamNetworkingIPAddr& serverAddr,
-	uint16_t port,
+	uint16_t ggpoPort,
 	std::string& name,
 	uint8_t deviceType,
 	uint8_t deviceIdx,
 	uint8_t delay
 ):
 	_sidecarHash(sidecarHash),
-	_serverAddr(serverAddr),
 	_name(name),
-	_port(port),
+	_ggpoPort(ggpoPort),
 	_interface(SteamNetworkingSockets()),
 	_delay(delay),
 	_deviceType(deviceType),
-	_deviceIdx(deviceIdx)
+	_deviceIdx(deviceIdx),
+	_conn(k_HSteamNetConnection_Invalid),
+	_connected(false)
 {
-	char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
-	SteamNetworkingConfigValue_t opt;
+	_serverAddr.Clear();
+}
 
+int SessionClient::Connect(HSteamNetConnection newConn) {
+	_snapshotsEnabled = false;
+	_serverAddr.SetIPv6LocalHost();
+	_conn = newConn;
+	_connected = true;
+	_interface->SetConnectionUserData(newConn, (int64)this);
+
+	// XXX (adanducci): It is absolutely critical to note that
+	// `SetConfigValue`'s interface to set callbacks is _not_ the
+	// same as the one used by `ConnectByIPAddress`/`SteamNetworkingConfigValue_t`.
+	// 
+	// Per the documentation for `SetConfigValue` and the header comment @
+	// https://github.com/ValveSoftware/GameNetworkingSockets/blob/62b395172f157ca4f01eea3387d1131400f8d604/include/steam/isteamnetworkingutils.h#L296-L307 :
+	//
+	// NOTE: When setting pointers (e.g. callback functions), do not pass the function pointer
+	// directly. Your argument should be a pointer to a function pointer.
+	//
+	// `ConnectByIPAddress`/`SteamNetworkingConfigValue_t` just takes the
+	// function pointer directly. The failure mode if you pass the function
+	// pointer directly is _extremely_ confusing- it just appears to be
+	// a segfault in the GNS callback loop.
+	void* callback = SteamNetConnectionStatusChangedCallback;
+	SteamNetworkingUtils()->SetConfigValue(
+		k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
+		k_ESteamNetworkingConfig_Connection,
+		newConn,
+		k_ESteamNetworkingConfig_Ptr,
+		&callback
+	);
+
+	return 0;
+}
+
+int SessionClient::Connect(const SteamNetworkingIPAddr& serverAddr) {
+	char szAddr[SteamNetworkingIPAddr::k_cchMaxString];
+	SteamNetworkingConfigValue_t opts[2];
+	_serverAddr = serverAddr;
 	_serverAddr.ToString(szAddr, sizeof(szAddr), true);
 	spdlog::info("Connecting to session server at {}", szAddr);
 
-	opt.SetPtr(
+	opts[0].SetInt64(
+		k_ESteamNetworkingConfig_ConnectionUserData,
+		(int64)this
+	);
+	opts[1].SetPtr(
 		k_ESteamNetworkingConfig_Callback_ConnectionStatusChanged,
 		(void*)SteamNetConnectionStatusChangedCallback
 	);
-	_conn = _interface->ConnectByIPAddress(_serverAddr, 1, &opt);
+	_snapshotsEnabled = true;
+	_conn = _interface->ConnectByIPAddress(_serverAddr, 2, opts);
 	if (_conn == k_HSteamNetConnection_Invalid) {
 		spdlog::error("Client failed to create connection");
 	}
+	return 0;
 }
 
 SessionClient::~SessionClient()
@@ -221,7 +264,7 @@ int SessionClient::Step()
 
 	// Send all our outstanding local snapshots and compare any to pending
 	// snapshots.
-	{	
+	if (_snapshotsEnabled) {
 		int mostRecentPredictiveFrame = (
 			rSystem::GetNumFramesSimulated_FixedPoint(rSystem::staticMethods.GetSingleton())->integral
 		);
@@ -330,7 +373,7 @@ void SessionClient::_OnVsBattleTasksRegistered()
 				strcpy_s(player.u.remote.ip_address, 32, memberData.ip.c_str());
 			}
 		}
-		fSystem::StartGGPO(players, _this->_lobbyData.size(), _this->_port, _this->_delay, _this->_matchData.rngSeed);
+		fSystem::StartGGPO(players, _this->_lobbyData.size(), _this->_ggpoPort, _this->_delay, _this->_matchData.rngSeed);
 	}
 	else {
 		// Always spectate from	P1 for now- the protocol has
@@ -350,7 +393,7 @@ void SessionClient::_OnVsBattleTasksRegistered()
 		}
 
 		fSystem::StartSpectating(
-			_this->_port,
+			_this->_ggpoPort,
 			2,
 			hostIP,
 			_this->_lobbyData[0].port,
@@ -420,7 +463,7 @@ void SessionClient::OnSteamNetConnectionStatusChanged(SteamNetConnectionStatusCh
 		SessionProtocol::JoinRequest request;
 		request.sidecarHash = _sidecarHash;
 		request.username = _name;
-		request.port = _port;
+		request.port = _ggpoPort;
 		json msg = request;
 		if (Send(msg, nullptr) != k_EResultOK) {
 			spdlog::warn("Client could send initial join request");
@@ -462,5 +505,6 @@ EResult SessionClient::ReportResults(SessionProtocol::ReportResultsRequest& r)
 
 void SessionClient::SteamNetConnectionStatusChangedCallback(SteamNetConnectionStatusChangedCallback_t* pInfo)
 {
-	s_pCallbackInstance->OnSteamNetConnectionStatusChanged(pInfo);
+	SessionClient* instance = (SessionClient *)SteamNetworkingSockets()->GetConnectionUserData(pInfo->m_hConn);
+	instance->OnSteamNetConnectionStatusChanged(pInfo);
 }
