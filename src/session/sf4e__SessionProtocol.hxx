@@ -95,7 +95,7 @@ namespace sf4e {
 			MessageType type = MT_SET_CONDITIONS;
 			Dimps::GameEvents::VsMode::ConfirmedCharaConditions chara;
 			int32_t stageID;
-			DWORD rngSeed;
+			uint32_t rngSeed;
 		};
 
 		struct ReportResultsRequest {

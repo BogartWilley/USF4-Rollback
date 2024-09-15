@@ -112,6 +112,10 @@ target_link_libraries(
     PUBLIC nlohmann_json::nlohmann_json spdlog::spdlog GameNetworkingSockets::shared ggpo::GGPO
 )
 
+add_executable(SessionInteractiveTest "src/session/interactive_test.cxx")
+target_link_libraries(SessionInteractiveTest PRIVATE nlohmann_json::nlohmann_json imgui::imgui spdlog::spdlog Dimps sf4e Session Overlay "d3d9")
+# target_link_options(SessionInteractiveTest PRIVATE "/entry:wWinMainCRTStartup")
+
 add_executable(Launcher WIN32 src/launcher/launcher.cxx)
 target_include_directories(Launcher PRIVATE ${VALVEFILEVDF_INCLUDE_DIRS})
 target_link_libraries(Launcher PRIVATE ${LIB_DETOURS} spdlog::spdlog "shlwapi" "pathcch")
