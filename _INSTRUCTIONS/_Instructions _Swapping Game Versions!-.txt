@@ -1,0 +1,9 @@
+To revert the game from ULTRA to SSFIVAE:
+Navigate to USFIV game on Steam, click the GEAR ICON, Select DLC, and search for ULTRA, UNCHECK ULTRA UPGRADE and let the game redownload the gamefiles.
+
+This will revolt the game to the final update of SSFIVAE, complete with UI differences, wallpapers, Announcer Lines, Arcade Mode Stories & Endings, and even a seperate save file! That's right, you can start over from Zero Points, if you so desire.
+
+To revert the game BACK TO ULTRA:
+Simply Recheck the ULTRA UPGRADE, and let Steam redownload the remaining 2.25GB DLC.
+
+If switching between versions, you will maintain your Save Data for each version seperately! It really seems like this is expected of you to do. 
