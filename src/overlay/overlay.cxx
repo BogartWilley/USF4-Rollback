@@ -32,6 +32,7 @@
 #include "../Dimps/Dimps__Pad.hxx"
 #include "../Dimps/Dimps__Platform.hxx"
 
+#include "../session/sf4e__SessionClient.hxx"
 #include "../session/sf4e__SessionProtocol.hxx"
 
 #include "../sf4e/sf4e.hxx"
@@ -157,6 +158,33 @@ static int mainMenuCharaIDs[2] = { 0 };
 static Dimps::GameEvents::VsMode::ConfirmedCharaConditions mainMenuJumpCharaConditions[2] = { 0 };
 static int mainMenuJumpCharaCount = 2;
 static int mainMenuJumpStageID = 0;
+static std::deque<std::string> clientAlerts;
+
+void OnClientError(sf4e::SessionClient::ErrorType errType, const sf4e::SessionClient::Callbacks& callbacks) {
+	switch (errType) {
+	case sf4e::SessionClient::ErrorType::SCE_JOIN_REJECTED_HASH_INVALID:
+		clientAlerts.push_back("Could not join lobby: version mismatch");
+		break;
+	case sf4e::SessionClient::ErrorType::SCE_JOIN_REJECTED_LOBBY_FULL:
+		clientAlerts.push_back("Could not join lobby: lobby fill");
+		break;
+	case sf4e::SessionClient::ErrorType::SCE_JOIN_REJECTED_NAME_TAKEN:
+		clientAlerts.push_back("Could not join lobby: name taken");
+		break;
+	case sf4e::SessionClient::ErrorType::SCE_JOIN_REJECTED_REQUEST_INVALID:
+		clientAlerts.push_back("Could not join lobby: join request incorrectly formatted- version mismatch?");
+		break;
+	default:
+		clientAlerts.push_back("An unknown error occurred");
+		break;
+	}
+	show_network_window = true;
+}
+
+sf4e::SessionClient::Callbacks clientCallbacks = {
+	nullptr,
+	OnClientError
+};
 
 enum NetworkWindowState {
 	NWS_CAPTURE = 0,
@@ -906,7 +934,7 @@ void DrawNetworkJoinPanel(uint8_t deviceIdx, uint8_t deviceType) {
 	ImGui::InputScalar("Delay", ImGuiDataType_U8, &delay);
 
 	if (Button("Join")) {
-		fUserApp::StartClient(joinAddr, port, sf4e::sidecarHash, std::string(name), deviceType, deviceIdx, delay);
+		fUserApp::StartClient(clientCallbacks, joinAddr, port, sf4e::sidecarHash, std::string(name), deviceType, deviceIdx, delay);
 	}
 }
 
@@ -939,7 +967,7 @@ void DrawNetworkHostPanel(uint8_t deviceIdx, uint8_t deviceType) {
 		char hostAddr[64];
 		snprintf(hostAddr, 64, "127.0.0.1:%d", hostPort);
 		fUserApp::StartServer(hostPort, sf4e::sidecarHash);
-		fUserApp::StartClient(hostAddr, ggpoPort, sf4e::sidecarHash, std::string(name), deviceType, deviceIdx, delay);
+		fUserApp::StartClient(clientCallbacks, hostAddr, ggpoPort, sf4e::sidecarHash, std::string(name), deviceType, deviceIdx, delay);
 	}
 	ImGui::EndDisabled();
 }
@@ -1032,64 +1060,79 @@ void DrawNetworkWindow(bool* pOpen) {
 	ImGui::InputInt("Randomize inputs every X frames", &fSystem::nRandomizeLocalInputsEveryXFramesInGGPO);
 	ImGui::Checkbox("Show debug data?", &bDebug);
 	Separator();
-	switch (netState) {
-	case NWS_CAPTURE:
-		if (deviceIdx == 0xff && deviceType == 0xff) {
-			PadSystem* p = PadSystem::staticMethods.GetSingleton();
-			PadSystem::__publicMethods& methods = PadSystem::publicMethods;
-			if ((p->*methods.CaptureNextMatchingPadToSide)(0, 0x1040, 0xffffffff)) {
-				deviceIdx = (p->*methods.GetDeviceIndexForPlayer)(0);
-				deviceType = (p->*methods.GetDeviceTypeForPlayer)(0);
-				(p->*methods.SetSideHasAssignedController)(0, 0);
-				netState = NWS_DECIDE;
-			}
-			else {
-				Text("Press start or LK...");
-			}
+	if (clientAlerts.size() > 0) {
+		ImU32 red = IM_COL32(255, 0, 0, 255);
+		ImU32 darkRed = IM_COL32(255, 0, 0, 102);
+		ImGui::PushStyleColor(ImGuiCol_Button, darkRed);
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, red);
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, red);
+		ImGui::PushStyleColor(ImGuiCol_Text, red);
+		Text(clientAlerts.at(0).c_str());
+		if (Button("OK")) {
+			clientAlerts.pop_front();
 		}
-		break;
-	case NWS_DECIDE:
-		if (Button("Host a game")) {
-			netState = NWS_HOST;
-		}
-		if (Button("Join a game")) {
-			netState = NWS_JOIN;
-		}
-		break;
-	case NWS_HOST:
-		if (!fUserApp::server) {
-			DrawNetworkHostPanel(deviceIdx, deviceType);
-			if (Button("Go back")) {
-				netState = NWS_DECIDE;
-			}
-		}
-		else {
-			if (bDebug) {
-				Text("Server initialized, client map:");
-				for (auto iter = fUserApp::server->clients.begin(); iter != fUserApp::server->clients.end(); iter++) {
-					Text("%x %s", iter->conn, iter->data.name.c_str());
+		ImGui::PopStyleColor(4);
+	}
+	else {
+		switch (netState) {
+		case NWS_CAPTURE:
+			if (deviceIdx == 0xff && deviceType == 0xff) {
+				PadSystem* p = PadSystem::staticMethods.GetSingleton();
+				PadSystem::__publicMethods& methods = PadSystem::publicMethods;
+				if ((p->*methods.CaptureNextMatchingPadToSide)(0, 0x1040, 0xffffffff)) {
+					deviceIdx = (p->*methods.GetDeviceIndexForPlayer)(0);
+					deviceType = (p->*methods.GetDeviceTypeForPlayer)(0);
+					(p->*methods.SetSideHasAssignedController)(0, 0);
+					netState = NWS_DECIDE;
+				}
+				else {
+					Text("Press start or LK...");
 				}
 			}
-			if (fUserApp::client) {
-				Separator();
-				Text("Client");
+			break;
+		case NWS_DECIDE:
+			if (Button("Host a game")) {
+				netState = NWS_HOST;
+			}
+			if (Button("Join a game")) {
+				netState = NWS_JOIN;
+			}
+			break;
+		case NWS_HOST:
+			if (!fUserApp::server) {
+				DrawNetworkHostPanel(deviceIdx, deviceType);
+				if (Button("Go back")) {
+					netState = NWS_DECIDE;
+				}
+			}
+			else {
+				if (bDebug) {
+					Text("Server initialized, client map:");
+					for (auto iter = fUserApp::server->clients.begin(); iter != fUserApp::server->clients.end(); iter++) {
+						Text("%x %s", iter->conn, iter->data.name.c_str());
+					}
+				}
+				if (fUserApp::client) {
+					Separator();
+					Text("Client");
+					DrawNetworkLobbyPanel();
+				}
+			}
+			break;
+		case NWS_JOIN:
+			if (!fUserApp::client) {
+				DrawNetworkJoinPanel(deviceIdx, deviceType);
+				if (Button("Go back")) {
+					netState = NWS_DECIDE;
+				}
+			}
+			else {
 				DrawNetworkLobbyPanel();
 			}
+			break;
+		default:
+			break;
 		}
-		break;
-	case NWS_JOIN:
-		if (!fUserApp::client) {
-			DrawNetworkJoinPanel(deviceIdx, deviceType);
-			if (Button("Go back")) {
-				netState = NWS_DECIDE;
-			}
-		}
-		else {
-			DrawNetworkLobbyPanel();
-		}
-		break;
-	default:
-		break;
 	}
 
 	End();

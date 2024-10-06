@@ -40,6 +40,7 @@ const int sf4e::SESSION_CLIENT_MAX_MESSAGES_PER_POLL = 20;
 SessionClient* SessionClient::s_pCallbackInstance;
 
 SessionClient::SessionClient(
+	const Callbacks& callbacks,
 	std::string sidecarHash,
 	uint16_t ggpoPort,
 	std::string& name,
@@ -47,6 +48,7 @@ SessionClient::SessionClient(
 	uint8_t deviceIdx,
 	uint8_t delay
 ):
+	_callbacks(callbacks),
 	_sidecarHash(sidecarHash),
 	_name(name),
 	_ggpoPort(ggpoPort),
@@ -182,6 +184,24 @@ int SessionClient::Step()
 			}
 
 			spdlog::info("Join rejected, reason: {}", (int)reject.result);
+			ErrorType errType = ErrorType::SCE_UNKNOWN;
+			switch (reject.result) {
+			case SessionProtocol::JoinResult::JR_HASH_INVALID:
+				errType = ErrorType::SCE_JOIN_REJECTED_HASH_INVALID;
+				break;
+			case SessionProtocol::JoinResult::JR_LOBBY_FULL:
+				errType = ErrorType::SCE_JOIN_REJECTED_LOBBY_FULL;
+				break;
+			case SessionProtocol::JoinResult::JR_NAME_TAKEN:
+				errType = ErrorType::SCE_JOIN_REJECTED_NAME_TAKEN;
+				break;
+			case SessionProtocol::JoinResult::JR_REQUEST_INVALID:
+				errType = ErrorType::SCE_JOIN_REJECTED_REQUEST_INVALID;
+				break;
+			default:
+				break;
+			}
+			_callbacks.OnError(errType, _callbacks);
 			_interface->CloseConnection(_conn, 0, nullptr, false);
 			_conn = k_HSteamNetConnection_Invalid;
 			return -1;

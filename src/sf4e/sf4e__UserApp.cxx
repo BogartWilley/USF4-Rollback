@@ -32,11 +32,11 @@ void fUserApp::Install() {
     DetourAttach((PVOID*)&rUserApp::staticMethods.Steam_PostUpdate, Steam_PostUpdate);
 }
 
-void fUserApp::StartClient(char* joinAddr, uint16_t port, std::string& sidecarHash, std::string& name, uint8_t deviceType, uint8_t deviceIdx, uint8_t delay) {
+void fUserApp::StartClient(const SessionClient::Callbacks& callbacks, char* joinAddr, uint16_t port, std::string& sidecarHash, std::string& name, uint8_t deviceType, uint8_t deviceIdx, uint8_t delay) {
     SteamNetworkingIPAddr addr;
     addr.Clear();
     addr.ParseString(joinAddr);
-    client.reset(new SessionClient(sidecarHash, port, name, deviceType, deviceIdx, delay));
+    client.reset(new SessionClient(callbacks, sidecarHash, port, name, deviceType, deviceIdx, delay));
     client->Connect(addr);
 }
 
