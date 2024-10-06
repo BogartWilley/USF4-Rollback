@@ -70,7 +70,8 @@ namespace sf4e {
 			{JOIN_OK, "ok"},
 			{JR_REQUEST_INVALID, "request_invalid"},
 			{JR_LOBBY_FULL, "lobby_full"},
-			{JR_NAME_TAKEN, "name_taken"}
+			{JR_NAME_TAKEN, "name_taken"},
+			{JR_HASH_INVALID, "hash_invalid"}
 		})
 
 		struct DataUpdate {

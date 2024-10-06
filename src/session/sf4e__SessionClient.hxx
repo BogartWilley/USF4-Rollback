@@ -14,8 +14,23 @@ namespace sf4e {
 
 	class SessionClient
 	{
+
 	public:
+		enum ErrorType {
+			SCE_UNKNOWN,
+			SCE_JOIN_REJECTED_HASH_INVALID,
+			SCE_JOIN_REJECTED_LOBBY_FULL,
+			SCE_JOIN_REJECTED_NAME_TAKEN,
+			SCE_JOIN_REJECTED_REQUEST_INVALID,
+		};
+
+		struct Callbacks {
+			void* data;
+			void (*OnError)(ErrorType errorType, const Callbacks& callbacks);
+		};
+
 		SessionClient(
+			const Callbacks& callbacks,
 			std::string sidecarHash,
 			uint16_t ggpoPort,
 			std::string& name,
@@ -24,6 +39,7 @@ namespace sf4e {
 			uint8_t delay
 		);
 		~SessionClient();
+
 
 		int Connect(HSteamNetConnection newConn);
 		int Connect(const SteamNetworkingIPAddr& serverAddr);
@@ -49,6 +65,7 @@ namespace sf4e {
 	private:
 
 		// Connection related data
+		Callbacks _callbacks;
 		bool _connected = false;
 		SteamNetworkingIPAddr _serverAddr;
 		HSteamNetConnection _conn;

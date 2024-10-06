@@ -46,6 +46,8 @@ static char* characterNames[] = {
 #define NUM_STUB_CHARAS 3
 
 struct TestingSessionClient {
+    SessionClient::Callbacks callbacks;
+    std::deque<std::string> alerts;
     SessionClient c;
     int menuCharaID;
     SetConditionsRequest setConditionsReqBuf;
@@ -58,14 +60,18 @@ struct TestingSessionClient {
         uint8_t deviceType,
         uint8_t deviceIdx,
         uint8_t delay
-    ) : c(
-        sidecarHash,
-        ggpoPort,
-        name,
-        deviceType,
-        deviceIdx,
-        delay
-    ), menuCharaID(0) {
+    ) : 
+        callbacks{ this, OnError },
+        c(
+            callbacks,
+            sidecarHash,
+            ggpoPort,
+            name,
+            deviceType,
+            deviceIdx,
+            delay
+        ), menuCharaID(0)
+    {
         setConditionsReqBuf.rngSeed = 0;
         setConditionsReqBuf.stageID = 0;
         setConditionsReqBuf.chara.charaID = 0;
@@ -78,6 +84,27 @@ struct TestingSessionClient {
         setConditionsReqBuf.chara.handicap = 0;
         setConditionsReqBuf.chara.unc_edition = 0;
         reportResultsReqBuf.loserSide = 0;
+    }
+
+    static void OnError(SessionClient::ErrorType errType, const SessionClient::Callbacks& callbacks) {
+        TestingSessionClient* client = (TestingSessionClient*)callbacks.data;
+        switch (errType) {
+        case sf4e::SessionClient::ErrorType::SCE_JOIN_REJECTED_HASH_INVALID:
+            client->alerts.push_back("Could not join lobby: version mismatch");
+            break;
+        case sf4e::SessionClient::ErrorType::SCE_JOIN_REJECTED_LOBBY_FULL:
+            client->alerts.push_back("Could not join lobby: lobby fill");
+            break;
+        case sf4e::SessionClient::ErrorType::SCE_JOIN_REJECTED_NAME_TAKEN:
+            client->alerts.push_back("Could not join lobby: name taken");
+            break;
+        case sf4e::SessionClient::ErrorType::SCE_JOIN_REJECTED_REQUEST_INVALID:
+            client->alerts.push_back("Could not join lobby: join request incorrectly formatted- version mismatch?");
+            break;
+        default:
+            client->alerts.push_back("Unknown error occurred");
+            break;
+        }
     }
 };
 
@@ -200,6 +227,7 @@ int DrawResultsForm(TestingSessionClient& client) {
 }
 
 int DrawServerWindow() {
+    static char nextClientHash[4] = "123";
     static int nNextClientID = 0;
     static int nNextGgpoPort = 23456;
 
@@ -211,6 +239,7 @@ int DrawServerWindow() {
     Text("Server window");
     if (g_server) {
         DrawServerSessionInfo(g_server->clients, g_server->_matchData);
+        ImGui::InputText("Sidecar hash", nextClientHash, 4);
         if (Button("Create new client")) {
             char szNewClientName[32];
             sprintf_s(szNewClientName, 32, "client %d", nNextClientID);
@@ -220,7 +249,7 @@ int DrawServerWindow() {
             SteamNetworkingSockets()->CreateSocketPair(&pOutConnection1, &pOutConnection2, false, nullptr, nullptr);
             g_server->AddConnection(pOutConnection1);
             g_clients.emplace_back(
-                std::string("123"),
+                std::string(nextClientHash),
                 nNextGgpoPort,
                 std::string(szNewClientName),
                 0,
@@ -249,22 +278,39 @@ int DrawClientWindow(int idx, TestingSessionClient& client) {
         ImGuiWindowFlags_None
     );
     Text("Client window for %d: %s", idx, client.c._name.c_str());
-    if (Button("Send join")) {
-        JoinRequest request;
-        request.sidecarHash = client.c._sidecarHash;
-        request.username = client.c._name;
-        request.port = client.c._ggpoPort;
-        nlohmann::json msg = request;
-        if (client.c.Send(msg, nullptr) != k_EResultOK) {
-        	spdlog::warn("Client could send initial join request");
+
+    if (client.alerts.size() > 0) {
+        ImU32 red = IM_COL32(255, 0, 0, 255);
+        ImU32 darkRed = IM_COL32(255, 0, 0, 102);
+        ImGui::PushStyleColor(ImGuiCol_Button, darkRed);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, red);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, red);
+        ImGui::PushStyleColor(ImGuiCol_Text, red);
+        Text(client.alerts.at(0).c_str());
+        if (Button("OK")) {
+            client.alerts.pop_front();
         }
+        ImGui::PopStyleColor(4);
+    }
+    else {
+        if (Button("Send join")) {
+            JoinRequest request;
+            request.sidecarHash = client.c._sidecarHash;
+            request.username = client.c._name;
+            request.port = client.c._ggpoPort;
+            nlohmann::json msg = request;
+            if (client.c.Send(msg, nullptr) != k_EResultOK) {
+                spdlog::warn("Client could send initial join request");
+            }
+        }
+
+        DrawClientSessionInfo(client.c._lobbyData, client.c._matchData);
+        Separator();
+        DrawSetConditionsForm(client);
+        Separator();
+        DrawResultsForm(client);
     }
 
-    DrawClientSessionInfo(client.c._lobbyData, client.c._matchData);
-    Separator();
-    DrawSetConditionsForm(client);
-    Separator();
-    DrawResultsForm(client);
     End();
     return 0;
 }
@@ -324,7 +370,7 @@ int main(int, char**)
 
         auto iter = g_clients.begin();
         while (iter != g_clients.end()) {
-            if (iter->c.Step()) {
+            if (iter->c.Step() && iter->alerts.size() == 0) {
                 iter = g_clients.erase(iter);
             }
             else {

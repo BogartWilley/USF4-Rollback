@@ -17,7 +17,7 @@ namespace sf4e {
         static std::unique_ptr<SessionServer> server;
         static void Install();
         static void Steam_PostUpdate();
-        static void StartClient(char* joinAddr, uint16_t port, std::string& sidecarHash, std::string& name, uint8_t deviceType, uint8_t deviceIdx, uint8_t delay);
+        static void StartClient(const SessionClient::Callbacks& callbacks, char* joinAddr, uint16_t port, std::string& sidecarHash, std::string& name, uint8_t deviceType, uint8_t deviceIdx, uint8_t delay);
         static void StartServer(uint16 hostPort, std::string& sidecarHash);
     };
 }
