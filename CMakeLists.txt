@@ -1,10 +1,10 @@
 cmake_minimum_required (VERSION 3.20)
 
 project (
-    usf4-rollback-mirror
+    usf4-rollback
     VERSION 0.0.1
-    DESCRIPTION "A process-inspection and modification tool for the Steam release of Ultra Street Fighter 4."
-    HOMEPAGE_URL "https://gitlab.com/wcolaw88/usf4-rollback-mirror/"
+    DESCRIPTION "A process-inspection and modification tool for the Steam release of Ultra Street Fighter 4. (Workaround, allows for GGPO-Rollback Netcode to be used for online play)"
+    HOMEPAGE_URL "https://gitlab.com/wcolaw88/usf4-rollback"
 )
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
